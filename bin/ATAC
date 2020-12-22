@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+import argparse
+from rich import print
+from ATACofthesnake import misc
+
+parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
+parser.add_argument('--bamDir', type=str, required=True,
+                    help='Provide the directory containing bam files.')
+parser.add_argument('--sampleSheet', type=str,
+                    help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
+args = parser.parse_args()
+
+print("This is the dir yo. {}".format(args.bamDir))
+print("These are the bams yo. {}".format(misc.readBamDir(args.bamDir)))
