@@ -9,7 +9,8 @@ setuptools.setup(
    author_email = "deboutte@ie-freiburg.mpg.de",
    scripts = ['bin/ATAC'],
    packages = ['ATACofthesnake'],
-   include_package_data = False,
+   package_data = {"":["Snakefile"]},
+   include_package_data = True,
    install_requires = ['configparser'],
    python_requires='>3'
 )

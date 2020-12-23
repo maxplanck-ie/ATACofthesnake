@@ -2,7 +2,10 @@
 import argparse
 from rich import print
 import sys
+import subprocess
 from ATACofthesnake import misc
+import yaml
+import os
 
 def main():
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
@@ -10,22 +13,33 @@ def main():
                         help='Provide the directory containing bam files.')
     parser.add_argument('--outDir', type=str, required=True,
                         help='Provide a name for the output directory.')                    
-    parser.add_argument('--sampleSheet', type=str,
+    parser.add_argument('--sampleSheet', type=str, required=True,
                         help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
     print("outDIR: {}".format(args.outDir))
 
-    #Grab bamfiles:
+    # Grab bamfiles:
     bamFiles = misc.readBamDir(args.bamDir)
     if not bamFiles:
         print("No bamfiles found. Are you sure your bamfiles sit where they need to?")
         sys.exit()
 
-    #Parse Samplesheet.
-    if args.sampleSheet:
-        ssDic, Samples  = misc.readSS(args.sampleSheet)
-        
+    # Parse Samplesheet.
+    paramDic = misc.setdefault_readss(args.sampleSheet)
+    paramDic['Loc'] = {"bamDir":os.path.abspath(args.bamDir), "outDir":os.path.abspath(args.outDir)}
+    with open('Parameters.yaml', 'w') as f:
+        yaml.dump(paramDic, f)
+    print("Parameters written out in yaml file.")
+
+    # Launch snakemake
+    cmd = ['snakemake', '-s ', os.path.join(paramDic["baseDir"], 'Snakefile'), '-j 10']
+    print(os.path.join(paramDic["baseDir"], 'Snakefile'))
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    print(stdout)
+    print(stderr)
+
 if __name__ == "__main__":
     main()

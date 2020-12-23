@@ -1,0 +1,20 @@
+import os
+import yaml
+
+with open('Parameters.yaml') as f:
+	paramDic = yaml.load(f, Loader=yaml.FullLoader)
+
+localrules: checkindex
+rule all:
+	input:
+		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
+
+rule checkindex:
+	input:
+		'{sample}.bam'
+	output:
+		'{sample}.bam.bai'
+	threads: 10
+	shell:'''
+	sambamba index -t {threads} {input}
+	'''

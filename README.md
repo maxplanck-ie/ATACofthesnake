@@ -6,5 +6,16 @@ Downstream processing of ATAC data. Based on the DNA-mapping output of snakePipe
 
   set up the environment:  
 >  conda env create -f CondaEnv.yaml  
+>  conda activate ATACofthesnake
+>  pip install ./
 
-  - Workflow:
+  - todo:
+
+ - [ ] deeptools: fragmentsize
+ - [ ] deeptools: TSS enrichment
+ - [ ] deeptools: correlations
+ - [ ] MACS2
+ - [ ] multibamsummary
+ - [ ] DESeq2
+ - [ ] annotate
+
