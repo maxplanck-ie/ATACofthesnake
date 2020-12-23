@@ -1,14 +1,31 @@
 #!/usr/bin/env python3
 import argparse
 from rich import print
+import sys
 from ATACofthesnake import misc
 
-parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
-parser.add_argument('--bamDir', type=str, required=True,
-                    help='Provide the directory containing bam files.')
-parser.add_argument('--sampleSheet', type=str,
-                    help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
+    parser.add_argument('--bamDir', type=str, required=True,
+                        help='Provide the directory containing bam files.')
+    parser.add_argument('--outDir', type=str, required=True,
+                        help='Provide a name for the output directory.')                    
+    parser.add_argument('--sampleSheet', type=str,
+                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
+    args = parser.parse_args()
 
-print("This is the dir yo. {}".format(args.bamDir))
-print("These are the bams yo. {}".format(misc.readBamDir(args.bamDir)))
+    print("bamDIR: {}".format(args.bamDir))
+    print("outDIR: {}".format(args.outDir))
+
+    #Grab bamfiles:
+    bamFiles = misc.readBamDir(args.bamDir)
+    if not bamFiles:
+        print("No bamfiles found. Are you sure your bamfiles sit where they need to?")
+        sys.exit()
+
+    #Parse Samplesheet.
+    if args.sampleSheet:
+        ssDic, Samples  = misc.readSS(args.sampleSheet)
+        
+if __name__ == "__main__":
+    main()
