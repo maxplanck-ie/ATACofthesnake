@@ -1,6 +1,7 @@
 # ATACofthesnake
 
-Downstream processing of ATAC data. Based on the DNA-mapping output of snakePipes (https://github.com/maxplanck-ie/snakepipes)
+Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
+
 
   - Installation
 
@@ -9,13 +10,21 @@ Downstream processing of ATAC data. Based on the DNA-mapping output of snakePipe
 >  conda activate ATACofthesnake
 >  pip install ./
 
+  - Running:  
+> ATAC --bamDir ./bams/ --outDir ./ --sampleSheet ss.tsv --blackList blackList.bed --genomeSize 2652783500 --Genes genes.gtf
+
   - todo:
 
- - [ ] deeptools: fragmentsize
+ - [x] index: generate bai files if they are missing.
+ - [x] deeptools: fragmentsize
+ - [x] mergeBams
+ - [x] MACS2
+ - [ ] multibamsummary (counts)
+ - [ ] scaleFactors
  - [ ] deeptools: TSS enrichment
  - [ ] deeptools: correlations
- - [ ] MACS2
- - [ ] multibamsummary
+ - [ ] produceREP
  - [ ] DESeq2
  - [ ] annotate
+ - [ ] slurm submission
 

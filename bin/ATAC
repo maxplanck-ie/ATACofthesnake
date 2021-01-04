@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 import argparse
 from rich import print
+from rich.console import Console
 import sys
 import subprocess
 from ATACofthesnake import misc
 import yaml
 import os
+import snakemake
 
 def main():
+    console = Console()
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
     parser.add_argument('--bamDir', type=str, required=True,
                         help='Provide the directory containing bam files.')
@@ -15,6 +18,12 @@ def main():
                         help='Provide a name for the output directory.')                    
     parser.add_argument('--sampleSheet', type=str, required=True,
                         help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
+    parser.add_argument('--blackList', type=str, required=True,
+                        help='Provide a blacklist file containing genomic regions to ignore (BED format)')
+    parser.add_argument('--Genes', type=str, required=True,
+                        help='Provide a GTF file containing genome annotations.')
+    parser.add_argument('--genomeSize', type=int, required=True,
+                        help='Provide genome size. e.g. 2652783500 for mouse.')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -29,17 +38,16 @@ def main():
     # Parse Samplesheet.
     paramDic = misc.setdefault_readss(args.sampleSheet)
     paramDic['Loc'] = {"bamDir":os.path.abspath(args.bamDir), "outDir":os.path.abspath(args.outDir)}
+    paramDic['blackList'] = os.path.abspath(args.blackList)
+    paramDic['GTF'] = os.path.abspath(args.Genes)
+    paramDic['genomeSize'] = args.genomeSize
     with open('Parameters.yaml', 'w') as f:
         yaml.dump(paramDic, f)
     print("Parameters written out in yaml file.")
+    console.print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
-    cmd = ['snakemake', '-s ', os.path.join(paramDic["baseDir"], 'Snakefile'), '-j 10']
-    print(os.path.join(paramDic["baseDir"], 'Snakefile'))
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    print(stdout)
-    print(stderr)
+    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=10, latency_wait=300)
 
 if __name__ == "__main__":
     main()

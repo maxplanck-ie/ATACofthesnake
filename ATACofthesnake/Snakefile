@@ -3,13 +3,19 @@ import yaml
 
 with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
+Conditions = list(paramDic['Cond'])
 
-localrules: checkindex
+localrules: checkindex, fragSize, BigWigs
 rule all:
 	input:
-		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
+		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
+		"deepTools/fragSizes.raw.tsv",
+		"mergeBams/" + list(paramDic['Cond'])[0] + ".bam",
+		"mergeBams/" + list(paramDic['Cond'])[1] + ".bam",
+		expand('MACS2/{cond}_peaks.narrowPeak', cond=Conditions)
+		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples'])
 
-rule checkindex:
+rule checkIndex:
 	input:
 		'{sample}.bam'
 	output:
@@ -17,4 +23,66 @@ rule checkindex:
 	threads: 10
 	shell:'''
 	sambamba index -t {threads} {input}
+	'''
+
+rule fragSize:
+	input:
+		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
+	output:
+		"deepTools/fragSizes.raw.tsv"
+	params:
+		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
+	threads: 10
+	shell:'''
+	echo {params}
+	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output}
+	'''
+rule mergeBams_Cond1:
+	input:
+		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
+	output:
+		"mergeBams/" + Conditions[0] + ".bam"
+	params:
+		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Cond'][Conditions[0]]))
+	threads: 10
+	shell:'''
+	sambamba merge -t {threads} {output} {params}
+	'''
+
+rule mergeBams_Cond2:
+	input:
+		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
+	output:
+		"mergeBams/" + Conditions[1] + ".bam"
+	params:
+		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Cond'][Conditions[1]]))
+	threads: 10
+	shell:'''
+	sambamba merge -t {threads} {output} {params}
+	'''
+
+rule MACS2:
+	input:
+		"mergeBams/{cond}.bam"
+	output:
+		"MACS2/{cond}_peaks.narrowPeak"
+	params:
+		genomeSize = paramDic['genomeSize'],
+		outName = "{cond}"
+	threads: 1
+	shell:'''
+	macs2 callpeak -t {input} -f BAMPE --shift -100 --extsize 200 --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
+	'''
+
+rule BigWigs:
+	input:
+		os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam')
+	output:
+		"BigWigs/{sample}.bw"
+	params:
+		blackList = paramDic['blackList'],
+		genomeSize = paramDic['genomeSize']
+	threads: 10
+	shell:'''
+	bamCoverage -b {input} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList} --normalizeUsing 
 	'''

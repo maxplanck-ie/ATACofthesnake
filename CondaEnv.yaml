@@ -13,20 +13,22 @@ dependencies:
   - bioconductor-biocgenerics=0.18.0=r3.2.2_0
   - bioconductor-biocparallel=1.4.3=r3.2.2_0
   - bioconductor-deseq2=1.10.1=r3.2.2_0
+  - bioconductor-edger=3.14.0=0
   - bioconductor-genefilter=1.52.1=r3.2.2_0
   - bioconductor-geneplotter=1.48.0=0
   - bioconductor-genomeinfodb=1.6.3=0
   - bioconductor-genomicranges=1.22.4=0
   - bioconductor-iranges=2.4.8=0
+  - bioconductor-limma=3.28.10=0
   - bioconductor-s4vectors=0.8.11=0
   - bioconductor-summarizedexperiment=1.0.2=1
   - bioconductor-xvector=0.8.0=0
   - blas=1.0=mkl
   - brotlipy=0.7.0=py36h27cfd23_1003
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2020.12.5=ha878542_0
+  - ca-certificates=2020.12.8=h06a4308_0
   - cairo=1.16.0=h18b612c_1001
-  - certifi=2020.12.5=py36h5fab9bb_0
+  - certifi=2020.12.5=py36h06a4308_0
   - cffi=1.14.4=py36h261ae71_0
   - chardet=4.0.0=py36h06a4308_1003
   - colorama=0.4.4=pyh9f0ad1d_0
@@ -198,4 +200,6 @@ dependencies:
   - yaml=0.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h6597ccf_2
+  - pip:
+    - atacofthesnake==0.0.1
 prefix: /localenv/deboutte/anaconda/miniconda3/envs/ATACofthesnake
