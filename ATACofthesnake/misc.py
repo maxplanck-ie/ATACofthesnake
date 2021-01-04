@@ -8,6 +8,10 @@ def readBamDir(bamDir):
     for i in os.listdir(bamDir):
         if i.endswith('bam'):
             bams.append(i.replace(".bam",""))
+    for bamFile in bams:
+        if '-' in i:
+            return "Illegal character '-' found in bamfiles. Rename them and try again."
+            sys.exit()
     return bams
 
 def setdefault_readss(ss):

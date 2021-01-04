@@ -9,7 +9,7 @@ setuptools.setup(
    author_email = "deboutte@ie-freiburg.mpg.de",
    scripts = ['bin/ATAC'],
    packages = ['ATACofthesnake'],
-   package_data = {"":["Snakefile"]},
+   package_data = {"":["Snakefile", "Rscripts/edgeR_scalefactors.R"]},
    include_package_data = True,
    install_requires = ['configparser'],
    python_requires='>3'

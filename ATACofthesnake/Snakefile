@@ -10,9 +10,10 @@ rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
 		"deepTools/fragSizes.raw.tsv",
-		"mergeBams/" + list(paramDic['Cond'])[0] + ".bam",
-		"mergeBams/" + list(paramDic['Cond'])[1] + ".bam",
-		expand('MACS2/{cond}_peaks.narrowPeak', cond=Conditions)
+		"mergeBams/Merged.bam",
+		'MACS2/Merged_peaks.narrowPeak',
+		"diffAcc/counts.mat",
+		"diffAcc/scalefactors.txt"
 		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples'])
 
 rule checkIndex:
@@ -35,27 +36,15 @@ rule fragSize:
 	threads: 10
 	shell:'''
 	echo {params}
-	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output}
+	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} 2> deepTools/fragSizes.err > deepTools/fragSizes.out
 	'''
-rule mergeBams_Cond1:
+rule mergeBams:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
 	output:
-		"mergeBams/" + Conditions[0] + ".bam"
+		"mergeBams/Merged.bam"
 	params:
-		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Cond'][Conditions[0]]))
-	threads: 10
-	shell:'''
-	sambamba merge -t {threads} {output} {params}
-	'''
-
-rule mergeBams_Cond2:
-	input:
-		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
-	output:
-		"mergeBams/" + Conditions[1] + ".bam"
-	params:
-		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Cond'][Conditions[1]]))
+		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
 	threads: 10
 	shell:'''
 	sambamba merge -t {threads} {output} {params}
@@ -63,15 +52,42 @@ rule mergeBams_Cond2:
 
 rule MACS2:
 	input:
-		"mergeBams/{cond}.bam"
+		"mergeBams/Merged.bam"
 	output:
-		"MACS2/{cond}_peaks.narrowPeak"
+		"MACS2/Merged_peaks.narrowPeak"
 	params:
 		genomeSize = paramDic['genomeSize'],
-		outName = "{cond}"
+		outName = "Merged"
 	threads: 1
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --shift -100 --extsize 200 --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
+	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all --call-summits 2> MACS2/{params.outName}.log
+	'''
+
+rule countMat:
+	input:
+		"MACS2/Merged_peaks.narrowPeak"
+	output:
+		mat = "diffAcc/counts.mat",
+		matnpz = "diffAcc/counts.npz"
+	params:
+		blackList = paramDic['blackList'],
+		samples = ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
+	threads: 20
+	shell:'''
+	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples}
+	sed -i "s/'//g" diffAcc/counts.mat
+	'''
+
+rule scaleFactors:
+	input:
+		"diffAcc/counts.mat"
+	output:
+		"diffAcc/scalefactors.txt"
+	threads: 1
+	params:
+		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
+	shell:'''
+	Rscript {params.scriptLoc} {input}
 	'''
 
 rule BigWigs:

@@ -47,7 +47,7 @@ def main():
     console.print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
-    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=10, latency_wait=300)
+    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=20, latency_wait=300)
 
 if __name__ == "__main__":
     main()

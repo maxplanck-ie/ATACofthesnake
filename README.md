@@ -1,6 +1,6 @@
 # ATACofthesnake
 
-Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
+Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
 
 
   - Installation
@@ -19,12 +19,19 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] deeptools: fragmentsize
  - [x] mergeBams
  - [x] MACS2
- - [ ] multibamsummary (counts)
+ - [x] multibamsummary (counts)
+ - [ ] deal with illegal characters ?
+ - [ ] Standardize logging
  - [ ] scaleFactors
  - [ ] deeptools: TSS enrichment
  - [ ] deeptools: correlations
- - [ ] produceREP
  - [ ] DESeq2
  - [ ] annotate
  - [ ] slurm submission
+ - [ ] produce report
+ - [ ] incorporate runID if more than 1 comparison per batch.
+ - [ ] Support multiple genomes
+      - [ ] blacklist DL + merge
+      - [ ] GTF DL
+      - [ ] genomeSizes
 
