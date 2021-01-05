@@ -1,9 +1,18 @@
 import os
 import yaml
+# Definitions
+def returnscaleFactor(sample):
+	scaleDic = {}
+	with open('diffAcc/scaleFactors.txt') as f:
+		for line in f:
+			scaleDic[line.strip().split(' ')[0]] = float(line.strip().split()[1])
+	return scaleDic[sample]
 
+# Read / set variables.
 with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
+
 
 localrules: checkindex, fragSize, BigWigs
 rule all:
@@ -13,8 +22,13 @@ rule all:
 		"mergeBams/Merged.bam",
 		'MACS2/Merged_peaks.narrowPeak',
 		"diffAcc/counts.mat",
-		"diffAcc/scalefactors.txt"
-		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples'])
+		"diffAcc/scaleFactors.txt",
+		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		'deepTools/BigwigSum.npz',
+		'Figures/plotCorr.png',
+		"Figures/PCA.png",
+		"deepTools/BigwigMatrix.gz",
+		"Figures/Heatmap.png"
 
 rule checkIndex:
 	input:
@@ -60,7 +74,7 @@ rule MACS2:
 		outName = "Merged"
 	threads: 1
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all --call-summits 2> MACS2/{params.outName}.log
+	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
 	'''
 
 rule countMat:
@@ -75,14 +89,17 @@ rule countMat:
 	threads: 20
 	shell:'''
 	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples}
+	# Remove quotes placed by multiBamSummary
 	sed -i "s/'//g" diffAcc/counts.mat
+	# Remove .bam postfix
+	sed -i 's/\.bam//g' diffAcc/counts.mat
 	'''
 
 rule scaleFactors:
 	input:
 		"diffAcc/counts.mat"
 	output:
-		"diffAcc/scalefactors.txt"
+		"diffAcc/scaleFactors.txt"
 	threads: 1
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
@@ -92,13 +109,72 @@ rule scaleFactors:
 
 rule BigWigs:
 	input:
-		os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam')
+		sf = "diffAcc/scaleFactors.txt",
+		inFile = os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam')
 	output:
 		"BigWigs/{sample}.bw"
 	params:
+		sampleName = '{sample}',
+		#scaleFactor = lambda wildcards: returnscaleFactor('{sample}'.format(sample=wildcards.sample)),
 		blackList = paramDic['blackList'],
 		genomeSize = paramDic['genomeSize']
 	threads: 10
 	shell:'''
-	bamCoverage -b {input} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList} --normalizeUsing 
+	SCALEFAC=$(grep {params.sampleName} diffAcc/scaleFactors.txt | cut -f2 -d ' ')
+	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList}
+	'''
+
+rule multiBigwigSum:
+	input:
+		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
+		Peaks = "MACS2/Merged_peaks.narrowPeak"
+	output:
+		'deepTools/BigwigSum.npz'
+	params:
+		bigwigs = ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])),
+		blackList = paramDic['blackList'],
+	threads: 10
+	shell:'''
+	multiBigwigSummary BED-file --BED {input.Peaks} -o {output} -b {params.bigwigs} -bl {params.blackList} -p {threads} -bs 150
+	'''
+
+rule plotCorr:
+	input:
+		"deepTools/BigwigSum.npz"
+	output:
+		"Figures/plotCorr.png"
+	shell:'''
+	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros
+	'''
+rule plotPCA:
+	input:
+		"deepTools/BigwigSum.npz"
+	output:
+		"Figures/PCA.png"
+	threads: 1
+	shell:'''
+	plotPCA --corData {input} -o {output} --transpose
+	'''
+
+rule computeMatrix:
+	input:
+		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
+	output:
+		"deepTools/BigwigMatrix.gz"
+	params:
+		bigwigs = ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])),
+		bed = "TSS.bed"
+	threads: 10
+	shell:'''
+	computeMatrix reference-point -S {params.bigwigs} -R {params.bed} --referencePoint center -a 2000 -b 2000 -out {output} -p {threads} --missingDataAsZero
+	'''
+
+rule plotHeatmap:
+	input:
+		"deepTools/BigwigMatrix.gz"
+	output:
+		"Figures/Heatmap.png"
+	threads: 1
+	shell:'''
+	plotHeatmap -m {input} -out {output} --refPointLabel TSS
 	'''

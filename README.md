@@ -22,9 +22,11 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] multibamsummary (counts)
  - [ ] deal with illegal characters ?
  - [ ] Standardize logging
- - [ ] scaleFactors
- - [ ] deeptools: TSS enrichment
- - [ ] deeptools: correlations
+ - [x] scaleFactors
+ - [x] bamCoverage
+ - [x] computeMatrix
+ - [x] deeptools: TSS enrichment
+ - [x] deeptools: correlations
  - [ ] DESeq2
  - [ ] annotate
  - [ ] slurm submission

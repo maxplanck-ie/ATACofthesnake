@@ -3,6 +3,28 @@ import pandas as pd
 import sys
 import rich
 
+from rich.progress import Progress
+def GTFtoTSS(bed):
+    TSS = []
+    linecount = 0
+    with open(bed) as f:
+        for line in f:
+            linecount += 1
+    with rich.progress.Progress() as progress:
+        task = progress.add_task("Extracting TSS from GTF", total=linecount)
+        with open(bed) as f:
+            for line in f:
+                if not line.startswith('#'):
+                    if line.strip().split()[2] == 'gene':
+                        geneid = line.strip().split()[8].split(';')[0].replace('gene_id ',"").replace('"', '')
+                        if line.strip().split()[6] == '+':
+                            TSS.append([line.strip().split()[0], int(line.strip().split()[3]), int(line.strip().split()[3]) + 1])
+                        elif line.strip().split()[6] == '-':
+                            TSS.append([line.strip().split()[0], int(line.strip().split()[4]) - 1, int(line.strip().split()[4])])
+                progress.advance(task)
+    TSSdf = pd.DataFrame(TSS)
+    TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
+
 def readBamDir(bamDir):
     bams = []
     for i in os.listdir(bamDir):

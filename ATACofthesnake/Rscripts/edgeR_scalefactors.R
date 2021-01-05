@@ -6,5 +6,15 @@ args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 
 countmat <- read.csv(mat, sep='\t', header=TRUE)
-head(countmat)
-touch('diffAcc/scalefactors.txt')
+rowmat <- paste(countmat[,1], countmat[,2], countmat[,3], sep='_')
+rownames(countmat) <- rowmat
+countmat <- as.matrix(countmat[,-(1:3),drop=FALSE])
+# Get norm factors.
+NormFactor <- calcNormFactors(object = countmat, method = "TMM")
+# Get libSize
+LibSize <- colSums(countmat)
+# Size factors
+SizeFactors <- NormFactor * LibSize / 1000000
+# Reciprocal for deepTools
+SizeFactors.reci <- 1/SizeFactors
+write.table(SizeFactors.reci, file = "diffAcc/scaleFactors.txt", col.names = FALSE, quote=FALSE)
