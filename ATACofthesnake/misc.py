@@ -2,8 +2,32 @@ import os
 import pandas as pd
 import sys
 import rich
-
 from rich.progress import Progress
+
+def returnscaleFactor(sample):
+    scaleDic = {}
+    with open('diffAcc/scaleFactors.txt') as f:
+        for line in f:
+            scaleDic[line.strip().split(' ')[0]] = float(line.strip().split()[1])
+    return scaleDic[sample]
+
+def conditionsfromCount(countmat, paramDic):
+    if not os.path.exists(countmat):
+        return "testcase"
+    with open(countmat) as f:
+        header = f.readline().strip().split()
+        header = header[3:]
+    conditionOrder = []
+    flipDic = {}
+    for cond in paramDic:
+        for sample in paramDic[cond]:
+            flipDic[sample] = cond
+    for sample in header:
+        print(sample)
+        conditionOrder.append(flipDic[sample])
+    return ','.join(conditionOrder)
+
+
 def GTFtoTSS(bed):
     TSS = []
     linecount = 0

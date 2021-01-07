@@ -1,12 +1,6 @@
 import os
 import yaml
-# Definitions
-def returnscaleFactor(sample):
-	scaleDic = {}
-	with open('diffAcc/scaleFactors.txt') as f:
-		for line in f:
-			scaleDic[line.strip().split(' ')[0]] = float(line.strip().split()[1])
-	return scaleDic[sample]
+from ATACofthesnake import misc
 
 # Read / set variables.
 with open('Parameters.yaml') as f:
@@ -28,7 +22,8 @@ rule all:
 		'Figures/plotCorr.png',
 		"Figures/PCA.png",
 		"deepTools/BigwigMatrix.gz",
-		"Figures/Heatmap.png"
+		"Figures/Heatmap.png",
+		"diffAcc/DESeq2.tsv"
 
 rule checkIndex:
 	input:
@@ -115,7 +110,6 @@ rule BigWigs:
 		"BigWigs/{sample}.bw"
 	params:
 		sampleName = '{sample}',
-		#scaleFactor = lambda wildcards: returnscaleFactor('{sample}'.format(sample=wildcards.sample)),
 		blackList = paramDic['blackList'],
 		genomeSize = paramDic['genomeSize']
 	threads: 10
@@ -144,7 +138,7 @@ rule plotCorr:
 	output:
 		"Figures/plotCorr.png"
 	shell:'''
-	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros
+	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1
 	'''
 rule plotPCA:
 	input:
@@ -176,5 +170,18 @@ rule plotHeatmap:
 		"Figures/Heatmap.png"
 	threads: 1
 	shell:'''
-	plotHeatmap -m {input} -out {output} --refPointLabel TSS
+	plotHeatmap -m {input}rrule -out {output} --refPointLabel TSS
+	'''
+
+rule DESeq2:
+	input:
+		"diffAcc/counts.mat"
+	output:
+		"diffAcc/DESeq2.tsv"
+	params:
+		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
+		condOrder = misc.conditionsfromCount("diffAcc/counts.mat", paramDic['Cond'])
+	threads: 1
+	shell:'''
+	Rscript {params.scriptLoc} {input} {params.condOrder}
 	'''
