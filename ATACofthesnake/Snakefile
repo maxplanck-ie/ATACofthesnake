@@ -7,23 +7,21 @@ with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
 
-
-localrules: checkindex, fragSize, BigWigs
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
-		"deepTools/fragSizes.raw.tsv",
-		"mergeBams/Merged.bam",
-		'MACS2/Merged_peaks.narrowPeak',
-		"diffAcc/counts.mat",
-		"diffAcc/scaleFactors.txt",
-		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		'deepTools/BigwigSum.npz',
-		'Figures/plotCorr.png',
-		"Figures/PCA.png",
-		"deepTools/BigwigMatrix.gz",
-		"Figures/Heatmap.png",
-		"diffAcc/DESeq2.tsv"
+		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
+		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
+		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp'])
+		#"diffAcc/scaleFactors.txt",
+		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		#'deepTools/BigwigSum.npz',
+		#'Figures/plotCorr.png',
+		#"Figures/PCA.png",
+		#"deepTools/BigwigMatrix.gz",
+		#"Figures/Heatmap.png",
+		#"diffAcc/DESeq2.tsv"
 
 rule checkIndex:
 	input:
@@ -39,21 +37,21 @@ rule fragSize:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
 	output:
-		"deepTools/fragSizes.raw.tsv"
+		"deepTools/{Comp}.fragSizes.raw.tsv"
 	params:
-		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
+		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
 	shell:'''
-	echo {params}
 	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} 2> deepTools/fragSizes.err > deepTools/fragSizes.out
 	'''
+
 rule mergeBams:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
 	output:
-		"mergeBams/Merged.bam"
+		"mergeBams/{Comp}.Merged.bam"
 	params:
-		' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
+		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
 	shell:'''
 	sambamba merge -t {threads} {output} {params}
@@ -61,33 +59,34 @@ rule mergeBams:
 
 rule MACS2:
 	input:
-		"mergeBams/Merged.bam"
+		"mergeBams/{Comp}.Merged.bam"
 	output:
-		"MACS2/Merged_peaks.narrowPeak"
+		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	params:
 		genomeSize = paramDic['genomeSize'],
-		outName = "Merged"
+		outName = lambda wildcards: wildcards.Comp + "_Merged"
 	threads: 1
 	shell:'''
 	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
 	'''
 
+
 rule countMat:
 	input:
-		"MACS2/Merged_peaks.narrowPeak"
+		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		mat = "diffAcc/counts.mat",
-		matnpz = "diffAcc/counts.npz"
+		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
+		matnpz = "diffAcc_{Comp}/{Comp}counts.npz"
 	params:
 		blackList = paramDic['blackList'],
-		samples = ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Samples']))
+		samples = lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 20
 	shell:'''
 	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples}
 	# Remove quotes placed by multiBamSummary
-	sed -i "s/'//g" diffAcc/counts.mat
+	sed -i "s/'//g" {output.mat}
 	# Remove .bam postfix
-	sed -i 's/\.bam//g' diffAcc/counts.mat
+	sed -i 's/\.bam//g' {output.mat}
 	'''
 
 rule scaleFactors:
@@ -140,6 +139,7 @@ rule plotCorr:
 	shell:'''
 	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1
 	'''
+
 rule plotPCA:
 	input:
 		"deepTools/BigwigSum.npz"
@@ -170,7 +170,7 @@ rule plotHeatmap:
 		"Figures/Heatmap.png"
 	threads: 1
 	shell:'''
-	plotHeatmap -m {input}rrule -out {output} --refPointLabel TSS
+	plotHeatmap -m {input} -out {output} --refPointLabel TSS
 	'''
 
 rule DESeq2:
@@ -180,7 +180,7 @@ rule DESeq2:
 		"diffAcc/DESeq2.tsv"
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
-		condOrder = misc.conditionsfromCount("diffAcc/counts.mat", paramDic['Cond'])
+		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input) ,paramDic['Cond'])
 	threads: 1
 	shell:'''
 	Rscript {params.scriptLoc} {input} {params.condOrder}

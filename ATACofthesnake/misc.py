@@ -4,16 +4,7 @@ import sys
 import rich
 from rich.progress import Progress
 
-def returnscaleFactor(sample):
-    scaleDic = {}
-    with open('diffAcc/scaleFactors.txt') as f:
-        for line in f:
-            scaleDic[line.strip().split(' ')[0]] = float(line.strip().split()[1])
-    return scaleDic[sample]
-
 def conditionsfromCount(countmat, paramDic):
-    if not os.path.exists(countmat):
-        return "testcase"
     with open(countmat) as f:
         header = f.readline().strip().split()
         header = header[3:]
@@ -60,36 +51,50 @@ def readBamDir(bamDir):
             sys.exit()
     return bams
 
-def setdefault_readss(ss):
+def setdefault_readss(ss, bams):
     ss = pd.read_csv(ss, sep='\t', header=0)
-    if ss.columns[0] == 'Sample' and ss.columns[1] == 'Cond':
-        if len(ss.columns) > 2:
-            return "Error parsing sampleSheet, more than 2 columns found."
+    if ss.columns[0] == 'Sample' and ss.columns[1] == 'Cond' and ss.columns[2] == 'Comp':
+        if len(ss.columns) > 3:
+            return "Error parsing sampleSheet, more than 3 columns found."
             sys.exit()
         elif len(ss.Cond.unique()) != 2:
             return "Error parsing sampleSheet, I need exactly 2 conditions."
             sys.exit()
         else:
+            for sample in ss.Sample:
+                if sample.replace(".bam","") not in bams:
+                    return "I didn't find {} in your bam directory. Please correct.".format(sample)
+                    sys.exit()
             diffDic = {}
-            key1 = ss.Cond.unique()[0]
-            key2 = ss.Cond.unique()[1]
-            diffDic['Cond'] = {}
-            diffDic['Cond'][key1] = list(ss[ss['Cond'] == key1]['Sample'].str.replace(".bam",""))
-            diffDic['Cond'][key2] = list(ss[ss['Cond'] == key2]['Sample'].str.replace(".bam",""))
-            samplesList = diffDic['Cond'][key1] + diffDic['Cond'][key2]
-            table = rich.table.Table(title="Samples - Conditions.")
-            table.add_column(key1, justify="center", style="cyan")
-            table.add_column(key2, justify="center", style="green")
-            for i in range(max([len(diffDic['Cond'][key1]), len(diffDic['Cond'][key2])])):
-                try:
-                    table.add_row(diffDic['Cond'][key1][i], diffDic['Cond'][key2][i])
-                except:
+            diffDic["Cond"] = list(ss.Cond.unique())
+            diffDic["Comp"] = {}
+            diffDic["Samples"] = list(ss.Sample.str.replace(".bam",""))
+            for Comp in ss.Comp.unique():
+                tempss = ss[ss['Comp'] == Comp]
+                diffDic["Comp"][Comp] = {}
+                key1 = tempss.Cond.unique()[0]
+                key2 = tempss.Cond.unique()[1]
+                diffDic["Comp"][Comp]['Cond'] = {}
+                diffDic["Comp"][Comp]['Cond'][key1] = list(tempss[tempss['Cond'] == key1]['Sample'].str.replace(".bam",""))
+                diffDic["Comp"][Comp]['Cond'][key2] = list(tempss[tempss['Cond'] == key2]['Sample'].str.replace(".bam",""))
+                samplesList = diffDic["Comp"][Comp]['Cond'][key1] + diffDic["Comp"][Comp]['Cond'][key2]
+                diffDic["Comp"][Comp]['Samples'] = samplesList
+            for Comp in ss.Comp.unique():
+                table = rich.table.Table(title="Samples - Conditions: {}".format(Comp))
+                table.add_column(key1, justify="center", style="cyan")
+                table.add_column(key2, justify="center", style="green")
+                for i in range(max([len(diffDic["Comp"][Comp]['Cond'][key1]), len(diffDic["Comp"][Comp]['Cond'][key2])])):
                     try:
-                        table.add_row(diffDic['Cond'][key1][i], "")
+                        table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i], diffDic["Comp"][Comp]['Cond'][key2][i])
                     except:
-                        table.add_row("", diffDic['Cond'][key2][i])
-            console = rich.console.Console()
-            console.print(table)
-            diffDic['Samples'] = samplesList
+                        try:
+                            table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i], "")
+                        except:
+                            table.add_row("", diffDic["Comp"][Comp]['Cond'][key2][i])
+                console = rich.console.Console()
+                console.print(table)
             diffDic['baseDir'] = os.path.dirname(__file__)
             return diffDic
+    else:
+        return "Column headers not ok, (expected [Sample, Cond, Comp])"
+        sys.exit()

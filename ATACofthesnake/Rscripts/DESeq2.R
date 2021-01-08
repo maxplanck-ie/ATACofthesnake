@@ -10,9 +10,7 @@ conds = strsplit(conds, ",")[[1]]
 
 countmat <- read.csv(mat, sep='\t')
 rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
-countmat[,1] <- NULL
-countmat[,2] <- NULL
-countmat[,3] <- NULL
+countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
 cols <- cbind(colnames(countmat), conds)
 colnames(cols) <- c("Sample", "Cond")

@@ -25,11 +25,13 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] computeMatrix
  - [x] deeptools: TSS enrichment
  - [x] deeptools: correlations
- - [ ] DESeq2/EdgeR/csaw?
+ - [x] DESeq2
+ - [ ] Multiple comparisons
  - [ ] annotate peaks
 
  - longer term to do:
 
+ - [ ] EdgeR / csaw ?
  - [ ] deal with illegal characters ?
  - [ ] Standardize logging
  - [ ] slurm submission
