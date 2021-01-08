@@ -4,6 +4,7 @@ library(edgeR)
 library(tools)
 args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
+outfile = args[[2]]
 
 countmat <- read.csv(mat, sep='\t', header=TRUE)
 rowmat <- paste(countmat[,1], countmat[,2], countmat[,3], sep='_')
@@ -17,4 +18,4 @@ LibSize <- colSums(countmat)
 SizeFactors <- NormFactor * LibSize / 1000000
 # Reciprocal for deepTools
 SizeFactors.reci <- 1/SizeFactors
-write.table(SizeFactors.reci, file = "diffAcc/scaleFactors.txt", col.names = FALSE, quote=FALSE)
+write.table(SizeFactors.reci, file = outfile, col.names = FALSE, quote=FALSE)

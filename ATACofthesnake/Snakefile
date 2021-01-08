@@ -13,10 +13,10 @@ rule all:
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp'])
-		#"diffAcc/scaleFactors.txt",
-		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		#'deepTools/BigwigSum.npz',
+		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
+		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp'])
 		#'Figures/plotCorr.png',
 		#"Figures/PCA.png",
 		#"deepTools/BigwigMatrix.gz",
@@ -70,13 +70,12 @@ rule MACS2:
 	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
 	'''
 
-
 rule countMat:
 	input:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
 		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
-		matnpz = "diffAcc_{Comp}/{Comp}counts.npz"
+		matnpz = "diffAcc_{Comp}/{Comp}_counts.npz"
 	params:
 		blackList = paramDic['blackList'],
 		samples = lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
@@ -91,19 +90,19 @@ rule countMat:
 
 rule scaleFactors:
 	input:
-		"diffAcc/counts.mat"
+		"diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
-		"diffAcc/scaleFactors.txt"
+		"diffAcc_{Comp}/{Comp}_scaleFactors.txt"
 	threads: 1
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
 	shell:'''
-	Rscript {params.scriptLoc} {input}
+	Rscript {params.scriptLoc} {input} {output}
 	'''
 
 rule BigWigs:
 	input:
-		sf = "diffAcc/scaleFactors.txt",
+		sf = expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt",Comp=paramDic['Comp']),
 		inFile = os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam')
 	output:
 		"BigWigs/{sample}.bw"
@@ -113,19 +112,19 @@ rule BigWigs:
 		genomeSize = paramDic['genomeSize']
 	threads: 10
 	shell:'''
-	SCALEFAC=$(grep {params.sampleName} diffAcc/scaleFactors.txt | cut -f2 -d ' ')
+	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
 	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList}
 	'''
 
 rule multiBigwigSum:
 	input:
 		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
-		Peaks = "MACS2/Merged_peaks.narrowPeak"
+		Peaks = "MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		'deepTools/BigwigSum.npz'
+		'deepTools/{Comp}_BigwigSum.npz'
 	params:
-		bigwigs = ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])),
-		blackList = paramDic['blackList'],
+		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
+		blackList = paramDic['blackList']
 	threads: 10
 	shell:'''
 	multiBigwigSummary BED-file --BED {input.Peaks} -o {output} -b {params.bigwigs} -bl {params.blackList} -p {threads} -bs 150
