@@ -7,7 +7,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
   set up the environment:  
 >  conda env create -f CondaEnv.yaml  
->  conda activate ATACofthesnake
+>  conda activate ATACofthesnake  
 >  pip install ./
 
   - Running:  
