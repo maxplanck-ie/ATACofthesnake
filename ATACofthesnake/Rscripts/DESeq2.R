@@ -6,6 +6,8 @@ suppressMessages(library(tools))
 args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 conds = args[[2]]
+outfile = args[[3]]
+
 conds = strsplit(conds, ",")[[1]]
 
 countmat <- read.csv(mat, sep='\t')

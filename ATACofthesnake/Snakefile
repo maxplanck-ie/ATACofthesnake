@@ -16,12 +16,12 @@ rule all:
 		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
 		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp'])
-		#'Figures/plotCorr.png',
-		#"Figures/PCA.png",
-		#"deepTools/BigwigMatrix.gz",
-		#"Figures/Heatmap.png",
-		#"diffAcc/DESeq2.tsv"
+		expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
+		expand('Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2.tsv", Comp=paramDic['Comp'])
 
 rule checkIndex:
 	input:
@@ -132,18 +132,18 @@ rule multiBigwigSum:
 
 rule plotCorr:
 	input:
-		"deepTools/BigwigSum.npz"
+		"deepTools/{Comp}_BigwigSum.npz"
 	output:
-		"Figures/plotCorr.png"
+		"Figures/{Comp}_plotCorr.png"
 	shell:'''
 	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1
 	'''
 
 rule plotPCA:
 	input:
-		"deepTools/BigwigSum.npz"
+		"deepTools/{Comp}_BigwigSum.npz"
 	output:
-		"Figures/PCA.png"
+		"Figures/{Comp}_PCA.png"
 	threads: 1
 	shell:'''
 	plotPCA --corData {input} -o {output} --transpose
@@ -153,9 +153,9 @@ rule computeMatrix:
 	input:
 		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
 	output:
-		"deepTools/BigwigMatrix.gz"
+		"deepTools/{Comp}_BigwigMatrix.gz"
 	params:
-		bigwigs = ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])),
+		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		bed = "TSS.bed"
 	threads: 10
 	shell:'''
@@ -164,9 +164,9 @@ rule computeMatrix:
 
 rule plotHeatmap:
 	input:
-		"deepTools/BigwigMatrix.gz"
+		"deepTools/{Comp}_BigwigMatrix.gz"
 	output:
-		"Figures/Heatmap.png"
+		"Figures/{Comp}_Heatmap.png"
 	threads: 1
 	shell:'''
 	plotHeatmap -m {input} -out {output} --refPointLabel TSS
@@ -174,13 +174,13 @@ rule plotHeatmap:
 
 rule DESeq2:
 	input:
-		"diffAcc/counts.mat"
+		"diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
-		"diffAcc/DESeq2.tsv"
+		"diffAcc_{Comp}/{Comp}_DESeq2.tsv"
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
-		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input) ,paramDic['Cond'])
+		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input) ,paramDic['Comp'][wildcards.Comp]['Cond'])
 	threads: 1
 	shell:'''
-	Rscript {params.scriptLoc} {input} {params.condOrder}
+	Rscript {params.scriptLoc} {input} {params.condOrder} {output}
 	'''
