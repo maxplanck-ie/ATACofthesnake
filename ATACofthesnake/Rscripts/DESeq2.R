@@ -28,4 +28,4 @@ dds = DESeq(dds)
 res <- as.data.frame(results(dds, pAdjustMethod = "fdr" ))
 res <- res[complete.cases(res), ]
 res <- res[res$padj < 0.1,]
-write.csv(res, file="diffAcc/DESeq2.tsv", quote=FALSE, sep='\t')
+write.csv(res, file=outfile, quote=FALSE, sep='\t')
