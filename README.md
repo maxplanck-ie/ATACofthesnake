@@ -26,8 +26,9 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] deeptools: TSS enrichment
  - [x] deeptools: correlations
  - [x] DESeq2
- - [ ] Multiple comparisons
+ - [x] Multiple comparisons
  - [ ] annotate peaks
+ - [ ] Standardize logs
 
  - longer term to do:
 
