@@ -17,13 +17,15 @@ def main():
     parser.add_argument('--outDir', type=str, required=True,
                         help='Provide a name for the output directory.')                    
     parser.add_argument('--sampleSheet', type=str, required=True,
-                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond]')
+                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
     parser.add_argument('--blackList', type=str, required=True,
                         help='Provide a blacklist file containing genomic regions to ignore (BED format)')
     parser.add_argument('--Genes', type=str, required=True,
                         help='Provide a GTF file containing genome annotations.')
     parser.add_argument('--genomeSize', type=int, required=True,
                         help='Provide genome size. e.g. 2652783500 for mouse.')
+    parser.add_argument('--clusterCMD', type=str, required=False,
+                        help='Cluster submission command, defaults to SlurmEasy')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -50,7 +52,11 @@ def main():
     console.print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
-    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=20, latency_wait=300)
+    if args.clusterCMD:
+        clusterCMD = args.clusterCMD
+    else:
+        clusterCMD = "SlurmEasy -t {threads} -n {rule}"
+    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=2, latency_wait=300, cluster=clusterCMD)
 
 if __name__ == "__main__":
     main()

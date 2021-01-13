@@ -25,12 +25,15 @@ rule all:
 
 rule checkIndex:
 	input:
-		'{sample}.bam'
+		paramDic['Loc']['bamDir'] + '/{sample}.bam'
 	output:
-		'{sample}.bam.bai'
+		paramDic['Loc']['bamDir'] + '/{sample}.bam.bai'
+	log:
+		out = 'logs/checkIndex.{sample}.out',
+		err = 'logs/checkIndex.{sample}.err'
 	threads: 10
 	shell:'''
-	sambamba index -t {threads} {input}
+	sambamba index -t {threads} {input} > {log.out} 2> {log.err}
 	'''
 
 rule fragSize:
@@ -38,11 +41,14 @@ rule fragSize:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
 	output:
 		"deepTools/{Comp}.fragSizes.raw.tsv"
+	log:
+		out = 'logs/fragSize.{Comp}.out',
+		err = 'logs/fragSize.{Comp}.err'
 	params:
 		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
 	shell:'''
-	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} 2> deepTools/fragSizes.err > deepTools/fragSizes.out
+	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} > {log.out} 2> {log.err}
 	'''
 
 rule mergeBams:
@@ -50,11 +56,14 @@ rule mergeBams:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples'])
 	output:
 		"mergeBams/{Comp}.Merged.bam"
+	log:
+		out = 'logs/mergeBams.{Comp}.out',
+		err = 'logs/mergeBams.{Comp}.err'
 	params:
 		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
 	shell:'''
-	sambamba merge -t {threads} {output} {params}
+	sambamba merge -t {threads} {output} {params} > {log.out} 2> {log.err}
 	'''
 
 rule MACS2:
@@ -62,12 +71,15 @@ rule MACS2:
 		"mergeBams/{Comp}.Merged.bam"
 	output:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+	log:
+		out = 'logs/MACS2.{Comp}.out',
+		err = 'logs/MACS2.{Comp}.err'
 	params:
 		genomeSize = paramDic['genomeSize'],
 		outName = lambda wildcards: wildcards.Comp + "_Merged"
 	threads: 1
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all 2> MACS2/{params.outName}.log
+	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
 rule countMat:
@@ -76,12 +88,15 @@ rule countMat:
 	output:
 		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
 		matnpz = "diffAcc_{Comp}/{Comp}_counts.npz"
+	log:
+		out = "logs/countMat.{Comp}.out",
+		err = "logs/countMat.{Comp}.err"
 	params:
 		blackList = paramDic['blackList'],
 		samples = lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 20
 	shell:'''
-	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples}
+	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples} > {log.out} 2> {log.err}
 	# Remove quotes placed by multiBamSummary
 	sed -i "s/'//g" {output.mat}
 	# Remove .bam postfix
@@ -93,11 +108,14 @@ rule scaleFactors:
 		"diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
 		"diffAcc_{Comp}/{Comp}_scaleFactors.txt"
+	log:
+		out = "logs/scaleFactors.{Comp}.out",
+		err = "logs/scaleFactors.{Comp}.err"
 	threads: 1
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
 	shell:'''
-	Rscript {params.scriptLoc} {input} {output}
+	Rscript {params.scriptLoc} {input} {output} > {log.out} 2> {log.err}
 	'''
 
 rule BigWigs:
@@ -106,6 +124,9 @@ rule BigWigs:
 		inFile = os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam')
 	output:
 		"BigWigs/{sample}.bw"
+	log:
+		out = "logs/BigWigs.{sample}.out",
+		err = "logs/Bigwigs.{sample}.err"
 	params:
 		sampleName = '{sample}',
 		blackList = paramDic['blackList'],
@@ -113,7 +134,7 @@ rule BigWigs:
 	threads: 10
 	shell:'''
 	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
-	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList}
+	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule multiBigwigSum:
@@ -122,12 +143,15 @@ rule multiBigwigSum:
 		Peaks = "MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
 		'deepTools/{Comp}_BigwigSum.npz'
+	log:
+		out = "logs/multiBigWigSum.{Comp}.out",
+		err = "logs/multiBigWigSum.{Comp}.err"
 	params:
 		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		blackList = paramDic['blackList']
 	threads: 10
 	shell:'''
-	multiBigwigSummary BED-file --BED {input.Peaks} -o {output} -b {params.bigwigs} -bl {params.blackList} -p {threads} -bs 150
+	multiBigwigSummary BED-file --BED {input.Peaks} -o {output} -b {params.bigwigs} -bl {params.blackList} -p {threads} -bs 150 > {log.out} 2> {log.err}
 	'''
 
 rule plotCorr:
@@ -135,8 +159,12 @@ rule plotCorr:
 		"deepTools/{Comp}_BigwigSum.npz"
 	output:
 		"Figures/{Comp}_plotCorr.png"
+	log:
+		out = "logs/plotCorr.{Comp}.out",
+		err = "logs/plotCorr.{Comp}.err"
+	threads: 1
 	shell:'''
-	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1
+	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1 > {log.out} 2> {log.err}
 	'''
 
 rule plotPCA:
@@ -144,9 +172,12 @@ rule plotPCA:
 		"deepTools/{Comp}_BigwigSum.npz"
 	output:
 		"Figures/{Comp}_PCA.png"
+	log:
+		out = "logs/plotPCA.{Comp}.out",
+		err = "logs/plotPCA.{Comp}.err",
 	threads: 1
 	shell:'''
-	plotPCA --corData {input} -o {output} --transpose
+	plotPCA --corData {input} -o {output} --transpose> {log.out} 2> {log.err}
 	'''
 
 rule computeMatrix:
@@ -154,12 +185,15 @@ rule computeMatrix:
 		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
 	output:
 		"deepTools/{Comp}_BigwigMatrix.gz"
+	log:
+		out = "logs/computeMatrix.{Comp}.out",
+		err = "logs/computeMatrix.{Comp}.err"
 	params:
 		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		bed = "TSS.bed"
 	threads: 10
 	shell:'''
-	computeMatrix reference-point -S {params.bigwigs} -R {params.bed} --referencePoint center -a 2000 -b 2000 -out {output} -p {threads} --missingDataAsZero
+	computeMatrix reference-point -S {params.bigwigs} -R {params.bed} --referencePoint center -a 2000 -b 2000 -out {output} -p {threads} --missingDataAsZero > {log.out} 2> {log.err}
 	'''
 
 rule plotHeatmap:
@@ -167,9 +201,12 @@ rule plotHeatmap:
 		"deepTools/{Comp}_BigwigMatrix.gz"
 	output:
 		"Figures/{Comp}_Heatmap.png"
+	log:
+		out = "logs/plotHeatmap.{Comp}.out",
+		err = "logs/plotHeatmap.{Comp}.err"
 	threads: 1
 	shell:'''
-	plotHeatmap -m {input} -out {output} --refPointLabel TSS
+	plotHeatmap -m {input} -out {output} --refPointLabel TSS > {log.out} 2> {log.err}
 	'''
 
 rule DESeq2:
@@ -177,10 +214,13 @@ rule DESeq2:
 		"diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
 		"diffAcc_{Comp}/{Comp}_DESeq2.tsv"
+	log:
+		out = "logs/DESeq2.{Comp}.out",
+		err = "logs/DESeq2.{Comp}.err"
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input) ,paramDic['Comp'][wildcards.Comp]['Cond'])
 	threads: 1
 	shell:'''
-	Rscript {params.scriptLoc} {input} {params.condOrder} {output}
+	Rscript {params.scriptLoc} {input} {params.condOrder} {output} > {log.out} 2> {log.err}
 	'''
