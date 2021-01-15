@@ -39,7 +39,7 @@ def main():
 
     # Parse Samplesheet.
     paramDic = misc.setdefault_readss(args.sampleSheet, bamFiles)
-    paramDic['Loc'] = {"bamDir":os.path.abspath(args.bamDir), "outDir":os.path.abspath(args.outDir)}
+    paramDic['Loc'] = {"bamDir":str(os.path.abspath(args.bamDir)), "outDir":str(os.path.abspath(args.outDir))}
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
@@ -56,7 +56,17 @@ def main():
         clusterCMD = args.clusterCMD
     else:
         clusterCMD = "SlurmEasy -t {threads} -n {rule}"
-    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=2, latency_wait=300, cluster=clusterCMD)
+    #snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
+    # nodes=5, latency_wait=300, cluster=clusterCMD, max_jobs_per_second=1, 
+    # max_status_checks_per_second=1)
+    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=10, latency_wait=300)
+    os.mkdir("cluster_logs")
+    for error in os.listdir():
+        if ".err" in error:
+            os.rename(error, "cluster_logs/" + error)
+    for out in os.listdir():
+        if ".out" in out:
+            os.rename(out, "cluster_logs/" + out)
 
 if __name__ == "__main__":
     main()

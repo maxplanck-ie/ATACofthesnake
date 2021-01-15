@@ -28,14 +28,13 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] DESeq2
  - [x] Multiple comparisons
  - [ ] annotate peaks
- - [ ] Standardize logs
+ - [x] Standardize logs
 
  - longer term to do:
 
  - [ ] EdgeR / csaw ?
- - [ ] deal with illegal characters ?
- - [ ] Standardize logging
- - [ ] slurm submission
+ - [x] deal with illegal characters ?
+ - [x] slurm submission
  - [ ] produce report
  - [ ] incorporate runID if more than 1 comparison per batch.
  - [ ] Support multiple genomes
