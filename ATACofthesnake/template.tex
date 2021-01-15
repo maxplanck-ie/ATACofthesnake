@@ -1,0 +1,21 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+
+\title{Report ATACofthesnake}
+\author{ATACofthesnake}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ATACofthesnake wraps together downstream analysis for ATAC data, starting from BAM files. 
+Main objective is differential accessibility calling using DESeq2.
+To achieve this goal, merged BAM files are created across comparisons. Subsequently peaks are called with MACS2 on the merged BAM file(s).
+A couple of QC plots are created (PCA and correlation heatmaps), and bigwigs for visual inspection (bigwigs are normalized using TMM normalized scale factors calculated by edgeR).
+This PDF file combines the output, and is aimed to provide initial inspection.
+\end{abstract}
+
+\pagebreak

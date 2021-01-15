@@ -172,12 +172,14 @@ rule plotPCA:
 		"deepTools/{Comp}_BigwigSum.npz"
 	output:
 		"Figures/{Comp}_PCA.png"
+	params: 
+		colors = lambda wildcards: " ".join(sum([[s] * n for s, n in zip(["red","blue"], [len(paramDic['Comp'][wildcards.Comp]['Cond'][paramDic['Cond'][0]]),len(paramDic['Comp'][wildcards.Comp]['Cond'][paramDic['Cond'][1]])])], []))
 	log:
 		out = "logs/plotPCA.{Comp}.out",
 		err = "logs/plotPCA.{Comp}.err",
 	threads: 1
 	shell:'''
-	plotPCA --corData {input} -o {output} --transpose> {log.out} 2> {log.err}
+	plotPCA --corData {input} -o {output} --transpose --colors {params.colors} > {log.out} 2> {log.err}
 	'''
 
 rule computeMatrix:

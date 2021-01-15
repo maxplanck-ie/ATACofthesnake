@@ -98,3 +98,9 @@ def setdefault_readss(ss, bams):
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()
+
+def createTexfromTemplate(texfile, comparisons, samples):
+    texOut = []
+    with open(texfile) as f:
+        for line in f:
+            texOut.append(line.strip())

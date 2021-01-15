@@ -60,7 +60,8 @@ def main():
     # nodes=5, latency_wait=300, cluster=clusterCMD, max_jobs_per_second=1, 
     # max_status_checks_per_second=1)
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=10, latency_wait=300)
-    os.mkdir("cluster_logs")
+    if not os.path.exists("cluster_logs"):
+        os.mkdir("cluster_logs")
     for error in os.listdir():
         if ".err" in error:
             os.rename(error, "cluster_logs/" + error)
