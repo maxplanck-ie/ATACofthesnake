@@ -99,8 +99,32 @@ def setdefault_readss(ss, bams):
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()
 
-def createTexfromTemplate(texfile, comparisons, samples):
+def createTexfromTemplate(texfile, paramDic):
     texOut = []
     with open(texfile) as f:
         for line in f:
             texOut.append(line.strip())
+    #now start appending lines based on number of comparisons.
+    for i in paramDic['Comp']:
+        texOut.append("\\section\{{}\}".format(i))
+        texOut.append("This sections contains the comparison {} with samples {}.".format(i, paramDic['Comp'][i]['Samples']))
+        texout.append("\\begin\{figure\}")
+        texout.append("\\begin\{center\}")
+        texout.append("\\includegraphics[width=1.3\\textwidth]\{Figures/{}_PCA.png\}".format(i))
+        texout.append("\\caption\{{} PCA\}".format(i))
+        texout.append("\\end\{center\}")
+        texout.append("\\end\{figure\}")
+        texout.append("\\begin\{figure\}")
+        texout.append("\\begin\{center\}")
+        texout.append("\\includegraphics[width=1.3\\textwidth]\{Figures/{}_plotCorr.png\}".format(i))
+        texout.append("\\caption\{{} Correlation Plot\}".format(i))
+        texout.append("\\end\{center\}")
+        texout.append("\\end\{figure\}")
+        texout.append("\\begin\{figure\}")
+        texout.append("\\begin\{center\}")
+        texout.append("\\includegraphics[width=1.3\\textwidth]\{Figures/{}_Heatmap.png\}".format(i))
+        texout.append("\\caption\{{} Heatmap\}".format(i))
+        texout.append("\\end\{center\}")
+        texout.append("\\end\{figure\}")
+    for i in texout:
+        print(i)

@@ -68,6 +68,7 @@ def main():
     for out in os.listdir():
         if ".out" in out:
             os.rename(out, "cluster_logs/" + out)
+    #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
 
 if __name__ == "__main__":
     main()
