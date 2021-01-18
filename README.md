@@ -35,8 +35,8 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] EdgeR / csaw ?
  - [x] deal with illegal characters ?
  - [x] slurm submission
- - [ ] produce report
- - [ ] incorporate runID if more than 1 comparison per batch.
+ - [x] produce report
+ - [x] incorporate runID if more than 1 comparison per batch.
  - [ ] Support multiple genomes
       - [ ] blacklist DL + merge
       - [ ] GTF DL

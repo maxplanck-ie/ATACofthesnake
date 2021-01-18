@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 import rich
 from rich.progress import Progress
+import subprocess
 
 def conditionsfromCount(countmat, paramDic):
     with open(countmat) as f:
@@ -100,6 +101,9 @@ def setdefault_readss(ss, bams):
         sys.exit()
 
 def createTexfromTemplate(texfile, paramDic):
+    if os.path.exists("Report.pdf"):
+        print("Report exists already, cleaning and recompiling.")
+        os.remove("Report.pdf")
     texOut = []
     with open(texfile) as f:
         for line in f:
@@ -135,3 +139,8 @@ def createTexfromTemplate(texfile, paramDic):
     with open("Report.tex", "w") as f:
         for texLine in texOut:
             f.write("%s\n" % texLine)
+    subprocess.call(['tectonic', 'Report.tex'])
+    if os.path.exists("Report.pdf"):
+        print("Report compilation done. Removing temporary file.")
+        os.remove("Report.tex")
+    print("Done")    
