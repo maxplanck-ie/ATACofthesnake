@@ -9,8 +9,8 @@ setuptools.setup(
    author_email = "deboutte@ie-freiburg.mpg.de",
    scripts = ['bin/ATAC'],
    packages = ['ATACofthesnake'],
-   package_data = {"":["Snakefile","template.tex", "Rscripts/edgeR_scalefactors.R", "Rscripts/DESeq2.R"]},
+   package_data = {"":["Snakefile","template.tex", "Rscripts/edgeR_scalefactors.R", "Rscripts/DESeq2.R", "envs/*yaml"]},
    include_package_data = True,
-   install_requires = ['configparser'],
+   install_requires = ['configparser','rich','snakemake','pandas'],
    python_requires='>3'
 )

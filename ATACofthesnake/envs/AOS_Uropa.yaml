@@ -1,4 +1,4 @@
-name: uropa
+name: AOS_Uropa
 channels:
   - defaults
 dependencies:

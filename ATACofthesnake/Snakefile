@@ -32,6 +32,7 @@ rule checkIndex:
 		out = 'logs/checkIndex.{sample}.out',
 		err = 'logs/checkIndex.{sample}.err'
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	sambamba index -t {threads} {input} > {log.out} 2> {log.err}
 	'''
@@ -47,6 +48,7 @@ rule fragSize:
 	params:
 		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} > {log.out} 2> {log.err}
 	'''
@@ -62,6 +64,7 @@ rule mergeBams:
 	params:
 		lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	sambamba merge -t {threads} {output} {params} > {log.out} 2> {log.err}
 	'''
@@ -78,6 +81,7 @@ rule MACS2:
 		genomeSize = paramDic['genomeSize'],
 		outName = lambda wildcards: wildcards.Comp + "_Merged"
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
@@ -95,6 +99,7 @@ rule countMat:
 		blackList = paramDic['blackList'],
 		samples = lambda wildcards: ' '.join(expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam'), sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 20
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	multiBamSummary BED-file --BED {input} -bl {params.blackList} -p {threads} --outRawCounts {output.mat} -o {output.matnpz} -b {params.samples} > {log.out} 2> {log.err}
 	# Remove quotes placed by multiBamSummary
@@ -112,6 +117,7 @@ rule scaleFactors:
 		out = "logs/scaleFactors.{Comp}.out",
 		err = "logs/scaleFactors.{Comp}.err"
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_diffR.yaml')
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
 	shell:'''
@@ -132,6 +138,7 @@ rule BigWigs:
 		blackList = paramDic['blackList'],
 		genomeSize = paramDic['genomeSize']
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
 	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList} > {log.out} 2> {log.err}
@@ -150,6 +157,7 @@ rule multiBigwigSum:
 		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		blackList = paramDic['blackList']
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	multiBigwigSummary BED-file --BED {input.Peaks} -o {output} -b {params.bigwigs} -bl {params.blackList} -p {threads} -bs 150 > {log.out} 2> {log.err}
 	'''
@@ -163,6 +171,7 @@ rule plotCorr:
 		out = "logs/plotCorr.{Comp}.out",
 		err = "logs/plotCorr.{Comp}.err"
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1 > {log.out} 2> {log.err}
 	'''
@@ -178,6 +187,7 @@ rule plotPCA:
 		out = "logs/plotPCA.{Comp}.out",
 		err = "logs/plotPCA.{Comp}.err",
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	plotPCA --corData {input} -o {output} --transpose --colors {params.colors} > {log.out} 2> {log.err}
 	'''
@@ -194,6 +204,7 @@ rule computeMatrix:
 		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		bed = "TSS.bed"
 	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	computeMatrix reference-point -S {params.bigwigs} -R {params.bed} --referencePoint center -a 2000 -b 2000 -out {output} -p {threads} --missingDataAsZero > {log.out} 2> {log.err}
 	'''
@@ -207,6 +218,7 @@ rule plotHeatmap:
 		out = "logs/plotHeatmap.{Comp}.out",
 		err = "logs/plotHeatmap.{Comp}.err"
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	plotHeatmap -m {input} -out {output} --refPointLabel TSS > {log.out} 2> {log.err}
 	'''
@@ -223,6 +235,17 @@ rule DESeq2:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input) ,paramDic['Comp'][wildcards.Comp]['Cond'])
 	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	Rscript {params.scriptLoc} {input} {params.condOrder} {output} > {log.out} 2> {log.err}
+	'''
+
+rule uropa:
+	input:
+		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+	output:
+		""
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Uropa.yaml')
+	shell:'''
+	uropa -b LTHSC_Merged_peaks.narrowPeak -g ../genes.gtf --feature transcript --distance 1500 --internals 1 -o testje/ -t 5 --show-attributes gene_id transcript_id gene_name gene_type transcript_type
 	'''

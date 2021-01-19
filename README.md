@@ -28,6 +28,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] DESeq2
  - [x] Multiple comparisons
  - [ ] annotate peaks
+ - [ ] Deal with multiple envs.
  - [x] Standardize logs
 
  - longer term to do:
