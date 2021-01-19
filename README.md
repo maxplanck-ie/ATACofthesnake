@@ -30,6 +30,9 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] annotate peaks
  - [ ] Deal with multiple envs.
  - [x] Standardize logs
+ - [ ] chromVAR
+ - [ ] chromHMM
+ - [ ] TOBIAS
 
  - longer term to do:
 

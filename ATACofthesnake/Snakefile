@@ -225,7 +225,8 @@ rule plotHeatmap:
 
 rule DESeq2:
 	input:
-		"diffAcc_{Comp}/{Comp}_counts.mat"
+		countMat = "diffAcc_{Comp}/{Comp}_counts.mat",
+		scales = "diffAcc_{Comp}/{Comp}_scaleFactors.txt"
 	output:
 		"diffAcc_{Comp}/{Comp}_DESeq2.tsv"
 	log:
@@ -237,14 +238,14 @@ rule DESeq2:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	Rscript {params.scriptLoc} {input} {params.condOrder} {output} > {log.out} 2> {log.err}
+	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output} > {log.out} 2> {log.err}
 	'''
 
 rule uropa:
 	input:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		""
+		"annotatedpeaks.txt"
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Uropa.yaml')
 	shell:'''
 	uropa -b LTHSC_Merged_peaks.narrowPeak -g ../genes.gtf --feature transcript --distance 1500 --internals 1 -o testje/ -t 5 --show-attributes gene_id transcript_id gene_name gene_type transcript_type
