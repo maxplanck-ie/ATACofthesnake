@@ -115,7 +115,7 @@ rule MACS2:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.001 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
 rule countMat:
