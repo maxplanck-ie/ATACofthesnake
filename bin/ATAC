@@ -59,8 +59,8 @@ def main():
     else:
         clusterCMD = "SlurmEasy -t {threads} -n {rule}"
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
-     nodes=5, latency_wait=300, cluster=clusterCMD, max_jobs_per_second=1, 
-     max_status_checks_per_second=1, use_conda=True)
+     cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, #cluster=clusterCMD,
+     max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3')
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), cores=10, latency_wait=300)
     if not os.path.exists("cluster_logs"):
         os.mkdir("cluster_logs")
@@ -70,7 +70,7 @@ def main():
     for out in os.listdir():
         if ".out" in out:
             os.rename(out, "cluster_logs/" + out)
-    misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
+    #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
 
 if __name__ == "__main__":
     main()

@@ -54,4 +54,4 @@ dependencies:
   - xorg-xproto=7.0.31=h7f98852_1007
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
-prefix: /localenv/deboutte/anaconda/miniconda3/envs/tectonic
+
