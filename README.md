@@ -29,11 +29,14 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] deeptools: correlations
  - [x] DESeq2
  - [x] Multiple comparisons
- - [ ] annotate peaks
+ - [x] annotate peaks
  - [x] Deal with multiple envs.
  - [x] Standardize logs
  - [ ] chromVAR
  - [ ] TOBIAS
+ - [ ] motif search?
+ - [ ] specify norm options (scalefactors): background or signal
+ - [ ] ?
 
  - longer term to do:
 
