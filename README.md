@@ -6,8 +6,10 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
   - Installation
 
   set up the environment:  
->  conda env create -f CondaEnv.yaml  
->  conda activate ATACofthesnake  
+>  git clone git@github.com:WardDeb/ATACofthesnake.git
+>  cd ATACofthesnake
+>  conda create -n ATACofthesnake python=3
+>  conda activate ATACofthesnake
 >  pip install ./
 
   - Running:  
@@ -28,10 +30,9 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] DESeq2
  - [x] Multiple comparisons
  - [ ] annotate peaks
- - [ ] Deal with multiple envs.
+ - [x] Deal with multiple envs.
  - [x] Standardize logs
  - [ ] chromVAR
- - [ ] chromHMM
  - [ ] TOBIAS
 
  - longer term to do:
