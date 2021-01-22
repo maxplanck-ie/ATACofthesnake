@@ -6,11 +6,11 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
   - Installation
 
   set up the environment:  
->  git clone git@github.com:WardDeb/ATACofthesnake.git
->  cd ATACofthesnake
->  conda create -n ATACofthesnake python=3
->  conda activate ATACofthesnake
->  pip install ./
+>  git clone git@github.com:WardDeb/ATACofthesnake.git  
+>  cd ATACofthesnake  
+>  conda create -n ATACofthesnake python=3  
+>  conda activate ATACofthesnake  
+>  pip install ./  
 
   - Running:  
 > ATAC --bamDir ./bams/ --outDir ./ --sampleSheet ss.tsv --blackList blackList.bed --genomeSize 2652783500 --Genes genes.gtf
