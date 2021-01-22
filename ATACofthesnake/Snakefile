@@ -23,7 +23,9 @@ rule all:
 		expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
 		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
 		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_DESeq2.tsv", Comp=paramDic['Comp'])
+		expand("diffAcc_{Comp}/{Comp}_DESeq2.tsv", Comp=paramDic['Comp']),
+		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.tsv", Comp=paramDic['Comp'])
 
 rule checkIndex:
 	input:
@@ -277,8 +279,25 @@ rule uropa:
 	input:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		"annotatedpeaks.txt"
+		"Annotation/{Comp}_uropa_finalhits.txt"
+	log:
+		out = "logs/uropa.{Comp}.out",
+		err = "logs/uropa.{Comp}.err"
+	params:
+		GTF = paramDic['GTF'],
+		prefix = "{Comp}_uropa"
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Uropa.yaml')
+	threads: 5
 	shell:'''
-	uropa -b LTHSC_Merged_peaks.narrowPeak -g ../genes.gtf --feature transcript --distance 1500 --internals 1 -o testje/ -t 5 --show-attributes gene_id transcript_id gene_name gene_type transcript_type
+	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 1500 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
 	'''
+
+rule mergeDiff_Ann:
+	input:
+		annotation = "Annotation/{Comp}_uropa_finalhits.txt",
+		diffPeak = "diffAcc_{Comp}/{Comp}_DESeq2.tsv"
+	output:
+		csvout = "diffAcc_{Comp}/{Comp}_DESeq2_annotated.tsv"
+	threads: 1
+	run:
+		misc.mergeDiff_Ann(input.annotation, input.diffPeak, output.csvout)

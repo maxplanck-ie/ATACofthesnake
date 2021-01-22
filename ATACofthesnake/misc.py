@@ -5,6 +5,23 @@ import rich
 from rich.progress import Progress
 import subprocess
 
+def mergeDiff_Ann(annotation, diff, outName):
+    diffDF = pd.read_csv(diff, sep=',', header=0, index_col=0, dtype={0:'str'})
+    annDF = pd.read_csv(annotation, sep='\t', header=0, dtype={0:'str'}, index_col=None)
+    annDF.index = annDF[['peak_chr','peak_start','peak_end']].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
+    res = pd.merge(diffDF, annDF, left_index=True, right_index=True)
+    if len(diffDF) != len(res):
+        print("Merged set contains a different number of peaks than the input set. Double check peak annotations..")
+    res.to_csv(outName, header=True, index=False, sep='\t')
+
+def sortGTF(GTF):
+    GTF = pd.read_csv(GTF, sep='\t', comment='#', header=None, dtype={0:'str'})
+    GTF.columns = ['chr', 'source', 'feature', 'start', 'end', 'score', 'strand','frame','attribute']
+    GTF = GTF[GTF['feature'] == 'gene']
+    GTF = GTF.sort_values(["chr", "start"], ascending = (True, True))
+    GTF.to_csv('genes.sort.gtf', header=False, index=False, sep='\t')
+
+
 def conditionsfromCount(countmat, paramDic):
     with open(countmat) as f:
         header = f.readline().strip().split()
@@ -20,15 +37,15 @@ def conditionsfromCount(countmat, paramDic):
     return ','.join(conditionOrder)
 
 
-def GTFtoTSS(bed):
+def GTFtoTSS(GTF):
     TSS = []
     linecount = 0
-    with open(bed) as f:
+    with open(GTF) as f:
         for line in f:
             linecount += 1
     with rich.progress.Progress() as progress:
         task = progress.add_task("Extracting TSS from GTF", total=linecount)
-        with open(bed) as f:
+        with open(GTF) as f:
             for line in f:
                 if not line.startswith('#'):
                     if line.strip().split()[2] == 'gene':

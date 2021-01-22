@@ -46,11 +46,16 @@ def main():
     with open('Parameters.yaml', 'w') as f:
         yaml.dump(paramDic, f)
     print("Parameters written out in yaml file.")
-    # sort GTF file:
-    #grep -v "^#" testje/LTHSC_Merged_peaks_feature_subset.gtf | sort -k1,1 -k4,4n > testje/LTHSC_Merged_peaks_sorted.gtf
+    if not os.path.exists("genes.sort.gtf"):
+        print("Sorting GTF for Uropa later on.")
+        misc.sortGTF(args.Genes)
+    else:
+        print("Found a sorted GTF file. Moving on..")
     if not os.path.isfile("TSS.bed"):
         print("Did not find TSS file, launching extraction.")
-        misc.GTFtoTSS(args.Genes)
+        misc.GTFtoTSS("genes.sort.gtf")
+    else:
+        print("Found TSS.bed. Moving on..")
     console.print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
@@ -59,7 +64,7 @@ def main():
     else:
         clusterCMD = "SlurmEasy -t {threads} -n {rule}"
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
-     cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+     cores=10, nodes=1, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
      max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3')
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), latency_wait=300)
     if not os.path.exists("cluster_logs"):
