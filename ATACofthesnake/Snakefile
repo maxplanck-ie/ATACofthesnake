@@ -15,7 +15,9 @@ rule all:
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
+		expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
 		expand("ShortBAM/{sample}.FRiP.txt", sample=paramDic['Samples']),
+		expand("finalPeaks/{Comp}.narrowPeak", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
 		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
@@ -132,6 +134,41 @@ rule MACS2done:
 	touch MACS2/Comp.done
 	'''
 
+rule MACS2_individual:
+	input:
+		bam = "ShortBAM/{sample}.bam",
+		index = "ShortBAM/{sample}.bam.bai"
+	output:
+		"MACS2/{sample}_peaks.narrowPeak"
+	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	log:
+		out = 'logs/MACS2.{sample}.out',
+		err = 'logs/MACS2.{sample}.err'
+	params:
+		genomeSize = paramDic['genomeSize'],
+		outName = lambda wildcards: wildcards.sample
+	shell:'''
+	macs2 callpeak -t {input.bam} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	'''
+
+rule IDR:
+	input:
+		narrowPeaks = expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
+		mergePeak = "MACS2/{Comp}_Merged_peaks.narrowPeak"
+	output:
+		"finalPeaks/{Comp}.narrowPeak"
+	threads: 1
+	params:
+		indPeak = lambda wildcards: ' '.join(expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Idr.yaml')
+	log:
+		out = 'logs/IDR.{Comp}.out',
+		err = 'logs/IDR.{Comp}.err'
+	shell:'''
+	idr --samples {params.indPeak} --peak-list {input.mergePeak} --input-file-type narrowPeak --output-file-type narrowPeak -o {output} > {log.out} 2> {log.err}
+	'''
+
 rule fripScore:
 	input:
 		bamfile = "ShortBAM/{sample}.bam",
@@ -155,7 +192,7 @@ rule fripScore:
 
 rule countMat:
 	input:
-		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+		"finalPeaks/{Comp}.narrowPeak"
 	output:
 		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
 		matnpz = "diffAcc_{Comp}/{Comp}_counts.npz"
