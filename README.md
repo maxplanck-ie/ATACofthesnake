@@ -36,7 +36,6 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] motif search - homer / MEME
  - [ ] specify norm options (scalefactors): background or signal
  - [ ] diffheatmap
- - [x] IDR values for replicates (https://github.com/kundajelab/idr)
  - [x] FrIPs
  - [ ] MAplot
  - [ ] chromHMM - marks ?

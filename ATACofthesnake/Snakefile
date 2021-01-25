@@ -15,9 +15,7 @@ rule all:
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
-		expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
 		expand("ShortBAM/{sample}.FRiP.txt", sample=paramDic['Samples']),
-		expand("finalPeaks/{Comp}.narrowPeak", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
 		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
@@ -52,13 +50,15 @@ rule alignmentSieve:
 	output:
 		shortBam = "ShortBAM/{sample}.bam",
 		filterMetrics = "ShortBAM/{sample}.metrics"
+	params:
+		blackList = paramDic['blackList']
 	log:
 		out = 'logs/alignmentSieve.{sample}.out',
 		err = 'logs/alignmentSieve.{sample}.err'
 	threads:10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 0 --minFragmentLength 150
+	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 0 --minFragmentLength 150 --blackListFileName {params.blackList}
 	'''
 
 rule shortIndex:
@@ -117,62 +117,18 @@ rule MACS2:
 		err = 'logs/MACS2.{Comp}.err'
 	params:
 		genomeSize = paramDic['genomeSize'],
-		outName = lambda wildcards: wildcards.Comp + "_Merged"
+		outName = lambda wildcards: wildcards.Comp + "_Merged",
+		blackList = paramDic['blackList']
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
-rule MACS2done:
-	input:
-		expand("MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp'])
-	output:
-		"MACS2/Comp.done"
-	threads: 1
-	shell:'''
-	touch MACS2/Comp.done
-	'''
-
-rule MACS2_individual:
-	input:
-		bam = "ShortBAM/{sample}.bam",
-		index = "ShortBAM/{sample}.bam.bai"
-	output:
-		"MACS2/{sample}_peaks.narrowPeak"
-	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
-	log:
-		out = 'logs/MACS2.{sample}.out',
-		err = 'logs/MACS2.{sample}.err'
-	params:
-		genomeSize = paramDic['genomeSize'],
-		outName = lambda wildcards: wildcards.sample
-	shell:'''
-	macs2 callpeak -t {input.bam} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
-	'''
-
-rule IDR:
-	input:
-		narrowPeaks = expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
-		mergePeak = "MACS2/{Comp}_Merged_peaks.narrowPeak"
-	output:
-		"finalPeaks/{Comp}.narrowPeak"
-	threads: 1
-	params:
-		indPeak = lambda wildcards: ' '.join(expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Idr.yaml')
-	log:
-		out = 'logs/IDR.{Comp}.out',
-		err = 'logs/IDR.{Comp}.err'
-	shell:'''
-	idr --samples {params.indPeak} --peak-list {input.mergePeak} --input-file-type narrowPeak --output-file-type narrowPeak -o {output} > {log.out} 2> {log.err}
-	'''
-
 rule fripScore:
 	input:
 		bamfile = "ShortBAM/{sample}.bam",
-		MACS2done = "MACS2/Comp.done"
+		MACS2done = expand("MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp'])
 	output:
 		"ShortBAM/{sample}.FRiP.txt"
 	params:
@@ -192,7 +148,7 @@ rule fripScore:
 
 rule countMat:
 	input:
-		"finalPeaks/{Comp}.narrowPeak"
+		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
 		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
 		matnpz = "diffAcc_{Comp}/{Comp}_counts.npz"
