@@ -15,6 +15,7 @@ rule all:
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
+		expand("ShortBAM/{sample}.FRiP.txt", sample=paramDic['Samples']),
 		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
 		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
@@ -25,7 +26,8 @@ rule all:
 		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2.tsv", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.tsv", Comp=paramDic['Comp'])
+		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.tsv", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp'])
 
 rule checkIndex:
 	input:
@@ -118,6 +120,37 @@ rule MACS2:
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -p 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	'''
+
+rule MACS2done:
+	input:
+		expand("MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp'])
+	output:
+		"MACS2/Comp.done"
+	threads: 1
+	shell:'''
+	touch MACS2/Comp.done
+	'''
+
+rule fripScore:
+	input:
+		bamfile = "ShortBAM/{sample}.bam",
+		MACS2done = "MACS2/Comp.done"
+	output:
+		"ShortBAM/{sample}.FRiP.txt"
+	params:
+		genomeSize = paramDic['genomeSize'],
+		peakFile = lambda wildcards: misc.returnCompfromSample(wildcards.sample ,paramDic)
+	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_samtools.yaml')
+	shell:'''
+	peakcount=$(cat {params.peakFile} | wc -l)
+	mapped=$(samtools view -c -F 4 {input.bamfile})
+	peakReads=$(samtools view -c -F 4 -L {params.peakFile} {input.bamfile})
+	frip=$(bc -l <<< "$peakReads/$mapped")
+	peak_len=$(awk '{{total+=$3-$2}}END{{print total}}' {params.peakFile})
+	genomecov=$(bc -l <<< "$peak_len/{params.genomeSize}")
+	printf "peakcount\tfrip\tpeak_genome_coverage\n%d\t%5.3f\t%6.4f\n" $peakcount $frip $genomecov > {output}
 	'''
 
 rule countMat:
@@ -301,3 +334,18 @@ rule mergeDiff_Ann:
 	threads: 1
 	run:
 		misc.mergeDiff_Ann(input.annotation, input.diffPeak, output.csvout)
+
+rule splitDiffRes:
+	input:
+		"diffAcc_{Comp}/{Comp}_DESeq2_annotated.tsv"
+	output:
+		UP = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
+		DOWN = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv"
+	threads: 1
+	shell:'''
+	head -1 {input} > {output.DOWN}
+	awk '$3 < 0' {input} >> {output.DOWN}
+	awk '$3 > 0' {input} >> {output.UP}
+	'''
+
+

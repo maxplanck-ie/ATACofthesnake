@@ -5,6 +5,14 @@ import rich
 from rich.progress import Progress
 import subprocess
 
+def returnCompfromSample(sample, paramDic):
+    compList = []
+    for comp in paramDic['Comp']:
+        if sample in paramDic['Comp'][comp]['Samples']:
+            compList.append("MACS2/{}_Merged_peaks.narrowPeak".format(comp))
+    if len(compList) == 1:
+        return compList[0]
+
 def mergeDiff_Ann(annotation, diff, outName):
     diffDF = pd.read_csv(diff, sep=',', header=0, index_col=0, dtype={0:'str'})
     annDF = pd.read_csv(annotation, sep='\t', header=0, dtype={0:'str'}, index_col=None)
@@ -12,7 +20,7 @@ def mergeDiff_Ann(annotation, diff, outName):
     res = pd.merge(diffDF, annDF, left_index=True, right_index=True)
     if len(diffDF) != len(res):
         print("Merged set contains a different number of peaks than the input set. Double check peak annotations..")
-    res.to_csv(outName, header=True, index=False, sep='\t')
+    res.to_csv(outName, header=True, index=True, sep='\t')
 
 def sortGTF(GTF):
     GTF = pd.read_csv(GTF, sep='\t', comment='#', header=None, dtype={0:'str'})

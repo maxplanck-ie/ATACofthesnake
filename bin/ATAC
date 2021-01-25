@@ -64,7 +64,7 @@ def main():
     else:
         clusterCMD = "SlurmEasy -t {threads} -n {rule}"
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
-     cores=10, nodes=1, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+     cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
      max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3')
     snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), latency_wait=300)
     if not os.path.exists("cluster_logs"):

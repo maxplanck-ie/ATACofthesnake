@@ -32,11 +32,14 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] annotate peaks
  - [x] Deal with multiple envs.
  - [x] Standardize logs
- - [ ] chromVAR
  - [ ] TOBIAS
  - [ ] motif search?
  - [ ] specify norm options (scalefactors): background or signal
- - [ ] ?
+ - [ ] diffheatmap
+ - [ ] IDR values for replicates (https://github.com/kundajelab/idr)
+ - [x] FrIPs
+ - [ ] MAplot
+ - [ ] chromHMM - marks ?
 
  - longer term to do:
 

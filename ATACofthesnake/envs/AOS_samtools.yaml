@@ -1,0 +1,32 @@
+name: AOS_samtools
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - bzip2=1.0.8=h7b6447c_0
+  - ca-certificates=2021.1.19=h06a4308_0
+  - certifi=2020.12.5=py39h06a4308_0
+  - htslib=1.11=hd3b49d5_2
+  - krb5=1.18.2=h173b8e3_0
+  - ld_impl_linux-64=2.33.1=h53a641e_7
+  - libcurl=7.71.1=h20c2e04_1
+  - libdeflate=1.7=h27cfd23_5
+  - libedit=3.1.20191231=h14c3975_1
+  - libffi=3.3=he6710b0_2
+  - libgcc-ng=9.1.0=hdf63c60_0
+  - libssh2=1.9.0=h1ba5d50_1
+  - libstdcxx-ng=9.1.0=hdf63c60_0
+  - ncurses=6.2=he6710b0_1
+  - openssl=1.1.1i=h27cfd23_0
+  - pip=20.3.3=py39h06a4308_0
+  - python=3.9.1=hdb3f193_2
+  - readline=8.0=h7b6447c_0
+  - samtools=1.11=h6270b1f_0
+  - setuptools=51.3.3=py39h06a4308_4
+  - sqlite=3.33.0=h62c20be_0
+  - tk=8.6.10=hbc83047_0
+  - tzdata=2020f=h52ac0ba_0
+  - wheel=0.36.2=pyhd3eb1b0_0
+  - xz=5.2.5=h7b6447c_0
+  - zlib=1.2.11=h7b6447c_3
