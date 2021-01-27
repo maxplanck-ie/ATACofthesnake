@@ -5,6 +5,21 @@ import rich
 from rich.progress import Progress
 import subprocess
 
+def diffCount(Complist):
+    retainComp = []
+    for Comp in Complist:
+        counter = 0
+        diffFile = "diffAcc_" + Comp + "/" + Comp + "_DESeq2_annotated.tsv"
+        if os.path.exists(diffFile):
+            with open(diffFile) as f:
+                for line in f:
+                    counter += 1
+            if counter > 50:
+                retainComp.append(Comp)
+        else:
+            retainComp.append(Comp)
+    return retainComp
+
 def returnCompfromSample(sample, paramDic):
     compList = []
     for comp in paramDic['Comp']:

@@ -35,12 +35,15 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] TOBIAS
  - [ ] motif search - homer / MEME
  - [ ] specify norm options (scalefactors): background or signal
- - [ ] diffheatmap
+ - [x] diffheatmap
  - [x] FrIPs
  - [ ] MAplot
  - [ ] chromHMM - marks ?
  - [ ] chromVAR
- - [ ] shift all QC in a QC folder
+ - [ ] shift all QC in a QC folder.
+ - [x] mitoBleed
+ - [ ] clean rule all declinations.
+ - [ ] Figures per comparison in a subfolder
 
  - longer term to do:
 
