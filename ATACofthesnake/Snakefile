@@ -7,6 +7,7 @@ with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
 
+localrules: fripPlotter
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
@@ -17,6 +18,7 @@ rule all:
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
 		expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
+		expand("Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
 		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
@@ -149,7 +151,8 @@ rule fripScore:
 		"QC/{sample}.FRiP.txt"
 	params:
 		genomeSize = paramDic['genomeSize'],
-		peakFile = lambda wildcards: misc.returnCompfromSample(wildcards.sample ,paramDic)
+		peakFile = lambda wildcards: misc.returnCompfromSample(wildcards.sample ,paramDic),
+		sample = lambda wildcards: wildcards.sample
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_samtools.yaml')
 	shell:'''
@@ -159,8 +162,18 @@ rule fripScore:
 	frip=$(bc -l <<< "$peakReads/$mapped")
 	peak_len=$(awk '{{total+=$3-$2}}END{{print total}}' {params.peakFile})
 	genomecov=$(bc -l <<< "$peak_len/{params.genomeSize}")
-	printf "peakcount\tfrip\tpeak_genome_coverage\n%d\t%5.3f\t%6.4f\n" $peakcount $frip $genomecov > {output}
+	printf "sample\tpeakcount\tfrip\tpeak_genome_coverage\n%s\t%d\t%5.3f\t%6.4f\n" {params.sample} $peakcount $frip $genomecov > {output}
 	'''
+
+rule fripPlotter:
+	input: 
+		fripFiles = expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples'])
+	output:
+		"Figures/{Comp}.FRIP.png"
+	threads: 1
+	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
+	run:
+		misc.plotter('frip', params, str(output))
 
 rule countMat:
 	input:
@@ -361,7 +374,7 @@ rule diffHeat:
 	input:
 		up = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
 		down = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv",
-		expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])
+		bigWigs = expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])
 	output:
 		heatmap = "Figures/{Comp}_Diffpeak.png",
 		outMat = 'deepTools/{Comp}_diff.BigwigMatrix.gz'

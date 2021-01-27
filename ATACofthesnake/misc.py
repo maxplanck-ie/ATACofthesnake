@@ -4,6 +4,36 @@ import sys
 import rich
 from rich.progress import Progress
 import subprocess
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plotter(what, inFiles, outFile):
+    if what == 'frip':
+        res = []
+        for sample in inFiles:
+            for i in sample: #snakemake returns a nested list.
+                filestr = 'QC/' + str(i) + '.FRiP.txt'
+                with open(filestr) as f:
+                    for line in f:
+                        if line.strip().split()[0] != 'sample':
+                            sample = str(line.strip().split()[0])
+                            frip = float(line.strip().split()[2])
+                            gcov = float(line.strip().split()[3])
+                            res.append([sample, frip, gcov])
+        df = pd.DataFrame(res)
+        df.columns = ['sample', 'frip', 'peak_genome_coverage']
+        df = pd.melt(df, id_vars='sample')
+        fig, ax1 = plt.subplots()
+        g = sns.barplot(x=df['sample'], y=df['value'], hue=df['variable'],data=df, ax=ax1)
+        g.set_xticklabels(g.get_xticklabels(),rotation=90)
+        g = ax1.set_ylabel('Frip score')
+        g = ax1.set_ylim((0,0.2+np.ceil(float(max(df[df.variable=='frip']['value']))*10)/10))
+        g = ax2 = ax1.twinx()
+        g = ax2.set_ylim((0,np.ceil(float(max(df[df.variable=='peak_genome_coverage']['value']))*10)/10))
+        g = ax2.set_ylabel('Peak genome coverage')
+        plt.tight_layout()
+        g.figure.savefig(outFile, dpi=300)
 
 def diffCount(Complist):
     retainComp = []
