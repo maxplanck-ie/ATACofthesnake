@@ -6,7 +6,9 @@ suppressMessages(library(tools))
 args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 conds = args[[2]]
-outfile = args[[3]]
+outfilesign = args[[3]]
+outfileall = args[[4]]
+
 
 conds = strsplit(conds, ",")[[1]]
 
@@ -27,5 +29,6 @@ dds = DESeq(dds)
 
 res <- as.data.frame(results(dds, pAdjustMethod = "fdr" ))
 res <- res[complete.cases(res), ]
-res <- res[res$padj < 0.1,]
-write.csv(res, file=outfile, quote=FALSE, sep='\t')
+ressig <- res[res$padj < 0.1,]
+write.csv(ressig, file=outfilesign, quote=FALSE, sep='\t')
+write.csv(res, file=outfileall, quote=FALSE, sep='\t')

@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plotter(what, inFiles, outFile):
+    colors = ["windows blue", "amber", "greyish", "faded green", "dusty purple"]
+    sns.set_palette(sns.xkcd_palette(colors))
     if what == 'frip':
         res = []
         for sample in inFiles:
@@ -34,6 +36,33 @@ def plotter(what, inFiles, outFile):
         g = ax2.set_ylabel('Peak genome coverage')
         plt.tight_layout()
         g.figure.savefig(outFile, dpi=300)
+    if what == 'idxstat':
+        res = []
+        for sample in inFiles:
+            for i in sample:
+                filestr = 'QC/' + str(i) + '.idxstat.txt'
+                with open(filestr) as f:
+                    chromcount = 0
+                    for line in f:
+                        chrom = str(line.strip().split()[0])
+                        count = int(line.strip().split()[1])
+                        if chrom.lower() == 'mt':
+                            mtcount = count
+                        else:
+                            chromcount += count
+                    res.append([i, mtcount/(chromcount+mtcount), chromcount/(chromcount+mtcount)])
+        df = pd.DataFrame(res)
+        df.columns = ['sample', 'MTfrac', 'Chromfrac']
+        df = pd.melt(df, id_vars='sample')
+        g = sns.barplot(x=df['sample'], y=df['value'], hue=df['variable'], data=df)
+        g.set_xticklabels(g.get_xticklabels(),rotation=90)
+        g.set_ylabel('% of Alignments')
+        plt.tight_layout()
+        g.figure.savefig(outFile, dpi=300)
+    if what == 'maPlot':
+        print("Do maplot here.")
+
+
 
 def diffCount(Complist):
     retainComp = []
