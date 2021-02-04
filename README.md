@@ -19,13 +19,15 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
  - [x] index: generate bai files if they are missing.
  - [x] deeptools: fragmentsize
- - [x] mergeBams
- - [x] MACS2
- - [x] multibamsummary (counts)
+ - [ ] MACS2 - summits
+ - [ ] extend summits
+ - [ ] TSS enrichment cutoff
+ - [ ] peak merging on TSS cut passing samples
+ - [ ] peak normalization / depth ?
+ - [ ] multibamsummary (counts)
  - [x] scaleFactors
  - [x] bamCoverage
  - [x] computeMatrix
- - [x] deeptools: TSS enrichment
  - [x] deeptools: correlations
  - [x] DESeq2
  - [x] Multiple comparisons
@@ -35,7 +37,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] TOBIAS
  - [ ] motif search - homer / MEME
  - [ ] specify norm options (scalefactors): background or signal
- - [x] diffheatmap
+ - [ ] diffheatmap
  - [x] FrIPs
  - [ ] MAplot
  - [ ] chromHMM - marks ?
