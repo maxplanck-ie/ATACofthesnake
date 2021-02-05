@@ -46,10 +46,10 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [x] mitoBleed
  - [ ] clean rule all declinations.
  - [ ] Figures per comparison in a subfolder
+ - [ ] diffHeat DAG problem ?
 
  - longer term to do:
 
- - [ ] EdgeR / csaw ?
  - [x] deal with illegal characters ?
  - [x] slurm submission
  - [x] produce report

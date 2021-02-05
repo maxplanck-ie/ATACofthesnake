@@ -16,22 +16,22 @@ rule all:
 		expand("ShortBAM/{sample}.bam", sample=paramDic['Samples']),
 		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
-		#expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
-		#expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
-		#expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
-		#expand("Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
-		#expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		#expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
-		#expand('Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
-		#expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		#expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
-		#expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
-		#expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
+		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
+		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
+		expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
+		expand("Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
+		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
+		expand('Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
+		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
 		#expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp']))
 
 rule checkIndex:
@@ -98,7 +98,8 @@ rule fragSize:
 	input:
 		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples'])
 	output:
-		"deepTools/{Comp}.fragSizes.raw.tsv"
+		raw = "deepTools/{Comp}.fragSizes.raw.tsv",
+		table = "deepTools/{Comp}.fragSizes.metrics.tsv"
 	log:
 		out = 'logs/fragSize.{Comp}.out',
 		err = 'logs/fragSize.{Comp}.err'
@@ -107,24 +108,24 @@ rule fragSize:
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output} > {log.out} 2> {log.err}
+	bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output.raw} --table {output.table} > {log.out} 2> {log.err}
 	'''
 
-#rule mergeBams:
-#	input:
-#		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples'])
-#	output:
-#		"mergeBams/{Comp}.Merged.bam"
-#	log:
-#		out = 'logs/mergeBams.{Comp}.out',
-#		err = 'logs/mergeBams.{Comp}.err'
-#	params:
-#		lambda wildcards: ' '.join(expand("ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
-#	threads: 10
-#	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
-#	shell:'''
-#	sambamba merge -t {threads} {output} {params} > {log.out} 2> {log.err}
-#	'''
+rule mergeBams:
+	input:
+		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples'])
+	output:
+		"mergeBams/{Comp}.Merged.bam"
+	log:
+		out = 'logs/mergeBams.{Comp}.out',
+		err = 'logs/mergeBams.{Comp}.err'
+	params:
+		lambda wildcards: ' '.join(expand("ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+	threads: 10
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	sambamba merge -t {threads} {output} {params} > {log.out} 2> {log.err}
+	'''
 
 rule MACS2:
 	input:
