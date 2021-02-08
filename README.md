@@ -47,6 +47,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] clean rule all declinations.
  - [ ] Figures per comparison in a subfolder
  - [ ] diffHeat DAG problem ?
+ - [ ] specify all input per 'module'
 
  - longer term to do:
 

@@ -26,6 +26,8 @@ def main():
                         help='Provide genome size. e.g. 2652783500 for mouse.')
     parser.add_argument('--clusterCMD', type=str, required=False,
                         help='Cluster submission command, defaults to SlurmEasy')
+    parser.add_argument('--genomeFasta', type=str, required=True,
+                        help='Provide genome fasta file.')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -43,6 +45,7 @@ def main():
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
+    paramDic['genomeFa'] = args.genomeFasta
     with open('Parameters.yaml', 'w') as f:
         yaml.dump(paramDic, f)
     print("Parameters written out in yaml file.")

@@ -11,6 +11,7 @@ localrules: fripPlotter, idxStatPlotter
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
+		paramDic['genomeFa'] + '.fai',
 		expand("QC/{sample}.idxstat.txt", sample=paramDic['Samples']),
 		expand("Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
 		expand("ShortBAM/{sample}.bam", sample=paramDic['Samples']),
@@ -32,7 +33,19 @@ rule all:
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
-		#expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp']))
+		expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])),
+		expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
+rule checkFai:
+	input: paramDic['genomeFa']
+	output: paramDic['genomeFa'] + '.fai'
+	log:
+		out = "logs/checkFai.out",
+		err = "logs/checkFai.err"
+	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_samtools.yaml')
+	shell:'''
+	samtools faidx {input}
+	'''
 
 rule checkIndex:
 	input:
@@ -408,4 +421,29 @@ rule diffHeat:
 	rm {params.Comp}.UP.bed
 	rm {params.Comp}.DOWN.bed
 	plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap Blues > {log.Plotout} 2> {log.Ploterr}
+	'''
+
+rule extractSeq:
+	input:
+		up = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
+		down = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv",
+		fai = paramDic['genomeFa'] + '.fai'
+	output:
+		up = 'MEME/{Comp}_up.fna',
+		down = 'MEME/{Comp}_down.fna'
+	threads: 1
+	params:
+		bedPref = "MEME/{Comp}",
+		genomeFa = paramDic['genomeFa']
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	log:
+		out = 'logs/extractSeq_{Comp}.out',
+		err = 'logs/extractSeq_{Comp}.err'
+	shell:'''
+	set +o pipefail;cut -f1 {input.up} | awk 'NF' | tr '_' '\t' > {params.bedPref}_UP.bed
+	set +o pipefail;cut -f1 {input.down} | awk 'NF' | tr '_' '\t' > {params.bedPref}_DOWN.bed
+	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.bed > {output.up}
+	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.bed > {output.down}
+	rm {params.bedPref}_UP.bed
+	rm {params.bedPref}_DOWN.bed
 	'''
