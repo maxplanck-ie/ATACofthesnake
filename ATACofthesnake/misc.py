@@ -87,6 +87,16 @@ def returnCompfromSample(sample, paramDic):
     if len(compList) == 1:
         return compList[0]
 
+def summitIncorp(finalhits, summits, output):
+    hits = pd.read_csv(finalhits, sep='\t', header=0)
+    summits = pd.read_csv(summits, sep='\t', header=None)
+    summits.columns = ['peak_chr', 'summit_start', 'summit_stop', 'peak_id', 'abs_peaksummit']
+    summits['summit_start'] = summits['summit_start'] - 100
+    summits['summit_stop'] = summits['summit_stop'] + 100
+    del summits['peak_chr']
+    mergeDF = pd.merge(hits, summits, on='peak_id')
+    mergeDF.to_csv(output, header=True, index=True, sep='\t')
+
 def mergeDiff_Ann(annotation, diff, outName):
     diffDF = pd.read_csv(diff, sep=',', header=0, index_col=0, dtype={0:'str'})
     annDF = pd.read_csv(annotation, sep='\t', header=0, dtype={0:'str'}, index_col=None)

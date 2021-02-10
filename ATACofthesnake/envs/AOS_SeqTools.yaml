@@ -5,9 +5,10 @@ channels:
 dependencies:
   - _libgcc_mutex=0.1=main
   - _r-mutex=1.0.0=anacondar_1
+  - bedtools=2.30.0=hc088bd4_0
   - blas=1.0=mkl
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2020.12.8=h06a4308_0
+  - ca-certificates=2021.1.19=h06a4308_0
   - cairo=1.14.12=h8948797_3
   - certifi=2020.12.5=py37h06a4308_0
   - curl=7.71.1=hbc83047_1
@@ -80,3 +81,4 @@ dependencies:
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h9ceee32_0
+prefix: /localenv/deboutte/anaconda/miniconda3/envs/AOS_SeqTools

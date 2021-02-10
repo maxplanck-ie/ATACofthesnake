@@ -7,7 +7,7 @@ with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
 
-localrules: fripPlotter, idxStatPlotter
+localrules: fripPlotter, idxStatPlotter, incorpSummit
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
@@ -31,11 +31,13 @@ rule all:
 		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
+		expand("Annotation/{Comp}_uropa_finalhits_summits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
-		expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])),
-		expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
-rule checkFai:
+		#expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])),
+		#expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
+
+rule checkGenomeIndex:
 	input: paramDic['genomeFa']
 	output: paramDic['genomeFa'] + '.fai'
 	log:
@@ -49,7 +51,8 @@ rule checkFai:
 
 rule checkIndex:
 	input:
-		paramDic['Loc']['bamDir'] + '/{sample}.bam'
+		sample = paramDic['Loc']['bamDir'] + '/{sample}.bam',
+		genomeFai = paramDic['genomeFa'] + '.fai'
 	output:
 		paramDic['Loc']['bamDir'] + '/{sample}.bam.bai'
 	log:
@@ -58,7 +61,7 @@ rule checkIndex:
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	sambamba index -t {threads} {input} > {log.out} 2> {log.err}
+	sambamba index -t {threads} {input.sample} > {log.out} 2> {log.err}
 	'''
 
 rule idxStat:
@@ -370,12 +373,26 @@ rule uropa:
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Uropa.yaml')
 	threads: 5
 	shell:'''
-	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 1500 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
+	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
 	'''
+
+rule incorpSummit:
+	input:
+		uropaPeaks = "Annotation/{Comp}_uropa_finalhits.txt"
+	output:
+		mergedOut = "Annotation/{Comp}_uropa_finalhits_summits.txt"
+	params:
+		summits = "MACS2/{Comp}_Merged_summits.bed"
+	log:
+		out = 'logs/incorpSummit.{Comp}.out',
+		err = 'logs/incorpSummit.{Comp}.out'
+	threads:1
+	run:
+		misc.summitIncorp(input.uropaPeaks,params.summits, output.mergedOut)
 
 rule mergeDiff_Ann:
 	input:
-		annotation = "Annotation/{Comp}_uropa_finalhits.txt",
+		annotation = "Annotation/{Comp}_uropa_finalhits_summits.txt",
 		diffPeak = "diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv"
 	output:
 		csvout = "diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv"
@@ -415,8 +432,8 @@ rule diffHeat:
 		Matout = "logs/diffMat_{Comp}.out",
 		Materr = "logs/diffMat_{Comp}.err"
 	shell:'''
-	cut -f1 -d ',' {input.up} | tail -n +2 | tr '_' '\t' > {params.Comp}.UP.bed
-	cut -f1 -d ',' {input.down} | tail -n +2 | tr '_' '\t' > {params.Comp}.DOWN.bed
+	cut -f1 {input.up} | tail -n +2 | tr '_' '\t' > {params.Comp}.UP.bed
+	cut -f1 {input.down} | tail -n +2 | tr '_' '\t' > {params.Comp}.DOWN.bed
 	computeMatrix reference-point -S {params.bigwigs} -R {params.Comp}.UP.bed {params.Comp}.DOWN.bed --referencePoint center -a 2000 -b 2000 -out {output.outMat} -p {threads} --missingDataAsZero > {log.Matout} 2> {log.Materr}
 	rm {params.Comp}.UP.bed
 	rm {params.Comp}.DOWN.bed
@@ -440,10 +457,22 @@ rule extractSeq:
 		out = 'logs/extractSeq_{Comp}.out',
 		err = 'logs/extractSeq_{Comp}.err'
 	shell:'''
-	set +o pipefail;cut -f1 {input.up} | awk 'NF' | tr '_' '\t' > {params.bedPref}_UP.bed
-	set +o pipefail;cut -f1 {input.down} | awk 'NF' | tr '_' '\t' > {params.bedPref}_DOWN.bed
+	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' > {params.bedPref}_UP.bed
+	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' > {params.bedPref}_DOWN.bed
 	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.bed > {output.up}
 	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.bed > {output.down}
 	rm {params.bedPref}_UP.bed
 	rm {params.bedPref}_DOWN.bed
+	'''
+
+rule MEMEsearch:
+	input:
+		upFA = 'MEME/{Comp}_up.fna',
+		doFA = 'MEME/{Comp}_down.fna'
+	output:
+		"outtest"
+	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_Meme.yaml')
+	threads:1
+	shell:'''
+	meme MPP2_down.fna -oc MPP2_down -dna -mod zoops -revcomp -nmotifs 8 -minw 6 -maxw 15 -minsites 10 -maxsize 0 -objfun de -p 15
 	'''
