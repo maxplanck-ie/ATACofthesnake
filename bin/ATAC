@@ -43,6 +43,8 @@ def main():
         sys.exit()
     # Parse Samplesheet.
     paramDic = misc.setdefault_readss(args.sampleSheet, bamFiles)
+
+    # Files existings.
     paramDic['Loc'] = {"bamDir":str(os.path.abspath(args.bamDir)), "outDir":str(os.path.abspath(args.outDir))}
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.Genes)

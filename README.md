@@ -19,6 +19,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
  - [x] index: generate bai files if they are missing.
  - [x] deeptools: fragmentsize
+ - [ ] for all arguments, make misc function that checks existence, otherwise fault before running.
  - [ ] MACS2 - summits
  - [ ] extend summits
  - [ ] TSS enrichment cutoff
