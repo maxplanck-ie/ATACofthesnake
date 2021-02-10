@@ -38,7 +38,9 @@ def main():
     if not bamFiles:
         print("No bamfiles found. Are you sure your bamfiles sit where they need to?")
         sys.exit()
-
+    if bamFiles == None:
+        print("Directory exists, but there is a mismatch between files and sampleSheet.")
+        sys.exit()
     # Parse Samplesheet.
     paramDic = misc.setdefault_readss(args.sampleSheet, bamFiles)
     paramDic['Loc'] = {"bamDir":str(os.path.abspath(args.bamDir)), "outDir":str(os.path.abspath(args.outDir))}

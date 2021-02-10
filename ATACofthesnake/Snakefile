@@ -35,7 +35,7 @@ rule all:
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
 		#expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])),
-		#expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
+		expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -93,7 +93,7 @@ rule alignmentSieve:
 	threads:10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 0 --minFragmentLength 150 --blackListFileName {params.blackList}
+	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 0 --minFragmentLength 150 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule shortIndex:
@@ -457,12 +457,10 @@ rule extractSeq:
 		out = 'logs/extractSeq_{Comp}.out',
 		err = 'logs/extractSeq_{Comp}.err'
 	shell:'''
-	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' > {params.bedPref}_UP.bed
-	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' > {params.bedPref}_DOWN.bed
-	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.bed > {output.up}
-	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.bed > {output.down}
-	rm {params.bedPref}_UP.bed
-	rm {params.bedPref}_DOWN.bed
+	set +o pipefail;cut -f1,30,31 {input.up} | tail -n +2 | sed 's/\t/_/g' | cut -f1,4,5 -d '_' | tr '_' '\t' > {params.bedPref}_UP.summit200.bed
+	set +o pipefail;cut -f1,30,31 {input.down} | tail -n +2 | sed 's/\t/_/g' | cut -f1,4,5 -d '_' | tr '_' '\t' > {params.bedPref}_DOWN.summit200.bed
+	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.summit200.bed > {output.up}
+	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.summit200.bed > {output.down}
 	'''
 
 rule MEMEsearch:
