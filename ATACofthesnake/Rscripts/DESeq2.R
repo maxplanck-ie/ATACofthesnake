@@ -7,8 +7,7 @@ args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 conds = args[[2]]
 outfilesign = args[[3]]
-outMAplot= args[[4]]
-outfileall = args[[5]]
+outfileall = args[[4]]
 
 
 
