@@ -7,7 +7,9 @@ args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 conds = args[[2]]
 outfilesign = args[[3]]
-outfileall = args[[4]]
+outMAplot= args[[4]]
+outfileall = args[[5]]
+
 
 
 conds = strsplit(conds, ",")[[1]]
@@ -29,6 +31,6 @@ dds = DESeq(dds)
 
 res <- as.data.frame(results(dds, pAdjustMethod = "fdr" ))
 res <- res[complete.cases(res), ]
-ressig <- res[res$padj < 0.1,]
+ressig <- res[res$padj < 0.01,]
 write.csv(ressig, file=outfilesign, quote=FALSE, sep='\t')
 write.csv(res, file=outfileall, quote=FALSE, sep='\t')
