@@ -29,13 +29,14 @@ rule all:
 		expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
 		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
 		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
+		#expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits_summits.txt", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
+		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
 		expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])),
-		#expand('MEME/{Comp}_down.fna', Comp=paramDic['Comp'])
+		expand('Motif/{Comp}_up.bed', Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -158,7 +159,7 @@ rule MACS2:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --nomodel --nolambda -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	macs2 callpeak -t {input} -f BAMPE --nomodel --shift 75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.05 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
 rule fripScore:
@@ -359,6 +360,24 @@ rule DESeq2:
 	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
 	'''
 
+rule edgeR:
+	input:
+		countMat = "diffAcc_{Comp}/{Comp}_counts.mat"
+	output:
+		sign = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
+		allPeaks = "diffAcc_{Comp}/{Comp}_edgeR.all.tsv",
+	log:
+		out = "logs/edgeR.{Comp}.out",
+		err = "logs/edgeR.{Comp}.err"
+	params:
+		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
+		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
+	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_diffR.yaml')
+	shell:'''
+	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
+	'''
+
 rule uropa:
 	input:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
@@ -393,30 +412,31 @@ rule incorpSummit:
 rule mergeDiff_Ann:
 	input:
 		annotation = "Annotation/{Comp}_uropa_finalhits_summits.txt",
-		diffPeak = "diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv"
+		diffPeak = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv"
 	output:
-		csvout = "diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv"
+		csvout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
 	threads: 1
 	run:
 		misc.mergeDiff_Ann(input.annotation, input.diffPeak, output.csvout)
 
 rule splitDiffRes:
 	input:
-		"diffAcc_{Comp}/{Comp}_DESeq2_annotated.sign.tsv"
+		"diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
 	output:
-		UP = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
-		DOWN = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv"
+		UP = "diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
+		DOWN = "diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv"
 	threads: 1
 	shell:'''
 	head -1 {input} > {output.DOWN}
+	# Down doesn't need to incorporate header because awk < 0 captures it.
 	awk '$3 < 0' {input} >> {output.DOWN}
 	awk '$3 > 0' {input} >> {output.UP}
 	'''
 
 rule diffHeat:
 	input:
-		up = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
-		down = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv",
+		up = "diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
+		down = "diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv",
 		bigWigs = expand('BigWigs/{sample}.bw', sample=paramDic['Samples'])
 	output:
 		heatmap = "Figures/{Comp}_Diffpeak.png",
@@ -440,27 +460,27 @@ rule diffHeat:
 	plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap Blues > {log.Plotout} 2> {log.Ploterr}
 	'''
 
-rule extractSeq:
+rule formatBedHomer:
 	input:
-		up = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_UP.tsv",
-		down = "diffAcc_{Comp}/{Comp}_DESeq2_annotated_DOWN.tsv",
+		up = "diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
+		down = "diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv",
 		fai = paramDic['genomeFa'] + '.fai'
 	output:
-		up = 'MEME/{Comp}_up.fna',
-		down = 'MEME/{Comp}_down.fna'
+		up = 'Motif/{Comp}_up.bed',
+		down = 'Motif/{Comp}_down.bed'
 	threads: 1
 	params:
-		bedPref = "MEME/{Comp}",
+		bedPref = "Motif/{Comp}",
 		genomeFa = paramDic['genomeFa']
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	log:
-		out = 'logs/extractSeq_{Comp}.out',
-		err = 'logs/extractSeq_{Comp}.err'
+		out = 'logs/formatBedHomer_{Comp}.out',
+		err = 'logs/formatBedHomer_{Comp}.err'
 	shell:'''
-	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' > {params.bedPref}_UP.peakregion.bed
-	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' > {params.bedPref}_DOWN.peakregion.bed
-	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.peakregion.bed > {output.up}
-	bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.peakregion.bed > {output.down}
+	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.up}
+	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.down}
+	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.peakregion.bed > {output.up}
+	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.peakregion.bed > {output.down}
 	'''
 
 rule MEMEsearch:

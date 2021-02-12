@@ -98,11 +98,12 @@ def summitIncorp(finalhits, summits, output):
     mergeDF.to_csv(output, header=True, index=True, sep='\t')
 
 def mergeDiff_Ann(annotation, diff, outName):
-    diffDF = pd.read_csv(diff, sep=',', header=0, index_col=0, dtype={0:'str'})
+    diffDF = pd.read_csv(diff, sep='\t', header=0, index_col=False, dtype={0:'str'})
+    diffDF = diffDF.set_index('peak_id')
     annDF = pd.read_csv(annotation, sep='\t', header=0, dtype={0:'str'}, index_col=None)
     annDF.index = annDF[['peak_chr','peak_start','peak_end']].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
     res = pd.merge(diffDF, annDF, left_index=True, right_index=True)
-    if len(diffDF) != len(res):
+    if len(diffDF.index) != len(res.index):
         print("Merged set contains a different number of peaks than the input set. Double check peak annotations..")
     res.to_csv(outName, header=True, index=True, sep='\t')
 

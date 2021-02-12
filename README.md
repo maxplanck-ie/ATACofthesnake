@@ -13,7 +13,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 >  pip install ./  
 
   - Running:  
-> ATAC --bamDir ./bams/ --outDir ./ --sampleSheet ss.tsv --blackList blackList.bed --genomeSize 2652783500 --Genes genes.gtf
+> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss.tsv --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa
 
   - todo:
 
