@@ -7,7 +7,7 @@ with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
 
-localrules: fripPlotter, idxStatPlotter, incorpSummit
+localrules: fripPlotter, idxStatPlotter, incorpSummit, maPlot
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
@@ -18,6 +18,7 @@ rule all:
 		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
 		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		expand("mergeBams/{Comp}.Merged.bam", Comp=paramDic['Comp']),
+		expand("mergeBams/{Comp}.Merged.bed", Comp=paramDic['Comp']),
 		expand('MACS2/{Comp}_Merged_peaks.narrowPeak', Comp=paramDic['Comp']),
 		expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
 		expand("Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
@@ -30,13 +31,12 @@ rule all:
 		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
 		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
-		#expand("diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv", Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits_summits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
-		#expand("Figures/{Comp}_Diffpeak.png", Comp=misc.diffCount(paramDic['Comp'])), #faults out if something is empty.
-		expand('Motif/{Comp}_up.bed', Comp=paramDic['Comp'])
+		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -144,9 +144,20 @@ rule mergeBams:
 	sambamba merge -t {threads} {output} {params} > {log.out} 2> {log.err}
 	'''
 
-rule MACS2:
+rule bamToBed:
 	input:
 		"mergeBams/{Comp}.Merged.bam"
+	output:
+		"mergeBams/{Comp}.Merged.bed"
+	threads: 1
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	bamToBed -i {input} > {output}
+	'''
+
+rule MACS2:
+	input:
+		"mergeBams/{Comp}.Merged.bed"
 	output:
 		"MACS2/{Comp}_Merged_peaks.narrowPeak"
 	log:
@@ -159,7 +170,7 @@ rule MACS2:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	macs2 callpeak -t {input} -f BAMPE --nomodel --shift 75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.05 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	macs2 callpeak -t {input} -f BED --nomodel --shift -100 --extsize 200 -g mm -n {params.outName} -q 0.05 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
 rule fripScore:
@@ -341,25 +352,6 @@ rule plotHeatmap:
 	plotHeatmap -m {input} -out {output} --refPointLabel TSS > {log.out} 2> {log.err}
 	'''
 
-rule DESeq2:
-	input:
-		countMat = "diffAcc_{Comp}/{Comp}_counts.mat",
-		scales = "diffAcc_{Comp}/{Comp}_scaleFactors.txt"
-	output:
-		sign = "diffAcc_{Comp}/{Comp}_DESeq2.sign.tsv",
-		allPeaks = "diffAcc_{Comp}/{Comp}_DESeq2.all.tsv"
-	log:
-		out = "logs/DESeq2.{Comp}.out",
-		err = "logs/DESeq2.{Comp}.err"
-	params:
-		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "DESeq2.R"),
-		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
-	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_diffR.yaml')
-	shell:'''
-	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
-	'''
-
 rule edgeR:
 	input:
 		countMat = "diffAcc_{Comp}/{Comp}_counts.mat"
@@ -377,6 +369,14 @@ rule edgeR:
 	shell:'''
 	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
 	'''
+
+rule maPlot:
+	input: "diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
+	output: "Figures/{Comp}_maPlot.png"
+	threads: 1
+	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
+	run:
+		misc.plotter('maPlot',str(input), str(output))
 
 rule uropa:
 	input:
@@ -481,16 +481,4 @@ rule formatBedHomer:
 	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.down}
 	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.peakregion.bed > {output.up}
 	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.peakregion.bed > {output.down}
-	'''
-
-rule MEMEsearch:
-	input:
-		upFA = 'MEME/{Comp}_up.fna',
-		doFA = 'MEME/{Comp}_down.fna'
-	output:
-		"outtest"
-	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_Meme.yaml')
-	threads:1
-	shell:'''
-	meme MPP2_down.fna -oc MPP2_down -dna -mod zoops -revcomp -nmotifs 8 -minw 6 -maxw 15 -minsites 10 -maxsize 0 -objfun de -p 15
 	'''

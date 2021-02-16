@@ -60,9 +60,10 @@ def plotter(what, inFiles, outFile):
         plt.tight_layout()
         g.figure.savefig(outFile, dpi=300)
     if what == 'maPlot':
-        print("Do maplot here.")
-
-
+        deDF = pd.read_csv(inFiles, sep='\t', index_col=False)
+        deDF['Sign'] = np.where(deDF['FDR'] < 0.05, True, False)
+        g = sns.scatterplot(data=deDF, x='logCPM', y='logFC', alpha=0.2, hue='Sign')
+        g.figure.savefig(outFile, dpi=300)
 
 def diffCount(Complist):
     retainComp = []

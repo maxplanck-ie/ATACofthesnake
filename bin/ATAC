@@ -28,6 +28,8 @@ def main():
                         help='Cluster submission command, defaults to SlurmEasy')
     parser.add_argument('--genomeFasta', type=str, required=True,
                         help='Provide genome fasta file.')
+    parser.add_argument('--snakeOpts', type=str, required=False,
+                        help='Any additional options for snakemake [API style, comma sep]')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
