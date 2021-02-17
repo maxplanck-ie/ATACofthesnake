@@ -36,7 +36,8 @@ rule all:
 		expand("Annotation/{Comp}_uropa_finalhits_summits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
-		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp'])
+		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp']),
+		expand("Figures/{Comp}_Diffpeak.png", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
