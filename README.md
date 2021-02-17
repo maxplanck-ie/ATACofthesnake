@@ -40,7 +40,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] specify norm options (scalefactors): background or signal
  - [ ] diffheatmap
  - [x] FrIPs
- - [ ] MAplot
+ - [x] MAplot
  - [ ] chromHMM - marks ?
  - [ ] chromVAR
  - [ ] shift all QC in a QC folder.
@@ -49,6 +49,8 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
  - [ ] Figures per comparison in a subfolder
  - [ ] diffHeat DAG problem ?
  - [ ] specify all input per 'module'
+ - [ ] decryptify error message.
+ - [ ] paramLogs + invocation in PDF
 
  - longer term to do:
 

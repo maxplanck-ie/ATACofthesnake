@@ -270,7 +270,7 @@ rule BigWigs:
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
-	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates --effectiveGenomeSize {params.genomeSize} -bl {params.blackList} > {log.out} 2> {log.err}
+	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates -bl {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule multiBigwigSum:
@@ -429,8 +429,8 @@ rule splitDiffRes:
 	shell:'''
 	head -1 {input} > {output.DOWN}
 	# Down doesn't need to incorporate header because awk < 0 captures it.
-	awk '$3 < 0' {input} >> {output.DOWN}
-	awk '$3 > 0' {input} >> {output.UP}
+	awk '$2 < 0' {input} >> {output.DOWN}
+	awk '$2 > 0' {input} >> {output.UP}
 	'''
 
 rule diffHeat:
