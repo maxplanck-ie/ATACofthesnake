@@ -33,7 +33,6 @@ rule all:
 		expand("diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
 		expand("Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		expand("Annotation/{Comp}_uropa_finalhits_summits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
 		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp']),
@@ -395,23 +394,9 @@ rule uropa:
 	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
 	'''
 
-rule incorpSummit:
-	input:
-		uropaPeaks = "Annotation/{Comp}_uropa_finalhits.txt"
-	output:
-		mergedOut = "Annotation/{Comp}_uropa_finalhits_summits.txt"
-	params:
-		summits = "MACS2/{Comp}_Merged_summits.bed"
-	log:
-		out = 'logs/incorpSummit.{Comp}.out',
-		err = 'logs/incorpSummit.{Comp}.out'
-	threads:1
-	run:
-		misc.summitIncorp(input.uropaPeaks,params.summits, output.mergedOut)
-
 rule mergeDiff_Ann:
 	input:
-		annotation = "Annotation/{Comp}_uropa_finalhits_summits.txt",
+		annotation = "Annotation/{Comp}_uropa_finalhits.txt",
 		diffPeak = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv"
 	output:
 		csvout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
