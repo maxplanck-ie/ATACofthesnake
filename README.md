@@ -13,54 +13,69 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 >  pip install ./  
 
   - Running:  
-> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss.tsv --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa
+> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss.tsv --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa --diffPeak
+
+Currently creates output in working directory!
+
+  - Flags:
+    - bamDir: Directory containing the bam files.  
+    - (outDir: Ouput directory (future).)  
+    - sampleSheet: tsv file containing Sample, Cond, Comp columns (header is required.).  
+    - blackList: bed file containing regions to remove from bam file (prior to peak calling).  
+    - Genes: gtf file containing genome annotations.  
+    - genomeSize: Effective genome size for organism of interest.  
+    - genomeFasta: fasta file for genome.  
+    - diffPeak: Wether or not to try and plot a heatmap of diff. Acc regions.
+  
+  sampleSheet example:
+
+  | Sample | Cond | Comp |
+  | -- | -- | -- |
+  | WT1 | WT | WTvsKOa |
+  | WT2 | WT | WTvsKOa |
+  | KOa1 | KO | WTvsKOa |
+  | KOa2 | KO | WTvsKOa |
+  | WT1 | WT | WTvsKOb |
+  | WT2 | WT | WTvsKOb |
+  | KOb1 | KO | WTvsKOb |
+  | KOb2 | KO | WTvsKOb |
+
 
   - todo:
+ - [ ] call-summits mode or not -> motif or no.
+ - [ ] (TSS enrichment cutoff)
+ - [ ] in diffPlots, add Condition labels
+ - [ ] TOBIAS
+ - [ ] motif search: Implement MEME
+ - [ ] specify norm options (scalefactors): background or signal (background need sparsity tests.)
+ - [ ] diffheatmap function test rather than hardflag.
+ - [ ] chromHMM - marks ?
+ - [ ] chromVAR ?
+ - [ ] clean rule all declinations.
+ - [ ] Figures per comparison in a subfolder
+ - [ ] decryptify error message (e.g. stop retries).
+ - [ ] paramLogs incorp in PDF
+ - [ ] lateX build PDF
 
+
+- Done:
+ - [x] FrIPs
+ - [x] MAplot
  - [x] index: generate bai files if they are missing.
+ - [x] mitoBleed
  - [x] deeptools: fragmentsize
  - [x] for all arguments, make misc function that checks existence, otherwise fault before running.
  - [x] MACS2 - summits
- - [ ] extend summits
- - [ ] TSS enrichment cutoff
- - [ ] in diffPlots, add Condition labels
- - [ ] peak merging on TSS cut passing samples
- - [ ] peak normalization / depth ?
- - [ ] multibamsummary (counts)
- - [x] scaleFactors
- - [x] bamCoverage
- - [x] computeMatrix
- - [x] deeptools: correlations
- - [x] DESeq2
- - [x] Multiple comparisons
- - [x] annotate peaks
- - [x] Deal with multiple envs.
- - [x] Standardize logs
- - [ ] TOBIAS
- - [ ] motif search - homer / MEME
- - [ ] specify norm options (scalefactors): background or signal
- - [ ] diffheatmap
- - [x] FrIPs
- - [x] MAplot
- - [ ] chromHMM - marks ?
- - [ ] chromVAR
- - [ ] shift all QC in a QC folder.
- - [x] mitoBleed
- - [ ] clean rule all declinations.
- - [ ] Figures per comparison in a subfolder
- - [ ] diffHeat DAG problem ?
- - [ ] specify all input per 'module'
- - [ ] decryptify error message.
- - [ ] paramLogs + invocation in PDF
-
- - longer term to do:
-
  - [x] deal with illegal characters ?
  - [x] slurm submission
  - [x] produce report
  - [x] incorporate runID if more than 1 comparison per batch.
- - [ ] Support multiple genomes
-      - [ ] blacklist DL + merge
-      - [ ] GTF DL
-      - [ ] genomeSizes
-
+ - [x] Multiple comparisons
+ - [x] annotate peaks
+ - [x] Deal with multiple envs.
+ - [x] Standardize logs
+ - [x] scaleFactors
+ - [x] bamCoverage
+ - [x] computeMatrix
+ - [x] deeptools: correlations
+ - [x] shift all QC in a QC folder.

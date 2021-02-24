@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
     parser.add_argument('--bamDir', type=str, required=True,
                         help='Provide the directory containing bam files.')
-    parser.add_argument('--outDir', type=str, required=True,
+    parser.add_argument('--outDir', type=str, required=False,
                         help='Provide a name for the output directory.')                    
     parser.add_argument('--sampleSheet', type=str, required=True,
                         help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
@@ -30,6 +30,8 @@ def main():
                         help='Provide genome fasta file.')
     parser.add_argument('--snakeOpts', type=str, required=False,
                         help='Any additional options for snakemake [API style, comma sep]')
+    parser.add_argument('--diffPeak', dest='diffPeak', action='store_true', default=False, required=False,
+                        help='Specify if a heatmap with up/down regulated sites should be included.')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -52,6 +54,7 @@ def main():
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
+    paramDic['diffPeak'] = args.diffPeak
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")
         sys.exit()

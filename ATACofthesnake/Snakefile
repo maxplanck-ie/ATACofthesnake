@@ -36,7 +36,9 @@ rule all:
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
 		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp']),
-		expand("Figures/{Comp}_Diffpeak.png", Comp=paramDic['Comp'])
+		expand('Motif/{Comp}_homer.txt', Comp=paramDic['Comp']),
+		expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['Comp'] if paramDic['diffPeak'] else [None]),
+		expand("TOBIAS_{Comp}/footprints.txt", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -466,4 +468,24 @@ rule formatBedHomer:
 	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.down}
 	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.peakregion.bed > {output.up}
 	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.peakregion.bed > {output.down}
+	'''
+
+rule homerRun:
+	input:
+		'Motif/{Comp}_up.bed'
+	output:
+		'Motif/{Comp}_homer.txt'
+	threads: 1
+	shell:'''
+	touch {output}
+	'''
+
+rule TOBIAS:
+	input:
+		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+	output:
+		"TOBIAS_{Comp}/footprints.txt"
+	threads: 1
+	shell:'''
+	touch {output}
 	'''
