@@ -52,12 +52,14 @@ Currently creates output in working directory!
  - [ ] chromHMM - marks ?
  - [ ] chromVAR ?
  - [ ] clean rule all declinations.
+ - [ ] ILP solver
  - [ ] Figures per comparison in a subfolder
  - [ ] decryptify error message (e.g. stop retries).
  - [ ] paramLogs incorp in PDF
  - [ ] lateX build PDF
+ - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
 
-
+ 
 - Done:
  - [x] FrIPs
  - [x] MAplot
