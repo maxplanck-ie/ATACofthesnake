@@ -63,12 +63,14 @@ def plotter(what, inFiles, outFile, conds=None):
         g.figure.savefig(outFile, dpi=300)
     if what == 'maPlot':
         deDF = pd.read_csv(inFiles, sep='\t', index_col=False)
-        print(type(conds))
-        upStr = conds[0][1] + '_Open' # snakeMake returns nested list
-        downStr = conds[0][0] + '_Open' # ditto
-        deDF['Status'] = 'nonSign'
+        #Fetch a string containing the condition, and how many regions
+        upStr = conds[0][1] + '_Open n=' + str(len(deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] > 0),])) # snakeMake returns nested list
+        downStr = conds[0][0] + '_Open n=' + str(len(deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] < 0),])) # ditto
+        #Define status column and fill conditionaly
+        deDF['Status'] = 'nonSign n=' + str(len(deDF.loc[deDF['FDR'] > 0.05,]))
         deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] > 0), 'Status'] = upStr
         deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] < 0), 'Status'] = downStr
+        #Plot and save
         g = sns.scatterplot(data=deDF, x='logCPM', y='logFC', alpha=0.4, hue='Status')
         g.figure.savefig(outFile, dpi=300)
 
