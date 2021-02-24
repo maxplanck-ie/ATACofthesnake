@@ -3,7 +3,7 @@
 Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
 
 
-  - Installation
+## Installation
 
   set up the environment:  
 >  git clone git@github.com:WardDeb/ATACofthesnake.git  
@@ -12,7 +12,8 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 >  conda activate ATACofthesnake  
 >  pip install ./  
 
-  - Running:  
+## Running:  
+
 > ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss.tsv --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa --diffPeak
 
 Currently creates output in working directory!
@@ -41,7 +42,8 @@ Currently creates output in working directory!
   | KOb2 | KO | WTvsKOb |
 
 
-  - todo:
+## Todo:
+
  - [ ] call-summits mode or not -> motif or no.
  - [ ] (TSS enrichment cutoff)
  - [ ] in diffPlots, add Condition labels
@@ -51,7 +53,7 @@ Currently creates output in working directory!
  - [ ] diffheatmap function test rather than hardflag.
  - [ ] chromHMM - marks ?
  - [ ] chromVAR ?
- - [ ] clean rule all declinations.
+ - [ ] clean rule all declinations / incorporate outDir.
  - [ ] ILP solver
  - [ ] Figures per comparison in a subfolder
  - [ ] decryptify error message (e.g. stop retries).
