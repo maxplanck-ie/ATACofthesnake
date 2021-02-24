@@ -32,6 +32,8 @@ def main():
                         help='Any additional options for snakemake [API style, comma sep]')
     parser.add_argument('--diffPeak', dest='diffPeak', action='store_true', default=False, required=False,
                         help='Specify if a heatmap with up/down regulated sites should be included.')
+    parser.add_argument('--condaPrefix', required=True,
+                        help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -92,7 +94,7 @@ def main():
     with console.status("[bold green] Running snakemake..."):
         snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
         cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-        max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3',
+        max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix,
         verbose=True)
     
     ## Compile pdf.
