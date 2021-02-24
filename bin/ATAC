@@ -49,6 +49,7 @@ def main():
     paramDic = misc.setdefault_readss(args.sampleSheet, bamFiles)
     print(paramDic)
     # Files existings.
+    paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['Loc'] = {"bamDir":str(os.path.abspath(args.bamDir)), "outDir":str(os.path.abspath(args.outDir))}
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.Genes)
@@ -65,7 +66,7 @@ def main():
         print("genomeFasta not found. Exiting.")
         sys.exit()
     with open('Parameters.yaml', 'w') as f:
-        yaml.dump(paramDic, f)
+        yaml.dump(paramDic, f, sort_keys=False)
     print("Parameters written out in yaml file.")
     if not os.path.exists("genes.sort.gtf"):
         print("Sorting GTF for Uropa later on.")
@@ -88,11 +89,14 @@ def main():
             os.mkdir("cluster_logs")
         clusterCMD = "SlurmEasy -t {threads} -l cluster_logs -n {rule}"
     #if args.snakeOpts:
-
-    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
-     cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-     max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3')
-    snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'), latency_wait=300)
+    with console.status("[bold green] Running snakemake..."):
+        snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
+        cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+        max_status_checks_per_second=1, use_conda=True, conda_prefix='/localenv/deboutte/anaconda/miniconda3',
+        verbose=True)
+    
+    ## Compile pdf.
+    
     #if not os.path.exists("cluster_logs"):
     #    os.mkdir("cluster_logs")
     #for error in os.listdir():

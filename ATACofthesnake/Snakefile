@@ -7,7 +7,7 @@ with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 Conditions = list(paramDic['Cond'])
 
-localrules: fripPlotter, idxStatPlotter, incorpSummit, maPlot
+localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
@@ -35,8 +35,8 @@ rule all:
 		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
-		expand('Motif/{Comp}_up.bed',Comp=paramDic['Comp']),
-		expand('Motif/{Comp}_homer.txt', Comp=paramDic['Comp']),
+		expand('Motif/{Comp}_up.fna',Comp=paramDic['Comp']),
+		#expand('Motif/{Comp}_homer.txt', Comp=paramDic['Comp']),
 		expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['Comp'] if paramDic['diffPeak'] else [None]),
 		expand("TOBIAS_{Comp}/footprints.txt", Comp=paramDic['Comp'])
 
@@ -447,38 +447,32 @@ rule diffHeat:
 	plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap Blues > {log.Plotout} 2> {log.Ploterr}
 	'''
 
-rule formatBedHomer:
+rule formatFNA:
 	input:
 		up = "diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
 		down = "diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv",
 		fai = paramDic['genomeFa'] + '.fai'
 	output:
-		up = 'Motif/{Comp}_up.bed',
-		down = 'Motif/{Comp}_down.bed'
+		up = 'Motif/{Comp}_up.fna',
+		down = 'Motif/{Comp}_down.fna'
 	threads: 1
 	params:
-		bedPref = "Motif/{Comp}",
+		upBed = "Motif/{Comp}_up.bed",
+		downBed = "Motif/{Comp}_down.bed",
 		genomeFa = paramDic['genomeFa']
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	log:
-		out = 'logs/formatBedHomer_{Comp}.out',
-		err = 'logs/formatBedHomer_{Comp}.err'
+		out = 'logs/formatFNA_{Comp}.out',
+		err = 'logs/formatFNA_{Comp}.err'
 	shell:'''
-	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.up}
-	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' | sed 's/^/chr/g' > {output.down}
-	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_UP.peakregion.bed > {output.up}
-	#bedtools getfasta -fi {params.genomeFa} -bed {params.bedPref}_DOWN.peakregion.bed > {output.down}
+	set +o pipefail;cut -f1 {input.up} | tail -n +2 | tr '_' '\t' > {params.upBed}
+	set +o pipefail;cut -f1 {input.down} | tail -n +2 | tr '_' '\t' > {params.downBed}
+	bedtools getfasta -fi {params.genomeFa} -bed {params.upBed} > {output.up}
+	bedtools getfasta -fi {params.genomeFa} -bed {params.downBed} > {output.down}
 	'''
 
-rule homerRun:
-	input:
-		'Motif/{Comp}_up.bed'
-	output:
-		'Motif/{Comp}_homer.txt'
-	threads: 1
-	shell:'''
-	touch {output}
-	'''
+#rule runMeme:
+
 
 rule TOBIAS:
 	input:

@@ -14,7 +14,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 ## Running:  
 
-> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss.tsv --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa --diffPeak
+> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss. --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa --diffPeak
 
 Currently creates output in working directory!
 
@@ -56,10 +56,12 @@ Currently creates output in working directory!
  - [ ] clean rule all declinations / incorporate outDir.
  - [ ] ILP solver
  - [ ] Figures per comparison in a subfolder
- - [ ] decryptify error message (e.g. stop retries).
+ - [x] decryptify error message (e.g. stop retries).
  - [ ] paramLogs incorp in PDF
  - [ ] lateX build PDF
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
+ - [ ] allow choice for DESeq2 and edgeR or not.
+ - [ ] shift condition definition specific to comparison.
 
  
 - Done:

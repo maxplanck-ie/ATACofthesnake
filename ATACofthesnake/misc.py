@@ -7,6 +7,8 @@ import subprocess
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
+import collections
 
 def plotter(what, inFiles, outFile):
     colors = ["windows blue", "amber", "greyish", "faded green", "dusty purple"]
@@ -164,6 +166,7 @@ def readBamDir(bamDir):
     return bams
 
 def setdefault_readss(ss, bams):
+    warnings.simplefilter(action='ignore', category=FutureWarning)
     ss = pd.read_csv(ss, sep='\t', header=0)
     if ss.columns[0] == 'Sample' and ss.columns[1] == 'Cond' and ss.columns[2] == 'Comp':
         if len(ss.columns) > 3:

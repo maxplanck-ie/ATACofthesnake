@@ -1,7 +1,6 @@
 .libPaths(R.home("library"))
 
 suppressMessages(library("edgeR"))
-suppressMessages(library("ggplot2"))
 
 args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
@@ -14,7 +13,7 @@ countmat <- read.csv(mat, sep='\t')
 rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
 countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
-design <- model.matrix(~factor(conds))
+design <- model.matrix(~factor(conds, levels=(unique(conds))))
 keep <- filterByExpr(countmat, design=design)
 countmat <- countmat[keep,]
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
