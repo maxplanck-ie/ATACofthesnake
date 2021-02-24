@@ -10,7 +10,7 @@ import numpy as np
 import warnings
 import collections
 
-def plotter(what, inFiles, outFile):
+def plotter(what, inFiles, outFile, conds=None):
     colors = ["windows blue", "amber", "greyish", "faded green", "dusty purple"]
     sns.set_palette(sns.xkcd_palette(colors))
     if what == 'frip':
@@ -63,8 +63,13 @@ def plotter(what, inFiles, outFile):
         g.figure.savefig(outFile, dpi=300)
     if what == 'maPlot':
         deDF = pd.read_csv(inFiles, sep='\t', index_col=False)
-        deDF['Sign'] = np.where(deDF['FDR'] < 0.05, True, False)
-        g = sns.scatterplot(data=deDF, x='logCPM', y='logFC', alpha=0.2, hue='Sign')
+        print(type(conds))
+        upStr = conds[0][1] + '_Open' # snakeMake returns nested list
+        downStr = conds[0][0] + '_Open' # ditto
+        deDF['Status'] = 'nonSign'
+        deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] > 0), 'Status'] = upStr
+        deDF.loc[(deDF['FDR'] < 0.05) & (deDF['logFC'] < 0), 'Status'] = downStr
+        g = sns.scatterplot(data=deDF, x='logCPM', y='logFC', alpha=0.4, hue='Status')
         g.figure.savefig(outFile, dpi=300)
 
 def diffCount(Complist):

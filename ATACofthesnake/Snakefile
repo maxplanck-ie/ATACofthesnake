@@ -375,9 +375,9 @@ rule maPlot:
 	input: "diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
 	output: "Figures/{Comp}_maPlot.png"
 	threads: 1
-	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
+	params: lambda wildcards: list(paramDic['Comp'][wildcards.Comp]['Cond'].keys())
 	run:
-		misc.plotter('maPlot',str(input), str(output))
+		misc.plotter('maPlot',str(input), str(output), params)
 
 rule uropa:
 	input:
