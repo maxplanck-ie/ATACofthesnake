@@ -10,6 +10,24 @@ import numpy as np
 import warnings
 import collections
 
+def checkNumDiff(paramDic):
+    #diffDownstream.yaml
+    diffDownstream = {}
+    samples = []
+    for Comp in paramDic['Comp']:
+        compFolder = "diffAcc_" + str(Comp)
+        countUp = 0
+        with open(os.path.join(compFolder, str(Comp) + '_edgeR_annotated_UP.tsv')) as f:
+            for line in f:
+                countUp += 1
+        with open(os.path.join(compFolder, str(Comp) + '_edgeR_annotated_DOWN.tsv')) as f:
+            for line in f:
+                countDown += 1
+        if countUp > 11 and countUp > 11:
+            paramDic['diffComp'][Comp] = paramDic['Comp']
+    return paramDic
+
+
 def plotter(what, inFiles, outFile, conds=None):
     colors = ["windows blue", "amber", "greyish", "faded green", "dusty purple"]
     sns.set_palette(sns.xkcd_palette(colors))

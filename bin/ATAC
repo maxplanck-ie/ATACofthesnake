@@ -30,10 +30,10 @@ def main():
                         help='Provide genome fasta file.')
     parser.add_argument('--snakeOpts', type=str, required=False,
                         help='Any additional options for snakemake [API style, comma sep]')
-    parser.add_argument('--diffPeak', dest='diffPeak', action='store_true', default=False, required=False,
-                        help='Specify if a heatmap with up/down regulated sites should be included.')
     parser.add_argument('--condaPrefix', required=True,
                         help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
+    parser.add_argument('--downStream', action='store_true', required=False,
+                        help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -57,7 +57,6 @@ def main():
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
-    paramDic['diffPeak'] = args.diffPeak
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")
         sys.exit()
@@ -90,12 +89,22 @@ def main():
         if not os.path.exists("cluster_logs"):
             os.mkdir("cluster_logs")
         clusterCMD = "SlurmEasy -t {threads} -l cluster_logs -n {rule}"
-    #if args.snakeOpts:
     with console.status("[bold green] Running snakemake..."):
-        snakemake.snakemake(os.path.join(paramDic["baseDir"], 'Snakefile'),
+        diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAnalysis.Snakefile'),
         cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
         max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
-    
+    if diffStatus == True:
+        print("diffAnalysis completed succesfully.")
+    if args.downStream:
+        print("Starting up with downstream analysis.")
+        print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
+        paramDic = misc.checkNumDiff(paramDic)
+        with open('Parameters.yaml', 'w') as f:
+            yaml.dump(paramDic, f, sort_keys=False)
+        if paramDic['diffComp']:
+            print("Launching snakemake")
+        else:
+            print("Not enough differential regions. Stopping.")
     ## Compile pdf.
     #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
 

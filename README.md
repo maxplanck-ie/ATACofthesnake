@@ -46,7 +46,7 @@ Currently creates output in working directory!
 
  - [ ] call-summits mode or not -> motif or no.
  - [ ] (TSS enrichment cutoff)
- - [ ] in diffPlots, add Condition labels
+ - [x] in diffPlots, add Condition labels
  - [ ] TOBIAS
  - [ ] motif search: Implement MEME
  - [ ] specify norm options (scalefactors): background or signal (background need sparsity tests.)
