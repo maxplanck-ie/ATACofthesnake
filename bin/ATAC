@@ -98,10 +98,10 @@ def main():
     if args.downStream:
         print("Starting up with downstream analysis.")
         print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
-        paramDic = misc.checkNumDiff(paramDic)
-        with open('Parameters.yaml', 'w') as f:
-            yaml.dump(paramDic, f, sort_keys=False)
-        if paramDic['diffComp']:
+        paramDic_diff = misc.checkNumDiff(paramDic)
+        if 'diffComp' in paramDic_diff:
+            with open('Parameters_downstream.yaml', 'w') as f:
+                yaml.dump(paramDic_diff, f, sort_keys=False)
             print("Launching snakemake")
         else:
             print("Not enough differential regions. Stopping.")

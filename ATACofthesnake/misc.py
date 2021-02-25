@@ -17,6 +17,7 @@ def checkNumDiff(paramDic):
     for Comp in paramDic['Comp']:
         compFolder = "diffAcc_" + str(Comp)
         countUp = 0
+        countDown = 0
         with open(os.path.join(compFolder, str(Comp) + '_edgeR_annotated_UP.tsv')) as f:
             for line in f:
                 countUp += 1
@@ -24,6 +25,8 @@ def checkNumDiff(paramDic):
             for line in f:
                 countDown += 1
         if countUp > 11 and countUp > 11:
+            if 'diffComp' not in paramDic:
+                paramDic['diffComp'] = {}
             paramDic['diffComp'][Comp] = paramDic['Comp']
     return paramDic
 

@@ -396,12 +396,15 @@ rule uropa:
 rule mergeDiff_Ann:
 	input:
 		annotation = "Annotation/{Comp}_uropa_finalhits.txt",
-		diffPeak = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv"
+		diffPeak = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
+		nonSig = "diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
 	output:
-		csvout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
+		csvout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv",
+		nonsigout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.all.tsv"
 	threads: 1
 	run:
 		misc.mergeDiff_Ann(input.annotation, input.diffPeak, output.csvout)
+		misc.mergeDiff_Ann(input.annotation, input.nonSig, output.nonsigout)
 
 rule splitDiffRes:
 	input:
