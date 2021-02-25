@@ -37,7 +37,7 @@ rule all:
 		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
 		expand('Motif/{Comp}_up.fna',Comp=paramDic['Comp']),
 		#expand('Motif/{Comp}_homer.txt', Comp=paramDic['Comp']),
-		expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['Comp'] if paramDic['diffPeak'] else [None]),
+		expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['Comp']),
 		expand("TOBIAS_{Comp}/footprints.txt", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
@@ -170,6 +170,7 @@ rule mergePeak:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
+	echo {params}
 	cat {params} | sort -k1,1 -k2,2n | bedtools merge > {output}
 	'''
 
