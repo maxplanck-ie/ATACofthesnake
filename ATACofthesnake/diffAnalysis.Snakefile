@@ -92,7 +92,7 @@ rule alignmentSieve:
 	threads:10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 0 --minFragmentLength 150 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
+	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 150 --minFragmentLength 0 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule shortIndex:

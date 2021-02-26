@@ -11,7 +11,6 @@ import warnings
 import collections
 
 def checkNumDiff(paramDic):
-    #diffDownstream.yaml
     diffDownstream = {}
     samples = []
     for Comp in paramDic['Comp']:

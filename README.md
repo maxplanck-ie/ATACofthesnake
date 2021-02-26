@@ -57,7 +57,7 @@ Currently creates output in working directory!
  - [ ] ILP solver
  - [ ] Figures per comparison in a subfolder
  - [x] decryptify error message (e.g. stop retries).
- - [ ] paramLogs incorp in PDF
+ - [x] paramLogs put in yaml
  - [ ] lateX build PDF
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
  - [ ] allow choice for DESeq2 and edgeR or not.
