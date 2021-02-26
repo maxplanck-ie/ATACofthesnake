@@ -68,7 +68,7 @@ def plotter(what, inFiles, outFile, conds=None):
                     for line in f:
                         chrom = str(line.strip().split()[0])
                         count = int(line.strip().split()[1])
-                        if chrom.lower() == 'mt':
+                        if chrom.lower().startswith('m'):
                             mtcount = count
                         else:
                             chromcount += count

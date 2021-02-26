@@ -34,6 +34,8 @@ def main():
                         help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
     parser.add_argument('--downStream', action='store_true', required=False,
                         help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
+    parser.add_argument('--fragSizeMax', type=int, default=150,
+                        help='Specify fragment size cut-off (default = 150).')
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -57,6 +59,8 @@ def main():
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
+    paramDic['fragSize'] = args.fragSizeMax
+    
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")
         sys.exit()

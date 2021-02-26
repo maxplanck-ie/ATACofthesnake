@@ -85,14 +85,15 @@ rule alignmentSieve:
 		shortBam = "ShortBAM/{sample}.bam",
 		filterMetrics = "ShortBAM/{sample}.metrics"
 	params:
-		blackList = paramDic['blackList']
+		blackList = paramDic['blackList'],
+		fragSize = paramDic['fragSize']
 	log:
 		out = 'logs/alignmentSieve.{sample}.out',
 		err = 'logs/alignmentSieve.{sample}.err'
 	threads:10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength 150 --minFragmentLength 0 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
+	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength {params.fragSize} --minFragmentLength 0 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule shortIndex:
