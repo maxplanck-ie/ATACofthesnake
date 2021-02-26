@@ -26,7 +26,7 @@ def checkNumDiff(paramDic):
         if countUp > 11 and countUp > 11:
             if 'diffComp' not in paramDic:
                 paramDic['diffComp'] = {}
-            paramDic['diffComp'][Comp] = paramDic['Comp']
+            paramDic['diffComp'][Comp] = paramDic['Comp'][Comp]
     return paramDic
 
 

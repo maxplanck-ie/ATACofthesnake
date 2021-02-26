@@ -5,7 +5,6 @@ from ATACofthesnake import misc
 # Read / set variables.
 with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
-Conditions = list(paramDic['Cond'])
 
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
@@ -388,7 +387,7 @@ rule uropa:
 	params:
 		GTF = paramDic['GTF'],
 		prefix = "{Comp}_uropa"
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_Uropa.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_AnnMotif.yaml')
 	threads: 5
 	shell:'''
 	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}

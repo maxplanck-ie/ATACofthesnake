@@ -9,6 +9,10 @@ import yaml
 import os
 import snakemake
 
+class NoAliasDumper(yaml.Dumper):
+    def ignore_aliases(self, data):
+        return True
+
 def main():
     console = Console()
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
@@ -105,8 +109,14 @@ def main():
         paramDic_diff = misc.checkNumDiff(paramDic)
         if 'diffComp' in paramDic_diff:
             with open('Parameters_downstream.yaml', 'w') as f:
-                yaml.dump(paramDic_diff, f, sort_keys=False)
+                yaml.dump(paramDic_diff, f, sort_keys=False, Dumper=NoAliasDumper)
             print("Launching snakemake")
+            with console.status("[bold green] Running snakemake for downstream analysis..."):
+                downStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffDownstream.Snakefile'),
+                cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+                max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
+            if downStatus == True:
+                print("downstream analysis completed succesfully.")
         else:
             print("Not enough differential regions. Stopping.")
     ## Compile pdf.

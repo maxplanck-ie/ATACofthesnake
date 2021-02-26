@@ -62,6 +62,8 @@ Currently creates output in working directory!
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
  - [ ] allow choice for DESeq2 and edgeR or not.
  - [ ] shift condition definition specific to comparison.
+ - [ ] linter
+ - [ ] clean conda envs
 
  
 - Done:
