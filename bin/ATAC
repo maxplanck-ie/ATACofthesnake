@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--Genes', type=str, required=True,
                         help='Provide a GTF file containing genome annotations.')
     parser.add_argument('--genomeSize', type=float, required=True,
-                        help='Provide genome size. e.g. 2652783500 for mouse.')
+                        help='Provide genome size. e.g. 1.87e9 for mouse.')
     parser.add_argument('--clusterCMD', type=str, required=False,
                         help='Cluster submission command, defaults to SlurmEasy')
     parser.add_argument('--genomeFasta', type=str, required=True,
@@ -60,7 +60,7 @@ def main():
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
     paramDic['fragSize'] = args.fragSizeMax
-    
+
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")
         sys.exit()
