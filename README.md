@@ -14,7 +14,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 ## Running:  
 
-> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss. --blackList blacklist.bed --Genes genes.gtf --genomeSize 2652783500 --genomeFasta genome.fa --diffPeak
+> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss. --blackList blacklist.bed --Genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --diffPeak
 
 Currently creates output in working directory!
 
