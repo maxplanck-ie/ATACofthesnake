@@ -40,6 +40,9 @@ def main():
                         help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
     parser.add_argument('--fragSizeMax', type=int, default=150,
                         help='Specify fragment size cut-off (default = 150).')
+    parser.add_argument('--motifs', required=True,
+                        help='Specify a motif file (meme format) to search for in diff. peaks.')
+    
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
@@ -64,6 +67,7 @@ def main():
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
     paramDic['fragSize'] = args.fragSizeMax
+    paramDic['motifLoc'] = os.path.abspath(args.motifs)
 
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")

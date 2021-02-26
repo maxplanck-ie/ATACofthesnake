@@ -387,7 +387,7 @@ rule uropa:
 	params:
 		GTF = paramDic['GTF'],
 		prefix = "{Comp}_uropa"
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_AnnMotif.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_uropa.yaml')
 	threads: 5
 	shell:'''
 	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}

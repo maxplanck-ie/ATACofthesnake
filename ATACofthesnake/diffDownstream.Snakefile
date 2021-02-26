@@ -9,7 +9,8 @@ with open('Parameters_downstream.yaml') as f:
 rule all:
     input:
         expand('Motif/{Comp}_up.fna', Comp=paramDic['diffComp']),
-        expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['diffComp'])
+        expand('Figures/{Comp}_Diffpeak.png', Comp=paramDic['diffComp']),
+        expand('Motif/{Comp}_up/ame.html', Comp=paramDic['diffComp'])
 
 # Does it make sense to run this as a seperate workflow?
 
@@ -59,19 +60,26 @@ rule diffHeat:
     computeMatrix reference-point -S {params.bigwigs} -R {input.upBed} {input.downBed} --referencePoint center -a 2000 -b 2000 -out {output.outMat} -p {threads} --missingDataAsZero > {log.Matout} 2> {log.Materr}
     plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap Blues > {log.Plotout} 2> {log.Ploterr}
     '''
+
 rule runMeme:
     input:
-        upFNA
-        downFNA
+        up = 'Motif/{Comp}_up.fna',
+        down = 'Motif/{Comp}_down.fna'
     output:
-        motifUP
-        motifDO
+        motifUP = 'Motif/{Comp}_up/ame.html',
+        motifDO = 'Motif/{Comp}_down/ame.html'
+    params:
+        motif = paramDic['motifLoc'],
+        upOut = lambda wildcards: wildcards.Comp + "_up",
+        downOut = lambda wildcards: wildcards.Comp + "_down"
     threads: 1
-    conda: os.path.join(paramDic['baseDir'], 'envs','AOS_AnnMotif.yaml')
+    conda: os.path.join(paramDic['baseDir'], 'envs','AOS_meme.yaml')
     shell:'''
-    echo run meme
+    ame --control {input.down} -o Motif/{params.upOut} {input.up} {params.motif}
+    ame --control {input.up} -o Motif/{params.downOut} {input.down} {params.motif}
     '''
 
+# Todo.
 rule TOBIAS:
     input:
         "MACS2/{Comp}_Merged_peaks.narrowPeak"

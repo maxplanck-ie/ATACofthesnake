@@ -1,8 +1,7 @@
-name: AOS_AnnMotif
+name: AOS_uropa
 channels:
   - bioconda
 dependencies:
   - pip
-  - meme=5.3.0
   - pip:
     - uropa==4.0.0
