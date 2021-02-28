@@ -1,0 +1,3 @@
+FileNotFoundError in line 6 of /data/manke/group/deboutte/repo/ATACofthesnake/ATACofthesnake/diffAcc.Snakefile:
+[Errno 2] No such file or directory: 'Parameters.yaml'
+  File "/data/manke/group/deboutte/repo/ATACofthesnake/ATACofthesnake/diffAcc.Snakefile", line 6, in <module>

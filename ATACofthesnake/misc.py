@@ -43,7 +43,7 @@ def plotter(what, inFiles, outFile, conds=None):
         res = []
         for sample in inFiles:
             for i in sample:  # snakemake returns a nested list.
-                filestr = 'QC/' + str(i) + '.FRiP.txt'
+                filestr = 'AOS/QC/' + str(i) + '.FRiP.txt'
                 with open(filestr) as f:
                     for line in f:
                         if line.strip().split()[0] != 'sample':
@@ -73,7 +73,7 @@ def plotter(what, inFiles, outFile, conds=None):
         res = []
         for sample in inFiles:
             for i in sample:
-                filestr = 'QC/' + str(i) + '.idxstat.txt'
+                filestr = 'AOS/QC/' + str(i) + '.idxstat.txt'
                 with open(filestr) as f:
                     chromcount = 0
                     for line in f:
@@ -144,7 +144,8 @@ def returnCompfromSample(sample, paramDic):
     compList = []
     for comp in paramDic['Comp']:
         if sample in paramDic['Comp'][comp]['Samples']:
-            compList.append("MACS2/{}_Merged_peaks.narrowPeak".format(comp))
+            compList.append(
+                "AOS/MACS2/{}_Merged_peaks.narrowPeak".format(comp))
     if len(compList) == 1:
         return compList[0]
 

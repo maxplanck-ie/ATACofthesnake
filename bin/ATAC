@@ -18,8 +18,6 @@ def main():
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
     parser.add_argument('--bamDir', type=str, required=True,
                         help='Provide the directory containing bam files.')
-    parser.add_argument('--outDir', type=str, required=False,
-                        help='Provide a name for the output directory.')                    
     parser.add_argument('--sampleSheet', type=str, required=True,
                         help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
     parser.add_argument('--blackList', type=str, required=True,
@@ -46,7 +44,6 @@ def main():
     args = parser.parse_args()
 
     print("bamDIR: {}".format(args.bamDir))
-    print("outDIR: {}".format(args.outDir))
 
     # Grab bamfiles:
     bamFiles = misc.readBamDir(args.bamDir)
@@ -61,7 +58,7 @@ def main():
     print(paramDic)
     # Files existings.
     paramDic['Invocation'] = " ".join(sys.argv)
-    paramDic['Loc'] = {"bamDir":str(os.path.abspath(args.bamDir)), "outDir":str(os.path.abspath(args.outDir))}
+    paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": 'AOS'}
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.Genes)
     paramDic['genomeSize'] = args.genomeSize
@@ -100,7 +97,7 @@ def main():
         # add log dir 
         if not os.path.exists("cluster_logs"):
             os.mkdir("cluster_logs")
-        clusterCMD = "SlurmEasy -t {threads} -l cluster_logs -n {rule}"
+        clusterCMD = "SlurmEasy -t {threads} -l AOS/cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
         diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.Snakefile'),
         cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,

@@ -58,12 +58,17 @@ Currently creates output in working directory!
  - [ ] Figures per comparison in a subfolder
  - [x] decryptify error message (e.g. stop retries).
  - [x] paramLogs put in yaml
- - [ ] lateX build PDF
+ - [ ] lateX build PDF - tectonic vs something else.
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
  - [0] allow choice for DESeq2 and edgeR or not (For now I ignore DESeq2 alltogether).
  - [x] shift condition definition specific to comparison.
- - [ ] linter fix
+ - [ ] linter fix - snakemake
+ - [x] PEP8
  - [x] clean conda envs
+ - [ ] outdir variable rather than fixed AOS str
+ - [ ] fragSize distribution plots.
+ - [ ] testData
+ - [ ] pytests
 
  
 - Done:

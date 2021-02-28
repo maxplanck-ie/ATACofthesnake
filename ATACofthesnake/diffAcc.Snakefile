@@ -11,36 +11,36 @@ rule all:
 	input:
 		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
 		paramDic['genomeFa'] + '.fai',
-		expand("QC/{sample}.idxstat.txt", sample=paramDic['Samples']),
-		expand("Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
-		expand("ShortBAM/{sample}.bam", sample=paramDic['Samples']),
-		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
-		expand("ShortBAM/{sample}.bed", sample=paramDic['Samples']),
-		expand("deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
-		expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
-		expand("MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp']),
-		expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
-		expand("Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
-		expand("BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		expand('deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
-		expand('Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
-		expand("Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		expand("deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
-		expand("Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
-		expand("Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
-		expand("Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
-		expand("diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp'])
+		expand(paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + '/deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
 	output: paramDic['genomeFa'] + '.fai'
 	log:
-		out = "logs/checkFai.out",
-		err = "logs/checkFai.err"
+		out = paramDic['Loc']['outDir'] + "/logs/checkFai.out",
+		err = paramDic['Loc']['outDir'] + "/logs/checkFai.err"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_SeqTools.yaml')
 	shell:'''
@@ -54,8 +54,8 @@ rule checkIndex:
 	output:
 		paramDic['Loc']['bamDir'] + '/{sample}.bam.bai'
 	log:
-		out = 'logs/checkIndex.{sample}.out',
-		err = 'logs/checkIndex.{sample}.err'
+		out = paramDic['Loc']['outDir'] + '/logs/checkIndex.{sample}.out',
+		err = paramDic['Loc']['outDir'] + '/logs/checkIndex.{sample}.err'
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -67,7 +67,7 @@ rule idxStat:
 		index = paramDic['Loc']['bamDir'] + '/{sample}.bam.bai',
 		bam = paramDic['Loc']['bamDir'] + '/{sample}.bam'
 	output:
-		"QC/{sample}.idxstat.txt"
+		paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -79,16 +79,16 @@ rule alignmentSieve:
 	input:
 		inBam = paramDic['Loc']['bamDir'] + '/{sample}.bam',
 		index = paramDic['Loc']['bamDir'] + '/{sample}.bam.bai',
-		mitoBleed = "QC/{sample}.idxstat.txt"
+		mitoBleed = paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt"
 	output:
-		shortBam = "ShortBAM/{sample}.bam",
-		filterMetrics = "ShortBAM/{sample}.metrics"
+		shortBam = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam",
+		filterMetrics = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.metrics"
 	params:
 		blackList = paramDic['blackList'],
 		fragSize = paramDic['fragSize']
 	log:
-		out = 'logs/alignmentSieve.{sample}.out',
-		err = 'logs/alignmentSieve.{sample}.err'
+		out = paramDic['Loc']['outDir'] + '/logs/alignmentSieve.{sample}.out',
+		err = paramDic['Loc']['outDir'] + '/logs/alignmentSieve.{sample}.err'
 	threads:10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -97,12 +97,12 @@ rule alignmentSieve:
 
 rule shortIndex:
 	input:
-		"ShortBAM/{sample}.bam"
+		paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam"
 	output:
-		"ShortBAM/{sample}.bam.bai"
+		paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai"
 	log:
-		out = 'logs/shortIndex.{sample}.out',
-		err = 'logs/shortIndex.{sample}.err',
+		out = paramDic['Loc']['outDir'] + '/logs/shortIndex.{sample}.out',
+		err = paramDic['Loc']['outDir'] + '/logs/shortIndex.{sample}.err',
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -111,15 +111,15 @@ rule shortIndex:
 
 rule fragSize:
 	input:
-		expand("ShortBAM/{sample}.bam.bai", sample=paramDic['Samples'])
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=paramDic['Samples'])
 	output:
-		raw = "deepTools/{Comp}.fragSizes.raw.tsv",
-		table = "deepTools/{Comp}.fragSizes.metrics.tsv"
+		raw = paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv",
+		table = paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.metrics.tsv"
 	log:
-		out = 'logs/fragSize.{Comp}.out',
-		err = 'logs/fragSize.{Comp}.err'
+		out = paramDic['Loc']['outDir'] + '/logs/fragSize.{Comp}.out',
+		err = paramDic['Loc']['outDir'] + '/logs/fragSize.{Comp}.err'
 	params:
-		lambda wildcards: ' '.join(expand("ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -128,10 +128,10 @@ rule fragSize:
 
 rule bamToBed:
 	input:
-		bai = "ShortBAM/{sample}.bam.bai",
-		bam = "ShortBAM/{sample}.bam"
+		bai = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai",
+		bam = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam"
 	output:
-		outBed = "ShortBAM/{sample}.bed"
+		outBed = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -140,12 +140,12 @@ rule bamToBed:
 
 rule MACS2:
 	input:
-		"ShortBAM/{sample}.bed"
+		paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed"
 	output:
-		"MACS2/{sample}_peaks.narrowPeak"
+		paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak"
 	log:
-		out = 'logs/MACS2.{sample}.out',
-		err = 'logs/MACS2.{sample}.err'
+		out = paramDic['Loc']['outDir'] + '/logs/MACS2.{sample}.out',
+		err = paramDic['Loc']['outDir'] + '/logs/MACS2.{sample}.err'
 	params:
 		genomeSize = paramDic['genomeSize'],
 		outName = lambda wildcards: wildcards.sample,
@@ -153,16 +153,16 @@ rule MACS2:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir MACS2/ --keep-dup all > {log.out} 2> {log.err}
+	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir AOS/MACS2/ --keep-dup all > {log.out} 2> {log.err}
 	'''
 
 rule mergePeak:
 	input:
-		expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples'])
+		expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples'])
 	output:
-		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+		paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak"
 	params:
-		lambda wildcards: ' '.join(expand("MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -173,10 +173,10 @@ rule mergePeak:
 
 rule fripScore:
 	input:
-		bamfile = "ShortBAM/{sample}.bam",
-		MACS2done = expand("MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp'])
+		bamfile = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam",
+		MACS2done = expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp'])
 	output:
-		"QC/{sample}.FRiP.txt"
+		paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt"
 	params:
 		genomeSize = paramDic['genomeSize'],
 		peakFile = lambda wildcards: misc.returnCompfromSample(wildcards.sample ,paramDic),
@@ -195,9 +195,9 @@ rule fripScore:
 
 rule fripPlotter:
 	input: 
-		fripFiles = expand("QC/{sample}.FRiP.txt", sample=paramDic['Samples'])
+		fripFiles = expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Samples'])
 	output:
-		"Figures/{Comp}.FRIP.png"
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png"
 	threads: 1
 	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
 	run:
@@ -205,9 +205,9 @@ rule fripPlotter:
 
 rule idxStatPlotter:
 	input: 
-		idxstatFiles = expand("QC/{sample}.idxstat.txt", sample=paramDic['Samples'])
+		idxstatFiles = expand(paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt", sample=paramDic['Samples'])
 	output:
-		"Figures/{Comp}.mtFrac.png"
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png"
 	threads: 1
 	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
 	run:
@@ -215,16 +215,16 @@ rule idxStatPlotter:
 
 rule countMat:
 	input:
-		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+		paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		mat = "diffAcc_{Comp}/{Comp}_counts.mat",
-		matnpz = "diffAcc_{Comp}/{Comp}_counts.npz"
+		mat = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat",
+		matnpz = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.npz"
 	log:
-		out = "logs/countMat.{Comp}.out",
-		err = "logs/countMat.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/countMat.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/countMat.{Comp}.err"
 	params:
 		blackList = paramDic['blackList'],
-		samples = lambda wildcards: ' '.join(expand("ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+		samples = lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 20
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -237,12 +237,12 @@ rule countMat:
 
 rule scaleFactors:
 	input:
-		"diffAcc_{Comp}/{Comp}_counts.mat"
+		paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
-		"diffAcc_{Comp}/{Comp}_scaleFactors.txt"
+		paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt"
 	log:
-		out = "logs/scaleFactors.{Comp}.out",
-		err = "logs/scaleFactors.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/scaleFactors.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/scaleFactors.{Comp}.err"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	params:
@@ -253,13 +253,13 @@ rule scaleFactors:
 
 rule BigWigs:
 	input:
-		sf = expand("diffAcc_{Comp}/{Comp}_scaleFactors.txt",Comp=paramDic['Comp']),
-		inFile = "ShortBAM/{sample}.bam"
+		sf = expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt",Comp=paramDic['Comp']),
+		inFile = paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam"
 	output:
-		"BigWigs/{sample}.bw"
+		paramDic['Loc']['outDir'] + "/BigWigs/{sample}.bw"
 	log:
-		out = "logs/BigWigs.{sample}.out",
-		err = "logs/Bigwigs.{sample}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/BigWigs.{sample}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/Bigwigs.{sample}.err"
 	params:
 		sampleName = '{sample}',
 		blackList = paramDic['blackList'],
@@ -273,15 +273,15 @@ rule BigWigs:
 
 rule multiBigwigSum:
 	input:
-		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
-		Peaks = "MACS2/{Comp}_Merged_peaks.narrowPeak"
+		expand(paramDic['Loc']['outDir'] + '/BigWigs/{sample}.bw', sample=paramDic['Samples']),
+		Peaks = paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		'deepTools/{Comp}_BigwigSum.npz'
+		paramDic['Loc']['outDir'] + '/deepTools/{Comp}_BigwigSum.npz'
 	log:
-		out = "logs/multiBigWigSum.{Comp}.out",
-		err = "logs/multiBigWigSum.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/multiBigWigSum.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/multiBigWigSum.{Comp}.err"
 	params:
-		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
+		bigwigs = lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] + '/BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		blackList = paramDic['blackList']
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
@@ -291,9 +291,9 @@ rule multiBigwigSum:
 
 rule plotCorr:
 	input:
-		"deepTools/{Comp}_BigwigSum.npz"
+		paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigSum.npz"
 	output:
-		"Figures/{Comp}_plotCorr.png"
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}_plotCorr.png"
 	log:
 		out = "logs/plotCorr.{Comp}.out",
 		err = "logs/plotCorr.{Comp}.err"
@@ -305,14 +305,14 @@ rule plotCorr:
 
 rule plotPCA:
 	input:
-		"deepTools/{Comp}_BigwigSum.npz"
+		paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigSum.npz"
 	output:
-		"Figures/{Comp}_PCA.png"
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png"
 	params: 
 		colors = lambda wildcards: " ".join(sum([[s] * n for s, n in zip(["red","blue"], [len(paramDic['Comp'][wildcards.Comp]['Cond'][paramDic['Cond'][0]]),len(paramDic['Comp'][wildcards.Comp]['Cond'][paramDic['Cond'][1]])])], []))
 	log:
-		out = "logs/plotPCA.{Comp}.out",
-		err = "logs/plotPCA.{Comp}.err",
+		out = paramDic['Loc']['outDir'] + "/logs/plotPCA.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/plotPCA.{Comp}.err",
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -321,14 +321,14 @@ rule plotPCA:
 
 rule computeMatrix:
 	input:
-		expand('BigWigs/{sample}.bw', sample=paramDic['Samples']),
+		expand(paramDic['Loc']['outDir'] + '/BigWigs/{sample}.bw', sample=paramDic['Samples']),
 	output:
-		"deepTools/{Comp}_BigwigMatrix.gz"
+		paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz"
 	log:
-		out = "logs/computeMatrix.{Comp}.out",
-		err = "logs/computeMatrix.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/computeMatrix.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/computeMatrix.{Comp}.err"
 	params:
-		bigwigs = lambda wildcards: ' '.join(expand('BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
+		bigwigs = lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] + '/BigWigs/{sample}.bw', sample=paramDic['Comp'][wildcards.Comp]['Samples'])),
 		bed = "TSS.bed"
 	threads: 10
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
@@ -338,12 +338,12 @@ rule computeMatrix:
 
 rule plotHeatmap:
 	input:
-		"deepTools/{Comp}_BigwigMatrix.gz"
+		paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz"
 	output:
-		"Figures/{Comp}_Heatmap.png"
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png"
 	log:
-		out = "logs/plotHeatmap.{Comp}.out",
-		err = "logs/plotHeatmap.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/plotHeatmap.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/plotHeatmap.{Comp}.err"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -352,13 +352,13 @@ rule plotHeatmap:
 
 rule edgeR:
 	input:
-		countMat = "diffAcc_{Comp}/{Comp}_counts.mat"
+		countMat = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat"
 	output:
-		sign = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
-		allPeaks = "diffAcc_{Comp}/{Comp}_edgeR.all.tsv",
+		sign = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
+		allPeaks = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.all.tsv",
 	log:
-		out = "logs/edgeR.{Comp}.out",
-		err = "logs/edgeR.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/edgeR.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/edgeR.{Comp}.err"
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
@@ -369,8 +369,8 @@ rule edgeR:
 	'''
 
 rule maPlot:
-	input: "diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
-	output: "Figures/{Comp}_maPlot.png"
+	input: paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
+	output: paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png"
 	threads: 1
 	params: lambda wildcards: list(paramDic['Comp'][wildcards.Comp]['Cond'].keys())
 	run:
@@ -378,12 +378,12 @@ rule maPlot:
 
 rule uropa:
 	input:
-		"MACS2/{Comp}_Merged_peaks.narrowPeak"
+		paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak"
 	output:
-		"Annotation/{Comp}_uropa_finalhits.txt"
+		paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt"
 	log:
-		out = "logs/uropa.{Comp}.out",
-		err = "logs/uropa.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/uropa.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/uropa.{Comp}.err"
 	params:
 		GTF = paramDic['GTF'],
 		prefix = "{Comp}_uropa"
@@ -395,12 +395,12 @@ rule uropa:
 
 rule mergeDiff_Ann:
 	input:
-		annotation = "Annotation/{Comp}_uropa_finalhits.txt",
-		diffPeak = "diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
-		nonSig = "diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
+		annotation = paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt",
+		diffPeak = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv",
+		nonSig = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
 	output:
-		csvout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv",
-		nonsigout = "diffAcc_{Comp}/{Comp}_edgeR_annotated.all.tsv"
+		csvout = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv",
+		nonsigout = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.all.tsv"
 	threads: 1
 	run:
 		misc.mergeDiff_Ann(input.annotation, input.diffPeak, output.csvout)
@@ -408,10 +408,10 @@ rule mergeDiff_Ann:
 
 rule splitDiffRes:
 	input:
-		"diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
+		paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv"
 	output:
-		UP = "diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
-		DOWN = "diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv"
+		UP = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv",
+		DOWN = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_DOWN.tsv"
 	threads: 1
 	shell:'''
 	head -1 {input} > {output.DOWN}

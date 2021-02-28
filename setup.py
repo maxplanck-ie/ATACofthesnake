@@ -9,7 +9,7 @@ setuptools.setup(
    author_email="deboutte@ie-freiburg.mpg.de",
    scripts=['bin/ATAC'],
    packages=['ATACofthesnake'],
-   package_data={"": ["diffAnalysis.Snakefile",
+   package_data={"": ["diffAcc.Snakefile",
                       "diffDownstream.Snakefile",
                       "template.tex",
                       "Rscripts/edgeR_scalefactors.R",
