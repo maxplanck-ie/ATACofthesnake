@@ -1,7 +1,0 @@
-name: AOS_uropa
-channels:
-  - bioconda
-dependencies:
-  - pip
-  - pip:
-    - uropa==4.0.0

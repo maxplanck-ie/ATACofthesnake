@@ -42,7 +42,7 @@ rule checkGenomeIndex:
 		out = "logs/checkFai.out",
 		err = "logs/checkFai.err"
 	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_samtools.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs', 'AOS_SeqTools.yaml')
 	shell:'''
 	samtools faidx {input}
 	'''
@@ -69,7 +69,7 @@ rule idxStat:
 	output:
 		"QC/{sample}.idxstat.txt"
 	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_samtools.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	set +o pipefail;
 	samtools idxstats {input.bam} | cut -f1,3 > {output}
@@ -182,7 +182,7 @@ rule fripScore:
 		peakFile = lambda wildcards: misc.returnCompfromSample(wildcards.sample ,paramDic),
 		sample = lambda wildcards: wildcards.sample
 	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_samtools.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	peakcount=$(cat {params.peakFile} | wc -l)
 	mapped=$(samtools view -c -F 4 {input.bamfile})
@@ -244,7 +244,7 @@ rule scaleFactors:
 		out = "logs/scaleFactors.{Comp}.out",
 		err = "logs/scaleFactors.{Comp}.err"
 	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_diffR.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "edgeR_scalefactors.R")
 	shell:'''
@@ -363,7 +363,7 @@ rule edgeR:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
 	threads: 1
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_diffR.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
 	'''
@@ -387,7 +387,7 @@ rule uropa:
 	params:
 		GTF = paramDic['GTF'],
 		prefix = "{Comp}_uropa"
-	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_uropa.yaml')
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	threads: 5
 	shell:'''
 	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o "Annotation" -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}

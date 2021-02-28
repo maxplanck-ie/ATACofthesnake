@@ -102,7 +102,7 @@ def main():
             os.mkdir("cluster_logs")
         clusterCMD = "SlurmEasy -t {threads} -l cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
-        diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAnalysis.Snakefile'),
+        diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.Snakefile'),
         cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
         max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
     if diffStatus == True:
