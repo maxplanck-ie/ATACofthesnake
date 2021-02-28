@@ -69,7 +69,7 @@ def main():
     if not os.path.exists(args.blackList):
         print("blacklist file not found. Exiting.")
         sys.exit()
-    if not os.path.exists(args.Genes):
+    if not os.path.exists(args.genes):
         print("Genes not found. Exiting.")
         sys.exit()
     if not os.path.exists(args.genomeFasta):
