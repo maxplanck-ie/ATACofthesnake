@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import sys
 import rich
-import subprocess
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -81,7 +80,7 @@ def plotter(what, inFiles, outFile, conds=None):
                         chrom = str(line.strip().split()[0])
                         count = int(line.strip().split()[1])
                         if chrom.lower().startswith('m') or \
-                        'mito' in chrom.lower():
+                           'mito' in chrom.lower():
                             mtcount = count
                         else:
                             chromcount += count
@@ -94,28 +93,29 @@ def plotter(what, inFiles, outFile, conds=None):
         g = sns.barplot(x=df['sample'],
                         y=df['value'],
                         hue=df['variable'], data=df)
-        g.set_xticklabels(g.get_xticklabels(),rotation=90)
+        g.set_xticklabels(g.get_xticklabels(), rotation=90)
         g.set_ylabel('% of Alignments')
         plt.tight_layout()
         g.figure.savefig(outFile, dpi=300)
     if what == 'maPlot':
         deDF = pd.read_csv(inFiles, sep='\t', index_col=False)
-        #Fetch a string containing the condition, and how many regions
+        # Fetch a string containing the condition, and how many regions
         upStr = conds[0][1] + \
-                '_Open n=' + \
-                str(len(deDF.loc[(deDF['FDR'] < 0.05) & \
-                       (deDF['logFC'] > 0),]))
+            '_Open n=' + \
+            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
+                (deDF['logFC'] > 0), ]))
         downStr = conds[0][0] + \
-                  '_Open n=' + \
-                  str(len(deDF.loc[(deDF['FDR'] < 0.05) & \
-                         (deDF['logFC'] < 0),]))
-        #Define status column and fill conditionaly
-        deDF['Status'] = 'nonSign n=' + str(len(deDF.loc[deDF['FDR'] > 0.05,]))
-        deDF.loc[(deDF['FDR'] < 0.05) & \
+            '_Open n=' + \
+            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
+                (deDF['logFC'] < 0), ]))
+        # Define status column and fill conditionaly
+        deDF['Status'] = 'nonSign n=' + \
+                         str(len(deDF.loc[deDF['FDR'] > 0.05, ]))
+        deDF.loc[(deDF['FDR'] < 0.05) &
                  (deDF['logFC'] > 0), 'Status'] = upStr
-        deDF.loc[(deDF['FDR'] < 0.05) & \
+        deDF.loc[(deDF['FDR'] < 0.05) &
                  (deDF['logFC'] < 0), 'Status'] = downStr
-        #Plot and save
+        # Plot and save
         g = sns.scatterplot(data=deDF,
                             x='logCPM',
                             y='logFC',
@@ -139,6 +139,7 @@ def diffCount(Complist):
             retainComp.append(Comp)
     return retainComp
 
+
 def returnCompfromSample(sample, paramDic):
     compList = []
     for comp in paramDic['Comp']:
@@ -146,6 +147,7 @@ def returnCompfromSample(sample, paramDic):
             compList.append("MACS2/{}_Merged_peaks.narrowPeak".format(comp))
     if len(compList) == 1:
         return compList[0]
+
 
 def summitIncorp(finalhits, summits, output):
     hits = pd.read_csv(finalhits, sep='\t', header=0)
@@ -161,23 +163,23 @@ def summitIncorp(finalhits, summits, output):
     mergeDF = pd.merge(hits, summits, on='peak_id')
     mergeDF.to_csv(output, header=True, index=True, sep='\t')
 
+
 def mergeDiff_Ann(annotation, diff, outName):
     diffDF = pd.read_csv(diff,
                          sep='\t',
                          header=0,
                          index_col=False,
-                         dtype={0:'str'})
+                         dtype={0: 'str'})
     diffDF = diffDF.set_index('peak_id')
     annDF = pd.read_csv(annotation,
                         sep='\t',
                         header=0,
-                        dtype={0:'str'},
+                        dtype={0: 'str'},
                         index_col=None)
     annDF.index = annDF[['peak_chr',
                          'peak_start',
-                         'peak_end']]\
-                         .apply(lambda row: '_'.join(row.values.astype(str)),
-                                                     axis=1)
+                         'peak_end']].apply(
+                         lambda row: '_'.join(row.values.astype(str)), axis=1)
     res = pd.merge(diffDF,
                    annDF,
                    left_index=True,
@@ -186,18 +188,19 @@ def mergeDiff_Ann(annotation, diff, outName):
         print("n(merged) != n(input). Double check peak annotations..")
     res.to_csv(outName, header=True, index=True, sep='\t')
 
+
 def sortGTF(GTF):
     GTF = pd.read_csv(GTF,
                       sep='\t',
                       comment='#',
                       header=None,
-                      dtype={0:'str'})
+                      dtype={0: 'str'})
     GTF.columns = ['chr', 'source', 'feature',
                    'start', 'end', 'score',
-                   'strand','frame','attribute']
+                   'strand', 'frame', 'attribute']
     GTF = GTF[GTF['feature'] == 'gene']
     GTF = GTF.sort_values(["chr", "start"],
-                          ascending = (True, True))
+                          ascending=(True, True))
     GTF.to_csv('genes.sort.gtf',
                header=False,
                index=False,
@@ -232,9 +235,9 @@ def GTFtoTSS(GTF):
                 if not line.startswith('#'):
                     liLis = line.strip().split()
                     if liLis[2] == 'gene':
-                        geneid = liLis[8].split(';')[0]\
-                                 .replace('gene_id ',"")\
-                                 .replace('"', '')
+                        # geneid = liLis[8].split(';')[0]\
+                        #          .replace('gene_id ',"")\
+                        #          .replace('"', '')
                         if liLis[6] == '+':
                             TSS.append([liLis[0],
                                         int(liLis[3]),
@@ -247,16 +250,18 @@ def GTFtoTSS(GTF):
     TSSdf = pd.DataFrame(TSS)
     TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
 
+
 def readBamDir(bamDir):
     bams = []
     for i in os.listdir(bamDir):
         if i.endswith('bam'):
-            bams.append(i.replace(".bam",""))
+            bams.append(i.replace(".bam", ""))
     for bamFile in bams:
         if '-' in i:
             return "Rename bamFiles, no - allowed."
             sys.exit()
     return bams
+
 
 def setdefault_readss(ss, bams):
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -272,13 +277,13 @@ def setdefault_readss(ss, bams):
             sys.exit()
         else:
             for sample in ss.Sample:
-                if sample.replace(".bam","") not in bams:
+                if sample.replace(".bam", "") not in bams:
                     return "Can't find {}. Please correct.".format(sample)
                     sys.exit()
             diffDic = {}
             diffDic["Cond"] = list(ss.Cond.unique())
             diffDic["Comp"] = {}
-            diffDic["Samples"] = list(ss.Sample.str.replace(".bam",""))
+            diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
             for Comp in ss.Comp.unique():
                 tempss = ss[ss['Comp'] == Comp]
                 diffDic["Comp"][Comp] = {}
@@ -286,33 +291,36 @@ def setdefault_readss(ss, bams):
                 key2 = tempss.Cond.unique()[1]
                 diffDic["Comp"][Comp]['Cond'] = {}
                 diffDic["Comp"][Comp]['Cond'][key1] = \
-                list(tempss[tempss['Cond'] == key1]['Sample']\
-                .str.replace(".bam",""))
+                    list(
+                    tempss[tempss['Cond'] == key1]['Sample'].str.replace(
+                        ".bam", ""))
                 diffDic["Comp"][Comp]['Cond'][key2] = \
-                list(tempss[tempss['Cond'] == key2]['Sample']\
-                .str.replace(".bam",""))
-                samplesList = diffDic["Comp"][Comp]['Cond'][key1] + \
-                              diffDic["Comp"][Comp]['Cond'][key2]
+                    list(
+                    tempss[tempss['Cond'] == key2]['Sample'].str.replace(
+                        ".bam", ""))
+                samplesList = \
+                    diffDic["Comp"][Comp]['Cond'][key1] + \
+                    diffDic["Comp"][Comp]['Cond'][key2]
                 diffDic["Comp"][Comp]['Samples'] = samplesList
             for Comp in ss.Comp.unique():
                 table = \
-                rich.table.Table(title="Samples - Conditions: {}"\
-                                 .format(Comp))
+                    rich.table.Table(
+                        title="Samples - Conditions: {}".format(Comp))
                 table.add_column(key1, justify="center", style="cyan")
                 table.add_column(key2, justify="center", style="green")
-                for i in range(max(\
+                for i in range(max(
                          [len(diffDic["Comp"][Comp]['Cond'][key1]),
-                         len(diffDic["Comp"][Comp]['Cond'][key2])])):
+                          len(diffDic["Comp"][Comp]['Cond'][key2])])):
                     try:
                         table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i],
                                       diffDic["Comp"][Comp]['Cond'][key2][i])
-                    except:
+                    except Exception:
                         try:
                             table.add_row(
-                            diffDic["Comp"][Comp]['Cond'][key1][i], "")
-                        except:
+                                diffDic["Comp"][Comp]['Cond'][key1][i], "")
+                        except Exception:
                             table.add_row(
-                            "", diffDic["Comp"][Comp]['Cond'][key2][i])
+                                "", diffDic["Comp"][Comp]['Cond'][key2][i])
                 console = rich.console.Console()
                 console.print(table)
             diffDic['baseDir'] = os.path.dirname(__file__)
@@ -320,51 +328,3 @@ def setdefault_readss(ss, bams):
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()
-
-def createTexfromTemplate(texfile, paramDic):
-    if os.path.exists("Report.pdf"):
-        print("Report exists already, cleaning and recompiling.")
-        os.remove("Report.pdf")
-    texOut = []
-    with open(texfile) as f:
-        for line in f:
-            texOut.append(line.strip())
-    #now start appending lines based on number of comparisons.
-    for i in paramDic['Comp']:
-        texOut.append("\n")
-        texOut.append("\section{" + "{}".format(i) + "}")
-        texOut.append("This section contains the comparison {}.".format(i))
-        texOut.append("\n")
-        texOut.append("\\begin{figure}[!htb]")
-        texOut.append("\\begin{center}")
-        texOut.append("\includegraphics[width=1\\textwidth]{Figures/" +
-                      "{}".format(i) + "_PCA.png}")
-        texOut.append("\caption{" + "{}".format(i) + " PCA.}")
-        texOut.append("\end{center}")
-        texOut.append("\end{figure}")
-        texOut.append("\n")
-        texOut.append("\\begin{figure}[!htb]")
-        texOut.append("\\begin{center}")
-        texOut.append("\includegraphics[width=1\\textwidth]{Figures/" +
-                      "{}".format(i) + "_plotCorr.png}")
-        texOut.append("\caption{" + "{}".format(i) + " correlation plot.}")
-        texOut.append("\end{center}")
-        texOut.append("\end{figure}")
-        texOut.append("\n")
-        texOut.append("\\begin{figure}[!htb]")
-        texOut.append("\\begin{center}")
-        texOut.append("\includegraphics[width=1\\textwidth]{Figures/" +
-                      "{}".format(i) + "_Heatmap.png}")
-        texOut.append("\caption{" + "{}".format(i) + " heatmap.}")
-        texOut.append("\end{center}")
-        texOut.append("\end{figure}")
-        texOut.append("\pagebreak")
-    texOut.append("\end{document}")
-    with open("Report.tex", "w") as f:
-        for texLine in texOut:
-            f.write("%s\n" % texLine)
-    subprocess.call(['tectonic', 'Report.tex'])
-    if os.path.exists("Report.pdf"):
-        print("Report compilation done. Removing temporary file.")
-        os.remove("Report.tex")
-    print("Done")
