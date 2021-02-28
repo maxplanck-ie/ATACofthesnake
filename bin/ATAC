@@ -22,7 +22,7 @@ def main():
                         help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
     parser.add_argument('--blackList', type=str, required=True,
                         help='Provide a blacklist file containing genomic regions to ignore (BED format)')
-    parser.add_argument('--Genes', type=str, required=True,
+    parser.add_argument('--genes', type=str, required=True,
                         help='Provide a GTF file containing genome annotations.')
     parser.add_argument('--genomeSize', type=float, required=True,
                         help='Provide genome size. e.g. 1.87e9 for mouse.')
@@ -60,7 +60,7 @@ def main():
     paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": 'AOS'}
     paramDic['blackList'] = os.path.abspath(args.blackList)
-    paramDic['GTF'] = os.path.abspath(args.Genes)
+    paramDic['GTF'] = os.path.abspath(args.genes)
     paramDic['genomeSize'] = args.genomeSize
     paramDic['genomeFa'] = os.path.abspath(args.genomeFasta)
     paramDic['fragSize'] = args.fragSizeMax
