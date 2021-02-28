@@ -48,9 +48,9 @@ Currently creates output in working directory!
  - [ ] (TSS enrichment cutoff)
  - [x] in diffPlots, add Condition labels
  - [ ] TOBIAS
- - [ ] motif search: Implement MEME
+ - [x] motif search: Implement MEME
  - [ ] specify norm options (scalefactors): background or signal (background need sparsity tests.)
- - [ ] diffheatmap function test rather than hardflag.
+ - [x] diffheatmap function test rather than hardflag.
  - [ ] chromHMM - marks ?
  - [ ] chromVAR ?
  - [ ] clean rule all declinations / incorporate outDir.
@@ -60,10 +60,10 @@ Currently creates output in working directory!
  - [x] paramLogs put in yaml
  - [ ] lateX build PDF
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
- - [ ] allow choice for DESeq2 and edgeR or not.
- - [ ] shift condition definition specific to comparison.
- - [ ] linter
- - [ ] clean conda envs
+ - [0] allow choice for DESeq2 and edgeR or not (For now I ignore DESeq2 alltogether).
+ - [x] shift condition definition specific to comparison.
+ - [ ] linter fix
+ - [x] clean conda envs
 
  
 - Done:
