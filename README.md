@@ -14,19 +14,27 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 ## Running:  
 
-> ATAC --bamDir ./bam/ --outDir ./ --sampleSheet ss. --blackList blacklist.bed --Genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --diffPeak
+> ATAC --bamDir ./bam/ --sampleSheet ss.tsv --blackList blacklist.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix /path/to/conda/ [--fragSizeMax] [--downStream] [--snakeOpts SNAKEOPTS]
 
-Currently creates output in working directory!
+Output is stored in AOS folder created in the invocation directory.
 
   - Flags:
     - bamDir: Directory containing the bam files.  
-    - (outDir: Ouput directory (future).)  
     - sampleSheet: tsv file containing Sample, Cond, Comp columns (header is required.).  
-    - blackList: bed file containing regions to remove from bam file (prior to peak calling).  
-    - Genes: gtf file containing genome annotations.  
+    - blackList: bed file containing regions to remove from bam file (prior to peak calling). This is required. If you don't want to mask any sequences, it should contain a mitochondrial genome alone.
+    - genes: gtf file containing genome annotations.  
     - genomeSize: Effective genome size for organism of interest.  
-    - genomeFasta: fasta file for genome.  
+    - genomeFasta: fasta file for organism of interest.  
     - diffPeak: Wether or not to try and plot a heatmap of diff. Acc regions.
+    - condaPrefix: point to your conda installation.
+
+  - Optional:  
+    - clusterCMD: submission command, default to SlurmEasy.  
+    - snakeOpts: additional snakemake options, given as a csv (API style)  
+    - downStream: Flag to try downstream analysis, e.g. motif calling.  
+    - motifs: point to a motif database of interest (meme format). Required if you invoke --downStream.  
+    - fragSizeMax: defaults to 150. Filters fragment lengths to this integer.  
+    
   
   sampleSheet example:
 
@@ -46,32 +54,35 @@ Currently creates output in working directory!
 
  - [ ] call-summits mode or not -> motif or no.
  - [ ] (TSS enrichment cutoff)
- - [x] in diffPlots, add Condition labels
  - [ ] TOBIAS
- - [x] motif search: Implement MEME
  - [ ] specify norm options (scalefactors): background or signal (background need sparsity tests.)
- - [x] diffheatmap function test rather than hardflag.
  - [ ] chromHMM - marks ?
  - [ ] chromVAR ?
- - [ ] clean rule all declinations / incorporate outDir.
+ - [ ] incorporate outDir
+ - [ ] Clean up output declinations.
  - [ ] ILP solver
  - [ ] Figures per comparison in a subfolder
- - [x] decryptify error message (e.g. stop retries).
- - [x] paramLogs put in yaml
  - [ ] lateX build PDF - tectonic vs something else.
  - [ ] Motif search vs background --> GC%test and #seq test --> warnings raised.
  - [0] allow choice for DESeq2 and edgeR or not (For now I ignore DESeq2 alltogether).
- - [x] shift condition definition specific to comparison.
  - [ ] linter fix - snakemake
- - [x] PEP8
- - [x] clean conda envs
  - [ ] outdir variable rather than fixed AOS str
  - [ ] fragSize distribution plots.
  - [ ] testData
  - [ ] pytests
+ - [ ] move plotter into a class.
+ - [ ] keep eye on meme bioconda installation.
 
  
 - Done:
+ - [x] motif search: Implement MEME
+ - [x] diffheatmap function test rather than hardflag.
+ - [x] decryptify error message (e.g. stop retries).
+ - [x] paramLogs put in yaml
+ - [x] shift condition definition specific to comparison.
+ - [x] PEP8
+ - [x] clean conda envs
+ - [x] in diffPlots, add Condition labels
  - [x] FrIPs
  - [x] MAplot
  - [x] index: generate bai files if they are missing.

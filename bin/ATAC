@@ -38,7 +38,7 @@ def main():
                         help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
     parser.add_argument('--fragSizeMax', type=int, default=150,
                         help='Specify fragment size cut-off (default = 150).')
-    parser.add_argument('--motifs', required=True,
+    parser.add_argument('--motifs', type=str, required=False,
                         help='Specify a motif file (meme format) to search for in diff. peaks.')
     
     args = parser.parse_args()
@@ -75,6 +75,13 @@ def main():
     if not os.path.exists(args.genomeFasta):
         print("genomeFasta not found. Exiting.")
         sys.exit()
+    if args.downStream and not args.motifs:
+        print("Downstream invoked but no motifs specified")
+    if args.downStream and args.motifs:
+        print("Downstream invoked.")
+        if not os.path.exists(args.motifs):
+            print("Motifs not found. Exiting.")
+            sys.exit()
     with open('Parameters.yaml', 'w') as f:
         yaml.dump(paramDic, f, sort_keys=False)
     print("Parameters written out in yaml file.")
