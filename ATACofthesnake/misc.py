@@ -10,7 +10,7 @@ import warnings
 
 def checkNumDiff(paramDic):
     for Comp in paramDic['Comp']:
-        compFolder = "diffAcc_" + str(Comp)
+        compFolder = "AOS/diffAcc_" + str(Comp)
         countUp = 0
         countDown = 0
         with open(os.path.join(compFolder,
