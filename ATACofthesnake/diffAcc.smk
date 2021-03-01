@@ -295,8 +295,8 @@ rule plotCorr:
 	output:
 		paramDic['Loc']['outDir'] + "/Figures/{Comp}_plotCorr.png"
 	log:
-		out = "logs/plotCorr.{Comp}.out",
-		err = "logs/plotCorr.{Comp}.err"
+		out = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.out",
+		err = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.err"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''

@@ -101,9 +101,6 @@ def main():
     if args.clusterCMD:
         clusterCMD = args.clusterCMD
     else:
-        # add log dir 
-        if not os.path.exists("cluster_logs"):
-            os.mkdir("cluster_logs")
         clusterCMD = "SlurmEasy -t {threads} -l AOS/cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
         diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
