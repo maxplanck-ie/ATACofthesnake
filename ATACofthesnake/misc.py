@@ -229,25 +229,25 @@ def GTFtoTSS(GTF):
     with open(GTF) as f:
         for line in f:
             linecount += 1
-    with rich.progress.Progress() as progress:
-        task = progress.add_task("Extracting TSS from GTF", total=linecount)
-        with open(GTF) as f:
-            for line in f:
-                if not line.startswith('#'):
-                    liLis = line.strip().split()
-                    if liLis[2] == 'gene':
-                        # geneid = liLis[8].split(';')[0]\
-                        #          .replace('gene_id ',"")\
-                        #          .replace('"', '')
-                        if liLis[6] == '+':
-                            TSS.append([liLis[0],
-                                        int(liLis[3]),
-                                        int(liLis[3]) + 1])
-                        elif liLis[6] == '-':
-                            TSS.append([liLis[0],
-                                       int(liLis[4]) - 1,
-                                       int(liLis[4])])
-                progress.advance(task)
+    #with rich.progress.Progress() as progress:
+    #    task = progress.add_task("Extracting TSS from GTF", total=linecount)
+    with open(GTF) as f:
+        for line in f:
+            if not line.startswith('#'):
+                liLis = line.strip().split()
+                if liLis[2] == 'gene':
+                    # geneid = liLis[8].split(';')[0]\
+                    #          .replace('gene_id ',"")\
+                    #          .replace('"', '')
+                    if liLis[6] == '+':
+                        TSS.append([liLis[0],
+                                    int(liLis[3]),
+                                    int(liLis[3]) + 1])
+                    elif liLis[6] == '-':
+                        TSS.append([liLis[0],
+                                    int(liLis[4]) - 1,
+                                    int(liLis[4])])
+    #            progress.advance(task)
     TSSdf = pd.DataFrame(TSS)
     TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
 
