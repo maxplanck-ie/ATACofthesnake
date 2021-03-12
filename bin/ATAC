@@ -87,7 +87,7 @@ def main():
     print("Parameters written out in yaml file.")
     if not os.path.exists("genes.sort.gtf"):
         print("Sorting GTF for Uropa later on.")
-        misc.sortGTF(args.Genes)
+        misc.sortGTF(args.genes)
     else:
         print("Found a sorted GTF file. Moving on..")
     if not os.path.isfile("TSS.bed"):
