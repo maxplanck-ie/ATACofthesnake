@@ -41,6 +41,8 @@ jobs:
         touch genome.fa
         touch ss.tsv
         touch motifs.meme
+        touch TSS.bed
+        touch genes.sort.gtf
         # sampleSheet.
         echo -e 'Sample\tCond\tComp' >> ss.tsv
         echo -e 'WT1\tWT\tWTKO' >> ss.tsv
