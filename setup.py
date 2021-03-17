@@ -18,6 +18,6 @@ setuptools.setup(
                       "envs/*yaml"]},
    include_package_data=True,
    install_requires=['configparser', 'rich', 'snakemake', 'pandas',
-                     'seaborn', 'matplotlib', 'numpy', 'flake8'],
+                     'seaborn', 'matplotlib', 'numpy'],
    python_requires='>3'
 )
