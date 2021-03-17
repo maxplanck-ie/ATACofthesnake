@@ -209,18 +209,22 @@ def sortGTF(GTF):
 
 
 def conditionsfromCount(countmat, paramDic):
-    with open(countmat) as f:
-        header = f.readline().strip().split()
-        header = header[3:]
-    conditionOrder = []
-    flipDic = {}
-    for cond in paramDic:
-        for sample in paramDic[cond]:
-            flipDic[sample] = cond
-    for sample in header:
-        print(sample)
-        conditionOrder.append(flipDic[sample])
-    return ','.join(conditionOrder)
+    # exception to return if countmat doesn't exist -> dryrun fails
+    if not os.path.exists(countmat):
+        return -1
+    else:
+        with open(countmat) as f:
+            header = f.readline().strip().split()
+            header = header[3:]
+        conditionOrder = []
+        flipDic = {}
+        for cond in paramDic:
+            for sample in paramDic[cond]:
+                flipDic[sample] = cond
+        for sample in header:
+            print(sample)
+            conditionOrder.append(flipDic[sample])
+        return ','.join(conditionOrder)
 
 
 def GTFtoTSS(GTF):
