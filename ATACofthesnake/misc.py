@@ -199,7 +199,7 @@ def sortGTF(GTF):
     GTF.columns = ['chr', 'source', 'feature',
                    'start', 'end', 'score',
                    'strand', 'frame', 'attribute']
-    GTF = GTF[GTF['feature'] == 'gene']
+    GTF = GTF[GTF['feature'] == 'feature']
     GTF = GTF.sort_values(["chr", "start"],
                           ascending=(True, True))
     GTF.to_csv('genes.sort.gtf',
@@ -239,7 +239,7 @@ def GTFtoTSS(GTF):
         for line in f:
             if not line.startswith('#'):
                 liLis = line.strip().split()
-                if liLis[2] == 'gene':
+                if liLis[2] == 'transcript':
                     # geneid = liLis[8].split(';')[0]\
                     #          .replace('gene_id ',"")\
                     #          .replace('"', '')
@@ -253,6 +253,7 @@ def GTFtoTSS(GTF):
                                     int(liLis[4])])
     #            progress.advance(task)
     TSSdf = pd.DataFrame(TSS)
+    TSSdf = TSSdf.drop_duplicates()
     TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
 
 
