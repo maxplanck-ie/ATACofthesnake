@@ -233,16 +233,11 @@ def GTFtoTSS(GTF):
     with open(GTF) as f:
         for line in f:
             linecount += 1
-    #with rich.progress.Progress() as progress:
-    #    task = progress.add_task("Extracting TSS from GTF", total=linecount)
     with open(GTF) as f:
         for line in f:
             if not line.startswith('#'):
                 liLis = line.strip().split()
                 if liLis[2] == 'transcript':
-                    # geneid = liLis[8].split(';')[0]\
-                    #          .replace('gene_id ',"")\
-                    #          .replace('"', '')
                     if liLis[6] == '+':
                         TSS.append([liLis[0],
                                     int(liLis[3]),
@@ -251,7 +246,6 @@ def GTFtoTSS(GTF):
                         TSS.append([liLis[0],
                                     int(liLis[4]) - 1,
                                     int(liLis[4])])
-    #            progress.advance(task)
     TSSdf = pd.DataFrame(TSS)
     TSSdf = TSSdf.drop_duplicates()
     TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
@@ -272,12 +266,16 @@ def readBamDir(bamDir):
 def setdefault_readss(ss, bams):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     ss = pd.read_csv(ss, sep='\t', header=0)
-    if ss.columns[0] == 'Sample' and \
-       ss.columns[1] == 'Cond' and \
-       ss.columns[2] == 'Comp':
+    if 'Sample' in ss.columns and \
+        'Cond' in ss.columns and \
+        'Comp' in ss.columns:
         if len(ss.columns) > 3:
-            return "Only 3 columns allowed in sampleSheet.."
-            sys.exit()
+            if 'Batch' in ss.columns:
+                print('Batch column found.')
+                batchStatus = True
+            else:
+                return "More then three columns, one of them is not Batch."
+                sys.exit()
         elif len(ss.Cond.unique()) != 2:
             return "Only two conditions allowed in sampleSheet.."
             sys.exit()
@@ -290,6 +288,8 @@ def setdefault_readss(ss, bams):
             diffDic["Cond"] = list(ss.Cond.unique())
             diffDic["Comp"] = {}
             diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
+            if batchStatus == True:
+                diffDic['Batch'] = list(ss.Batch)
             for Comp in ss.Comp.unique():
                 tempss = ss[ss['Comp'] == Comp]
                 diffDic["Comp"][Comp] = {}
@@ -330,7 +330,7 @@ def setdefault_readss(ss, bams):
                 console = rich.console.Console()
                 console.print(table)
             diffDic['baseDir'] = os.path.dirname(__file__)
-            return diffDic
+            return diffDic, batchStatus
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()
