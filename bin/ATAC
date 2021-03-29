@@ -54,9 +54,10 @@ def main():
         print("Directory exists, but there is a mismatch between files and sampleSheet.")
         sys.exit()
     # Parse Samplesheet.
-    paramDic = misc.setdefault_readss(args.sampleSheet, bamFiles)
+    paramDic, batchStatus = misc.setdefault_readss(args.sampleSheet, bamFiles)
     print(paramDic)
     # Files existings.
+    paramDic['batchStatus'] = batchStatus
     paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": 'AOS'}
     paramDic['blackList'] = os.path.abspath(args.blackList)

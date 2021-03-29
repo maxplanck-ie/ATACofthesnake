@@ -226,6 +226,23 @@ def conditionsfromCount(countmat, paramDic):
             conditionOrder.append(flipDic[sample])
         return ','.join(conditionOrder)
 
+def batchesfromCount(countmat, paramDic_samples, paramDic):
+    # exception to return if countmat doesn't exist -> dryrun fails
+    if not os.path.exists(countmat):
+        return -1
+    else:
+        with open(countmat) as f:
+            header = f.readline().strip().split()
+            header = header[3:]
+        flipDic = {}
+        for i in range(len(paramDic['Samples'])):
+            flipdic[paramDic['Samples'][i]] = paramDic['Batch'][i]
+        batchOrder = []
+        for sample in header:
+            print(sample)
+            batchOrder.append(flipDic[sample])
+        return ','.join(batchOrder)
+
 
 def GTFtoTSS(GTF):
     TSS = []
@@ -330,7 +347,7 @@ def setdefault_readss(ss, bams):
             console = rich.console.Console()
             console.print(table)
         diffDic['baseDir'] = os.path.dirname(__file__)
-        return diffDic
+        return diffDic, batchStatus
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()

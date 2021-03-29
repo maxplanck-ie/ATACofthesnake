@@ -14,7 +14,12 @@ countmat <- read.csv(mat, sep='\t')
 rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
 countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
-design <- model.matrix(~factor(conds, levels=(unique(conds))))
+if (length(batches) > 1) {
+    design <- model.matrix(~factor(batches, levels(unique(batches))) + factor(conds, levels=(unique(conds))))
+} else {
+    design <- model.matrix(~factor(conds, levels=(unique(conds))))
+}
+
 keep <- filterByExpr(countmat, design=design)
 countmat <- countmat[keep,]
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)

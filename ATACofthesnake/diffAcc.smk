@@ -362,6 +362,7 @@ rule edgeR:
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
+		batchOrder = lambda wildcards, input: misc.batchesfromCount(str(input.countMat),paramDic) if paramDic['batchStatus'] else 'None'
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
