@@ -226,7 +226,7 @@ def conditionsfromCount(countmat, paramDic):
             conditionOrder.append(flipDic[sample])
         return ','.join(conditionOrder)
 
-def batchesfromCount(countmat, paramDic_samples, paramDic):
+def batchesfromCount(countmat, paramDic):
     # exception to return if countmat doesn't exist -> dryrun fails
     if not os.path.exists(countmat):
         return -1
@@ -236,7 +236,7 @@ def batchesfromCount(countmat, paramDic_samples, paramDic):
             header = header[3:]
         flipDic = {}
         for i in range(len(paramDic['Samples'])):
-            flipdic[paramDic['Samples'][i]] = paramDic['Batch'][i]
+            flipDic[paramDic['Samples'][i]] = paramDic['Batch'][i]
         batchOrder = []
         for sample in header:
             print(sample)

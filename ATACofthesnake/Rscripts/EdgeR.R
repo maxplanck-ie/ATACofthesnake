@@ -25,7 +25,7 @@ countmat <- countmat[keep,]
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 fit <- glmQLFit(countmat, design=design,dispersion = countmat_disp)
 res <- glmQLFTest(fit, coef=ncol(fit$design))
-ressig <- topTags(res, n = 100000, adjust.method = "BH", sort.by = "PValue", p.value = 1)
+ressig <- topTags(res, n = Inf, adjust.method = "BH", sort.by = "PValue", p.value = 1)
 ressig_LFCcut <- ressig$table[abs(ressig$table$logFC) > 1,]
 ressig_LFCcut <- ressig_LFCcut[ressig_LFCcut$FDR < 0.05,]
 ressig$table$peak_id <- rownames(ressig$table)

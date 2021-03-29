@@ -116,7 +116,7 @@ def main():
         print("diffAnalysis completed succesfully.")
     else:
         print("Error in diffAnalysis!")
-    if args.downStream and not args.dryRun:
+    if args.downStream and not args.dryRun and diffStatus == True:
         print("Starting up with downstream analysis.")
         print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
         paramDic_diff = misc.checkNumDiff(paramDic)
@@ -132,6 +132,8 @@ def main():
                 print("downstream analysis completed succesfully.")
         else:
             print("Not enough differential regions. Stopping.")
+    else:
+        print("Dryrun invoked or diff. analysis didn't complete succesfully. Stopping.")
     
     ## Compile pdf.
     #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)

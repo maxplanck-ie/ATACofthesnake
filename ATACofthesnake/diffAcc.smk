@@ -361,12 +361,12 @@ rule edgeR:
 		err = paramDic['Loc']['outDir'] + "/logs/edgeR.{Comp}.err"
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
-		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond'])
-		batchOrder = lambda wildcards, input: misc.batchesfromCount(str(input.countMat),paramDic) if paramDic['batchStatus'] else 'None'
+		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond']),
+		batchOrder = lambda wildcards, input: misc.batchesfromCount(str(input.countMat), paramDic)
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} > {log.out} 2> {log.err}
+	Rscript {params.scriptLoc} {input.countMat} {params.condOrder} {output.sign} {output.allPeaks} {params.batchOrder} > {log.out} 2> {log.err}
 	'''
 
 rule maPlot:
