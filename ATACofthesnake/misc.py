@@ -199,7 +199,7 @@ def sortGTF(GTF):
     GTF.columns = ['chr', 'source', 'feature',
                    'start', 'end', 'score',
                    'strand', 'frame', 'attribute']
-    GTF = GTF[GTF['feature'] == 'feature']
+    GTF = GTF[GTF['feature'] == 'transcript']
     GTF = GTF.sort_values(["chr", "start"],
                           ascending=(True, True))
     GTF.to_csv('genes.sort.gtf',
@@ -266,11 +266,12 @@ def readBamDir(bamDir):
 def setdefault_readss(ss, bams):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     ss = pd.read_csv(ss, sep='\t', header=0)
-    if 'Sample' in ss.columns and \
-        'Cond' in ss.columns and \
-        'Comp' in ss.columns:
+    if 'Sample' in list(ss.columns) and \
+        'Cond' in list(ss.columns) and \
+        'Comp' in list(ss.columns):
+        batchStatus = False
         if len(ss.columns) > 3:
-            if 'Batch' in ss.columns:
+            if 'Batch' in list(ss.columns):
                 print('Batch column found.')
                 batchStatus = True
             else:
@@ -279,58 +280,57 @@ def setdefault_readss(ss, bams):
         elif len(ss.Cond.unique()) != 2:
             return "Only two conditions allowed in sampleSheet.."
             sys.exit()
-        else:
-            for sample in ss.Sample:
-                if sample.replace(".bam", "") not in bams:
-                    return "Can't find {}. Please correct.".format(sample)
-                    sys.exit()
-            diffDic = {}
-            diffDic["Cond"] = list(ss.Cond.unique())
-            diffDic["Comp"] = {}
-            diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
-            if batchStatus == True:
-                diffDic['Batch'] = list(ss.Batch)
-            for Comp in ss.Comp.unique():
-                tempss = ss[ss['Comp'] == Comp]
-                diffDic["Comp"][Comp] = {}
-                key1 = tempss.Cond.unique()[0]
-                key2 = tempss.Cond.unique()[1]
-                diffDic["Comp"][Comp]['Cond'] = {}
-                diffDic["Comp"][Comp]['Cond'][key1] = \
-                    list(
-                    tempss[tempss['Cond'] == key1]['Sample'].str.replace(
-                        ".bam", ""))
-                diffDic["Comp"][Comp]['Cond'][key2] = \
-                    list(
-                    tempss[tempss['Cond'] == key2]['Sample'].str.replace(
-                        ".bam", ""))
-                samplesList = \
-                    diffDic["Comp"][Comp]['Cond'][key1] + \
-                    diffDic["Comp"][Comp]['Cond'][key2]
-                diffDic["Comp"][Comp]['Samples'] = samplesList
-            for Comp in ss.Comp.unique():
-                table = \
-                    rich.table.Table(
-                        title="Samples - Conditions: {}".format(Comp))
-                table.add_column(key1, justify="center", style="cyan")
-                table.add_column(key2, justify="center", style="green")
-                for i in range(max(
-                         [len(diffDic["Comp"][Comp]['Cond'][key1]),
-                          len(diffDic["Comp"][Comp]['Cond'][key2])])):
+        for sample in ss.Sample:
+            if sample.replace(".bam", "") not in bams:
+                return "Can't find {}. Please correct.".format(sample)
+                sys.exit()
+        diffDic = {}
+        diffDic["Cond"] = list(ss.Cond.unique())
+        diffDic["Comp"] = {}
+        diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
+        if batchStatus == True:
+            diffDic["Batch"] = list(ss.Batch)
+        for Comp in ss.Comp.unique():
+            tempss = ss[ss['Comp'] == Comp]
+            diffDic["Comp"][Comp] = {}
+            key1 = tempss.Cond.unique()[0]
+            key2 = tempss.Cond.unique()[1]
+            diffDic["Comp"][Comp]['Cond'] = {}
+            diffDic["Comp"][Comp]['Cond'][key1] = \
+                list(
+                tempss[tempss['Cond'] == key1]['Sample'].str.replace(
+                    ".bam", ""))
+            diffDic["Comp"][Comp]['Cond'][key2] = \
+                list(
+                tempss[tempss['Cond'] == key2]['Sample'].str.replace(
+                    ".bam", ""))
+            samplesList = \
+                diffDic["Comp"][Comp]['Cond'][key1] + \
+                diffDic["Comp"][Comp]['Cond'][key2]
+            diffDic["Comp"][Comp]['Samples'] = samplesList
+        for Comp in ss.Comp.unique():
+            table = \
+                rich.table.Table(
+                    title="Samples - Conditions: {}".format(Comp))
+            table.add_column(key1, justify="center", style="cyan")
+            table.add_column(key2, justify="center", style="green")
+            for i in range(max(
+                        [len(diffDic["Comp"][Comp]['Cond'][key1]),
+                        len(diffDic["Comp"][Comp]['Cond'][key2])])):
+                try:
+                    table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i],
+                                    diffDic["Comp"][Comp]['Cond'][key2][i])
+                except Exception:
                     try:
-                        table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i],
-                                      diffDic["Comp"][Comp]['Cond'][key2][i])
+                        table.add_row(
+                            diffDic["Comp"][Comp]['Cond'][key1][i], "")
                     except Exception:
-                        try:
-                            table.add_row(
-                                diffDic["Comp"][Comp]['Cond'][key1][i], "")
-                        except Exception:
-                            table.add_row(
-                                "", diffDic["Comp"][Comp]['Cond'][key2][i])
-                console = rich.console.Console()
-                console.print(table)
-            diffDic['baseDir'] = os.path.dirname(__file__)
-            return diffDic, batchStatus
+                        table.add_row(
+                            "", diffDic["Comp"][Comp]['Cond'][key2][i])
+            console = rich.console.Console()
+            console.print(table)
+        diffDic['baseDir'] = os.path.dirname(__file__)
+        return diffDic
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
         sys.exit()

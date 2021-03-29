@@ -7,6 +7,7 @@ mat = args[[1]]
 conds = args[[2]]
 outfilesign = args[[3]]
 outfileall = args[[4]]
+batches = args[[5]]
 
 conds = strsplit(conds, ",")[[1]]
 countmat <- read.csv(mat, sep='\t')

@@ -115,7 +115,7 @@ def main():
         print("diffAnalysis completed succesfully.")
     else:
         print("Error in diffAnalysis!")
-    if args.downStream:
+    if args.downStream and not args.dryRun:
         print("Starting up with downstream analysis.")
         print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
         paramDic_diff = misc.checkNumDiff(paramDic)
