@@ -14,19 +14,21 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 ## Running:  
 
-> ATAC --bamDir ./bam/ --sampleSheet ss.tsv --blackList blacklist.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix /path/to/conda/ [--fragSizeMax] [--downStream] [--snakeOpts SNAKEOPTS]
+> ATAC --bamDir ./bam/ --sampleSheet ss.tsv --blackList blacklist.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix /path/to/conda/ [--fragSizeMax] [--downStream] --motifs /path/to/motif.meme
 
 Output is stored in AOS folder created in the invocation directory.
 
   - Flags:
     - bamDir: Directory containing the bam files.  
-    - sampleSheet: tsv file containing Sample, Cond, Comp columns (header is required.).  
+    - sampleSheet: tsv file containing Sample, Cond, Comp columns (header is required.). An additional columns 'Batch' can be used to include batch in the Diff. acc. analysis.
     - blackList: bed file containing regions to remove from bam file (prior to peak calling). This is required. If you don't want to mask any sequences, it should contain a mitochondrial genome alone.
-    - genes: gtf file containing genome annotations.  
+    - genes: gtf file containing genome annotations (TSS enrichments are based on 'transcript' features.) 
     - genomeSize: Effective genome size for organism of interest.  
     - genomeFasta: fasta file for organism of interest.  
-    - diffPeak: Wether or not to try and plot a heatmap of diff. Acc regions.
+    - downStream: Try downstream plotting of differential sites, and AME enrichment of up and down-regulated peaks respectively.
     - condaPrefix: point to your conda installation.
+    - dryRun: dry run snakemake.
+    - motifs: path to (meme) motif files to scan for in AME. required.
 
   - Optional:  
     - clusterCMD: submission command, default to SlurmEasy.  
@@ -49,7 +51,14 @@ Output is stored in AOS folder created in the invocation directory.
   | KOb1 | KO | WTvsKOb |
   | KOb2 | KO | WTvsKOb |
 
-
+  or if there is a batch effect:
+  
+  | Sample | Cond | Comp | Batch |
+  | -- | -- | -- | -- |
+  | WT1 | WT | WTvsKOa | Batch1 |
+  | WT2 | WT | WTvsKOa | Batch2 |
+  | KOa1 | KO | WTvsKOa | Batch1 |
+  | KOa2 | KO | WTvsKOa | Batch2 |
 ## Todo:
 
  - [ ] call-summits mode or not -> motif or no.
