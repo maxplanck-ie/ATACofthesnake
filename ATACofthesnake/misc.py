@@ -234,14 +234,15 @@ def batchesfromCount(countmat, paramDic):
         with open(countmat) as f:
             header = f.readline().strip().split()
             header = header[3:]
-        flipDic = {}
-        for i in range(len(paramDic['Samples'])):
-            flipDic[paramDic['Samples'][i]] = paramDic['Batch'][i]
-        batchOrder = []
-        for sample in header:
-            print(sample)
-            batchOrder.append(flipDic[sample])
-        return ','.join(batchOrder)
+        if paramDic['Samples']['batchStatus'] == 1:
+            flipDic = {}
+            for i in range(len(paramDic['Samples'])):
+                flipDic[paramDic['Samples'][i]] = paramDic['Batch'][i]
+            batchOrder = []
+            for sample in header:
+                print(sample)
+                batchOrder.append(flipDic[sample])
+            return ','.join(batchOrder)
 
 
 def GTFtoTSS(GTF):
@@ -286,11 +287,11 @@ def setdefault_readss(ss, bams):
     if 'Sample' in list(ss.columns) and \
         'Cond' in list(ss.columns) and \
         'Comp' in list(ss.columns):
-        batchStatus = False
+        batchStatus = 0
         if len(ss.columns) > 3:
             if 'Batch' in list(ss.columns):
                 print('Batch column found.')
-                batchStatus = True
+                batchStatus = 1
             else:
                 return "More then three columns, one of them is not Batch."
                 sys.exit()
@@ -305,7 +306,7 @@ def setdefault_readss(ss, bams):
         diffDic["Cond"] = list(ss.Cond.unique())
         diffDic["Comp"] = {}
         diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
-        if batchStatus == True:
+        if batchStatus == 1:
             diffDic["Batch"] = list(ss.Batch)
         for Comp in ss.Comp.unique():
             tempss = ss[ss['Comp'] == Comp]

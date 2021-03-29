@@ -362,7 +362,7 @@ rule edgeR:
 	params:
 		scriptLoc = os.path.join(paramDic["baseDir"], "Rscripts", "EdgeR.R"),
 		condOrder = lambda wildcards, input: misc.conditionsfromCount(str(input.countMat) ,paramDic['Comp'][wildcards.Comp]['Cond']),
-		batchOrder = lambda wildcards, input: misc.batchesfromCount(str(input.countMat), paramDic)
+		batchOrder = lambda wildcards, input: misc.batchesfromCount(str(input.countMat), paramDic) if paramDic['batchStatus'] == 1 else 'None'
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -370,12 +370,14 @@ rule edgeR:
 	'''
 
 rule maPlot:
-	input: paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.all.tsv"
+	input: 
+		edgeR = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.all.tsv",
+		countMat = paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat"
 	output: paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png"
 	threads: 1
 	params: lambda wildcards: list(paramDic['Comp'][wildcards.Comp]['Cond'].keys())
 	run:
-		misc.plotter('maPlot',str(input), str(output), params)
+		misc.plotter('maPlot',str(input.edgeR), str(output), params)
 
 rule uropa:
 	input:
