@@ -14,10 +14,14 @@ countmat <- read.csv(mat, sep='\t')
 rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
 countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
+
+condF =  factor(conds, levels=(unique(conds)))
+
 if (length(batches) > 1) {
-    design <- model.matrix(~factor(batches, levels(unique(batches))) + factor(conds, levels=(unique(conds))))
+    batchF = factor(batches, levels(unique(batches)))
+    design <- model.matrix(~batchF + condF)
 } else {
-    design <- model.matrix(~factor(conds, levels=(unique(conds))))
+    design <- model.matrix(~condF)
 }
 
 keep <- filterByExpr(countmat, design=design)
@@ -26,8 +30,8 @@ countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 fit <- glmQLFit(countmat, design=design,dispersion = countmat_disp)
 res <- glmQLFTest(fit, coef=ncol(fit$design))
 ressig <- topTags(res, n = Inf, adjust.method = "BH", sort.by = "PValue", p.value = 1)
-ressig_LFCcut <- ressig$table[abs(ressig$table$logFC) > 1,]
-ressig_LFCcut <- ressig_LFCcut[ressig_LFCcut$FDR < 0.05,]
+#ressig_LFCcut <- ressig$table[abs(ressig$table$logFC) > 1,]
+ressig_LFCcut <- ressig$table[ressig$table$FDR < 0.05,]
 ressig$table$peak_id <- rownames(ressig$table)
 ressig_LFCcut$peak_id <- rownames(ressig_LFCcut)
 write.table(ressig$table, file=outfileall, quote=FALSE, sep='\t',row.names=FALSE)
