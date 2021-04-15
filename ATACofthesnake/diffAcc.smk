@@ -316,7 +316,7 @@ rule plotPCA:
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	plotPCA --ntop 500 --corData {input} -o {output} --transpose --colors {params.colors} > {log.out} 2> {log.err}
+	plotPCA --ntop 5000 --corData {input} -o {output} --transpose --colors {params.colors} > {log.out} 2> {log.err}
 	'''
 
 rule computeMatrix:
