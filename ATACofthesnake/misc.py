@@ -234,7 +234,7 @@ def batchesfromCount(countmat, paramDic):
         with open(countmat) as f:
             header = f.readline().strip().split()
             header = header[3:]
-        if paramDic['Samples']['batchStatus'] == 1:
+        if paramDic['batchStatus'] == 1:
             flipDic = {}
             for i in range(len(paramDic['Samples'])):
                 flipDic[paramDic['Samples'][i]] = paramDic['Batch'][i]
