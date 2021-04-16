@@ -34,22 +34,6 @@ rule all:
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp'])
-		#expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		#expand(paramDic['Loc']['outDir'] + '/deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
