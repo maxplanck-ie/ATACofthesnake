@@ -15,22 +15,36 @@ def mergeInput(paramDic):
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
 	elif paramDic['mergeBam'] == 'merge':
-		CompCond = {}
-		
-
+		CompCond = []
+		for comparison in list(paramDic['Comp'].keys()):
+			for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
+				CompCond.append(comparison + '_' + condition)
 		outList = []
-		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", Comp=paramDic['Comp']))
-		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_union_peaks.bed", sample=paramDic['Comp']))
+		# Merge BAM files per condition per comparison.
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{CompCond}.bam", CompCond=CompCond))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=CompCond))
 		return outList
+		
+		#outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", Comp=paramDic['Comp']))
+		#outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_union_peaks.bed", sample=paramDic['Comp']))
+		#return outList
 
+if paramDic['mergeBam'] == 'merge':
+	CompCondSamples = {}
+	for comparison in list(paramDic['Comp'].keys()):
+		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
+			CompCondSamples[comparison + '_' + condition] = paramDic['Comp'][comparison]['Cond'][condition]
 
+print(mergeInput(paramDic))
 # Define rule input.
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
 	input:
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		mergeInput(paramDic),
+
 		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
 		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
 		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
@@ -78,6 +92,27 @@ rule idxStat:
 	samtools idxstats {input.bam} | cut -f1,3 > {output}
 	'''
 
+rule fripPlotter:
+	input: 
+		lambda wildcards: expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Comp'][wildcards.Comp]['Samples'])
+	output:
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png"
+	threads: 1
+	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
+	run:
+		print(str(input))
+		misc.plotter('frip', params, str(output), allFiles=str(input))
+
+rule idxStatPlotter:
+	input: 
+		idxstatFiles = expand(paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt", sample=paramDic['Samples'])
+	output:
+		paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png"
+	threads: 1
+	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
+	run:
+		misc.plotter('idxstat', params, str(output))
+
 rule alignmentSieve:
 	input:
 		inBam = paramDic['Loc']['bamDir'] + '/{sample}.bam',
@@ -116,9 +151,9 @@ rule mergeBam:
 	input:
 		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples'])
 	output:
-		bam = paramDic['Loc']['outDir'] + "/ShortBAM/{Comp}.bam"
+		bam = paramDic['Loc']['outDir'] + "/ShortBAM/{CompCond}.bam"
 	params:
-		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=CompCondSamples[wildcards.CompCond]))
 	threads: 5
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
@@ -211,27 +246,6 @@ rule fripScore:
 	genomecov=$(bc -l <<< "$peak_len/{params.genomeSize}")
 	printf "sample\tpeakcount\tfrip\tpeak_genome_coverage\n%s\t%d\t%5.3f\t%6.4f\n" {params.sample} $peakcount $frip $genomecov > {output}
 	'''
-
-rule fripPlotter:
-	input: 
-		lambda wildcards: expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Comp'][wildcards.Comp]['Samples'])
-	output:
-		paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png"
-	threads: 1
-	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
-	run:
-		print(str(input))
-		misc.plotter('frip', params, str(output), allFiles=str(input))
-
-rule idxStatPlotter:
-	input: 
-		idxstatFiles = expand(paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt", sample=paramDic['Samples'])
-	output:
-		paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png"
-	threads: 1
-	params: lambda wildcards: paramDic['Comp'][wildcards.Comp]['Samples']
-	run:
-		misc.plotter('idxstat', params, str(output))
 
 rule countMat:
 	input:

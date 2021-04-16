@@ -61,7 +61,7 @@ def main():
     paramDic, batchStatus = misc.setdefault_readss(args.sampleSheet, bamFiles)
     print(paramDic)
     # Files existings.
-    paramDic['mergeBam'] = 1 if args.mergeBam else 0
+    paramDic['mergeBam'] = args.mergeBam
     paramDic['batchStatus'] = batchStatus
     paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": args.outDir}
@@ -112,7 +112,8 @@ def main():
         if not args.dryRun:
             diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
             cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy')
+            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy',
+            printshellcmds=False)
             if diffStatus == True:
                 print("diffAnalysis completed succesfully.")
             else:
