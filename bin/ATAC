@@ -18,8 +18,10 @@ def main():
     parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
     parser.add_argument('--bamDir', type=str, required=True,
                         help='Provide the directory containing bam files.')
+    parser.add_argument('--outDir', type=str, required=False, default='AOS',
+                        help='Specify output directory.')
     parser.add_argument('--sampleSheet', type=str, required=True,
-                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
+                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp, Batch]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
     parser.add_argument('--blackList', type=str, required=True,
                         help='Provide a blacklist file containing genomic regions to ignore (BED format)')
     parser.add_argument('--genes', type=str, required=True,
@@ -40,6 +42,8 @@ def main():
                         help='Specify fragment size cut-off (default = 150).')
     parser.add_argument('--motifs', type=str, required=True,
                         help='Specify a motif file (meme format) to search for in diff. peaks.')
+    parser.add_argument('--mergeBam', action='store_true', required=False,
+                        help='Flag if you want to merge bam files per condition before peak calling (default is peak merging per replicate).')
     
     args = parser.parse_args()
 
@@ -57,9 +61,10 @@ def main():
     paramDic, batchStatus = misc.setdefault_readss(args.sampleSheet, bamFiles)
     print(paramDic)
     # Files existings.
+    paramDic['mergeBam'] = 1 if args.mergeBam else 0
     paramDic['batchStatus'] = batchStatus
     paramDic['Invocation'] = " ".join(sys.argv)
-    paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": 'AOS'}
+    paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": args.outDir}
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.genes)
     paramDic['genomeSize'] = args.genomeSize
