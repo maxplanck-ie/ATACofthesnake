@@ -8,15 +8,18 @@ with open('Parameters.yaml') as f:
 
 # define mergeBam rule inputs:
 def mergeInput(paramDic):
-	if paramDic['mergeBam'] == 0:
+	if paramDic['mergeBam'] == 'union':
 		outList = []
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples'])),
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
-	elif paramDic['mergeBam'] == 1:
+	elif paramDic['mergeBam'] == 'merge':
+		CompCond = {}
+		
+
 		outList = []
-		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Comp']))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", Comp=paramDic['Comp']))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_union_peaks.bed", sample=paramDic['Comp']))
 		return outList
 
@@ -28,12 +31,12 @@ rule all:
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		mergeInput(paramDic),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -109,19 +112,19 @@ rule shortIndex:
 	sambamba index {input} > {log.out} 2> {log.err}
 	'''
 
-#rule mergeBam:
-#	input:
-#		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples'])
-#	output:
-#		bam = paramDic['Loc']['outDir'] + "/ShortBAM/{Comp}.bam"
-#	params:
-#		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
-#	threads: 5
-#	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
-#	shell:'''
-#	samtools merge -@ {threads} {output.bam} {params}
-#	samtools index -@ {threads} {output.bam}
-#	'''
+rule mergeBam:
+	input:
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples'])
+	output:
+		bam = paramDic['Loc']['outDir'] + "/ShortBAM/{Comp}.bam"
+	params:
+		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+	threads: 5
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	samtools merge -@ {threads} {output.bam} {params}
+	samtools index -@ {threads} {output.bam}
+	'''
 
 rule fragSize:
 	input:
@@ -361,7 +364,7 @@ rule plotHeatmap:
 	log:
 		out = paramDic['Loc']['outDir'] + "/logs/plotHeatmap.{Comp}.out",
 		err = paramDic['Loc']['outDir'] + "/logs/plotHeatmap.{Comp}.err"
-	threads: 1
+	threads: 4
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	plotHeatmap -m {input} -out {output} --refPointLabel TSS > {log.out} 2> {log.err}

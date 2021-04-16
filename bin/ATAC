@@ -42,7 +42,7 @@ def main():
                         help='Specify fragment size cut-off (default = 150).')
     parser.add_argument('--motifs', type=str, required=True,
                         help='Specify a motif file (meme format) to search for in diff. peaks.')
-    parser.add_argument('--mergeBam', action='store_true', required=False,
+    parser.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
                         help='Flag if you want to merge bam files per condition before peak calling (default is peak merging per replicate).')
     
     args = parser.parse_args()
