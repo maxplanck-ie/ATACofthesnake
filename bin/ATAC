@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--genomeFasta', type=str, required=True,
                         help='Provide genome fasta file.')
     parser.add_argument('--dryRun', action='store_true', required=False,
-                        help='dryRun snakemake.')
+                        help='Run workflow as dryrun, a DAG.pdf is also created in the directory of execution.')
     parser.add_argument('--condaPrefix', required=True,
                         help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
     parser.add_argument('--downStream', action='store_true', required=False,
