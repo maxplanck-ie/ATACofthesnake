@@ -11,7 +11,7 @@ def mergeInput(paramDic):
 	if paramDic['mergeBam'] == 'union':
 		outList = []
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']))
-		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples'])),
+		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
 	elif paramDic['mergeBam'] == 'merge':
@@ -23,19 +23,35 @@ def mergeInput(paramDic):
 		# Merge BAM files per condition per comparison.
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{CompCond}.bam", CompCond=CompCond))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=CompCond))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=CompCond))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
 		
-		#outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", Comp=paramDic['Comp']))
-		#outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_union_peaks.bed", sample=paramDic['Comp']))
-		#return outList
-
 if paramDic['mergeBam'] == 'merge':
 	CompCondSamples = {}
 	for comparison in list(paramDic['Comp'].keys()):
 		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
 			CompCondSamples[comparison + '_' + condition] = paramDic['Comp'][comparison]['Cond'][condition]
+	Comp2Cond = {}
+	for comparison in list(paramDic['Comp'].keys()):
+		Comp2Cond[comparison] = []
+		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
+			Comp2Cond[comparison].append(comparison + '_' + condition)
+Comp2Merge = {}
+if paramDic['mergeBam'] == 'merge':
+	for comparison in list(paramDic['Comp'].keys()):
+		Comp2Merge[comparison] = []
+		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
+			Comp2Merge[comparison].append(comparison + '_' + condition)
+else:
+	for comparison in list(paramDic['Comp'].keys()):
+		Comp2Merge[comparison] = []
+		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
+			for sample in list(paramDic['Comp'][comparison]['Cond'][condition]):
+				Comp2Merge[comparison].append(sample)
 
-print(mergeInput(paramDic))
+print(Comp2Merge)
+
 # Define rule input.
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
@@ -44,13 +60,12 @@ rule all:
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
 		mergeInput(paramDic),
-
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		#expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -212,16 +227,14 @@ rule MACS2:
 
 rule mergePeak:
 	input:
-		expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples'])
+		lambda wildcards: expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=Comp2Merge[wildcards.Comp])
 	output:
 		paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed"
-	params:
-		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	echo {params}
-	cat {params} | sort -k1,1 -k2,2n | bedtools merge > {output}
+	cat {input} | sort -k1,1 -k2,2n | bedtools merge > {output}
 	'''
 
 
