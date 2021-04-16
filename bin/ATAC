@@ -107,12 +107,12 @@ def main():
     if args.clusterCMD:
         clusterCMD = args.clusterCMD
     else:
-        clusterCMD = "SlurmEasy -t {threads} -l AOS/cluster_logs -n {rule}"
+        clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['Loc']['outDir'] + "/cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
         if not args.dryRun:
             diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
             cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
+            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy')
             if diffStatus == True:
                 print("diffAnalysis completed succesfully.")
             else:

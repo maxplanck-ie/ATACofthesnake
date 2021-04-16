@@ -34,16 +34,17 @@ def setCeil(pdSer):
     return np.ceil(maxSerScale)
 
 
-def plotter(what, inFiles, outFile, conds=None):
+def plotter(what, inFiles, outFile, conds=None, allFiles=None):
     colors = ["windows blue",
               "amber", "greyish",
               "faded green", "dusty purple"]
     sns.set_palette(sns.xkcd_palette(colors))
+    outDir = outFile.split('/')[0]
     if what == 'frip':
         res = []
         for sample in inFiles:
             for i in sample:  # snakemake returns a nested list.
-                filestr = 'AOS/QC/' + str(i) + '.FRiP.txt'
+                filestr = outDir + '/QC/' + str(i) + '.FRiP.txt'
                 with open(filestr) as f:
                     for line in f:
                         if line.strip().split()[0] != 'sample':
@@ -71,9 +72,10 @@ def plotter(what, inFiles, outFile, conds=None):
         g.figure.savefig(outFile, dpi=300)
     if what == 'idxstat':
         res = []
+        outDir = outFile.split('/')[0]
         for sample in inFiles:
             for i in sample:
-                filestr = 'AOS/QC/' + str(i) + '.idxstat.txt'
+                filestr = outDir + '/QC/' + str(i) + '.idxstat.txt'
                 with open(filestr) as f:
                     chromcount = 0
                     for line in f:
@@ -145,7 +147,7 @@ def returnCompfromSample(sample, paramDic):
     for comp in paramDic['Comp']:
         if sample in paramDic['Comp'][comp]['Samples']:
             compList.append(
-                "AOS/MACS2/{}_Merged_peaks.narrowPeak".format(comp))
+                paramDic['Loc']['outDir'] + "/MACS2/{}_union_peaks.bed".format(comp))
     if len(compList) == 1:
         return compList[0]
 
