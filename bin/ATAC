@@ -113,14 +113,22 @@ def main():
             diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
             cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
             max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
+            if diffStatus == True:
+                print("diffAnalysis completed succesfully.")
+            else:
+                print("Error in diffAnalysis!")
         else:
-            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
-            cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, dryrun=True)
-    if diffStatus == True:
-        print("diffAnalysis completed succesfully.")
-    else:
-        print("Error in diffAnalysis!")
+            # Not clear to me how I could create DAG pdf from API easily. Revert to subprocess.
+            snakemakeCMD = "snakemake -s " + os.path.join(paramDic["baseDir"], 'diffAcc.smk') + \
+                " --cores 10 --latency-wait 300 --max-jobs-per-second 1" \
+                " --rulegraph --use-conda --conda-prefix " + args.condaPrefix + \
+                " --dryrun"
+            dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
+            subprocess.check_call("dot -Tpdf -o DAG.pdf".format(args.outDir), stdin=dryRun.stdout, shell=True)
+            #ruleGraph = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
+            #cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+            #max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, dryrun=True, printrulegraph=True)
+
     if args.downStream and not args.dryRun and diffStatus == True:
         print("Starting up with downstream analysis.")
         print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
@@ -137,8 +145,6 @@ def main():
                 print("downstream analysis completed succesfully.")
         else:
             print("Not enough differential regions. Stopping.")
-    else:
-        print("Dryrun invoked or diff. analysis didn't complete succesfully. Stopping.")
     
     ## Compile pdf.
     #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
