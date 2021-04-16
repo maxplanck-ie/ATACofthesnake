@@ -6,34 +6,51 @@ from ATACofthesnake import misc
 with open('Parameters.yaml') as f:
 	paramDic = yaml.load(f, Loader=yaml.FullLoader)
 
+# define mergeBam rule inputs:
+def mergeInput(paramDic):
+	if paramDic['mergeBam'] == 0:
+		outList = []
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']))
+		return outList
+	elif paramDic['mergeBam'] == 1:
+		outList = []
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{Comp}.bam", Comp=paramDic['Comp']))
+		return outList
+
+
+# Define rule input.
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
 	input:
-		expand(os.path.join(paramDic['Loc']['bamDir'], '{sample}.bam.bai'), sample=paramDic['Samples']),
-		paramDic['genomeFa'] + '.fai',
-		expand(paramDic['Loc']['outDir'] + "/QC/{sample}.idxstat.txt", sample=paramDic['Samples']),
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.mtFrac.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples']),
-		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=paramDic['Samples']),
-		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']),
 		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}.fragSizes.raw.tsv", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']),
-		expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/BigWigs/{sample}.bw", sample=paramDic['Samples']),
-		expand(paramDic['Loc']['outDir'] + '/deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp'])
+		mergeInput(paramDic)
+		
+
+
+
+		#expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples']),
+		
+		#expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']),
+		
+		
+		#expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_Merged_peaks.narrowPeak", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/QC/{sample}.FRiP.txt", sample=paramDic['Samples']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}.FRIP.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_counts.mat", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_scaleFactors.txt", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/BigWigs/{sample}.bw", sample=paramDic['Samples']),
+		#expand(paramDic['Loc']['outDir'] + '/deepTools/{Comp}_BigwigSum.npz', Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigMatrix.gz",Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR.sign.tsv", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/Annotation/{Comp}_uropa_finalhits.txt", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated.sign.tsv", Comp=paramDic['Comp']),
+		#expand(paramDic['Loc']['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -107,6 +124,19 @@ rule shortIndex:
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	sambamba index {input} > {log.out} 2> {log.err}
+	'''
+rule mergeBam:
+	input:
+		expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples'])
+	output:
+		paramDic['Loc']['outDir'] + "/ShortBAM/{Comp}.bam"
+	params:
+		lambda wildcards: ' '.join(expand(paramDic['Loc']['outDir'] +"/ShortBAM/{sample}.bam", sample=paramDic['Comp'][wildcards.Comp]['Samples']))
+	threads: 5
+	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	samtools merge -@ {threads} {output} {params}
+	samtools index -@ {threads} {output}
 	'''
 
 rule fragSize:
