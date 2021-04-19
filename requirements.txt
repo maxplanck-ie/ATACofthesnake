@@ -5,4 +5,3 @@ pandas==1.2.2
 rich==9.12.3
 seaborn==0.11.1
 snakemake==6.1.1
-graphviz==0.16
