@@ -44,7 +44,7 @@ def main():
                         help='Specify a motif file (meme format) to search for in diff. peaks.')
     parser.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
                         help='Flag if you want to merge bam files per condition before peak calling (default is peak merging per replicate).')
-    parser.add_argument('--DAG', type=str, action='store_true',
+    parser.add_argument('--DAG', action='store_true',
                         help='Build a DAG if dryrun is invoked. Requires you to have dot (graphviz) installed.')
     
     args = parser.parse_args()
