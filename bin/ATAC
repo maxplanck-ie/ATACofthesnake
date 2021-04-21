@@ -43,7 +43,7 @@ def main():
     parser.add_argument('--motifs', type=str, required=True,
                         help='Specify a motif file (meme format) to search for in diff. peaks.')
     parser.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
-                        help='Flag if you want to merge bam files per condition before peak calling (default is peak merging per replicate).')
+                        help='Set to merge if you want to merge bam files per condition before peak calling. (default is peak merging per replicate, and take union afterwards.).')
     parser.add_argument('--DAG', action='store_true',
                         help='Build a DAG if dryrun is invoked. Requires you to have dot (graphviz) installed.')
     
@@ -126,9 +126,12 @@ def main():
                 " --cores 10 --latency-wait 300 --max-jobs-per-second 1" \
                 " --rulegraph --use-conda --conda-prefix " + args.condaPrefix + \
                 " --dryrun --conda-frontend conda"
-            dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
+            print(snakemakeCMD)
             if args.DAG:
+                dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
                 subprocess.check_call("dot -Tpdf -o DAG.pdf".format(args.outDir), stdin=dryRun.stdout, shell=True)
+            else:
+                dryRun = subprocess.run(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
             #ruleGraph = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
             #cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
             #max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, dryrun=True, printrulegraph=True)

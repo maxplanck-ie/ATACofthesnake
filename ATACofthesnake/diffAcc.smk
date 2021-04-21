@@ -50,8 +50,6 @@ else:
 			for sample in list(paramDic['Comp'][comparison]['Cond'][condition]):
 				Comp2Merge[comparison].append(sample)
 
-print(Comp2Merge)
-
 # Define rule input.
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
@@ -65,7 +63,7 @@ rule all:
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_Heatmap.png", Comp=paramDic['Comp']),
 		expand(paramDic['Loc']['outDir'] + "/Figures/{Comp}_PCA.png", Comp=paramDic['Comp']),
-		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr.png', Comp=paramDic['Comp'])
+		expand(paramDic['Loc']['outDir'] + '/Figures/{Comp}_plotCorr_pearson.png', Comp=paramDic['Comp'])
 
 rule checkGenomeIndex:
 	input: paramDic['genomeFa']
@@ -340,14 +338,18 @@ rule plotCorr:
 	input:
 		paramDic['Loc']['outDir'] + "/deepTools/{Comp}_BigwigSum.npz"
 	output:
-		paramDic['Loc']['outDir'] + "/Figures/{Comp}_plotCorr.png"
+		pear = paramDic['Loc']['outDir'] + "/Figures/{Comp}_plotCorr_pearson.png",
+		spear = paramDic['Loc']['outDir'] + "/Figures/{Comp}_plotCorr_spearman.png"
 	log:
-		out = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.out",
-		err = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.err"
+		outpear = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.out",
+		outspear = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.out",
+		errpear = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.err",
+		errspear = paramDic['Loc']['outDir'] + "/logs/plotCorr.{Comp}.err"
 	threads: 1
 	conda: os.path.join(paramDic['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output} --skipZeros -min 0.8 -max 1 > {log.out} 2> {log.err}
+	plotCorrelation --corData {input} --corMethod pearson --whatToPlot heatmap --plotFile {output.pear} --skipZeros -min 0.8 -max 1 > {log.outpear} 2> {log.errpear}
+	plotCorrelation --corData {input} --corMethod spearman --whatToPlot heatmap --plotFile {output.spear} --skipZeros -min 0.8 -max 1 > {log.outspear} 2> {log.errspear}
 	'''
 
 rule plotPCA:
