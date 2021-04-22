@@ -22,8 +22,8 @@ def mergeInput(paramDic):
 		outList = []
 		# Merge BAM files per condition per comparison.
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{CompCond}.bam", CompCond=CompCond))
-		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=CompCond))
-		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=CompCond))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{CompCond}.bed", CompCond=CompCond))
+		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak", CompCond=CompCond))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
 		
