@@ -1,5 +1,6 @@
 import os
 import yaml
+import shutil
 from ATACofthesnake import misc
 
 # Read / set variables.
@@ -8,7 +9,10 @@ with open('Parameters.yaml') as f:
 
 # define mergeBam rule inputs:
 def mergeInput(paramDic):
-	if paramDic['mergeBam'] == 'union':
+	if paramDic['peakSet']:
+		outList = []
+		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bam", sample=paramDic['Samples']))
+	elif paramDic['mergeBam'] == 'union':
 		outList = []
 		outList.append(expand(paramDic['Loc']['outDir'] + "/ShortBAM/{sample}.bed", sample=paramDic['Samples']))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=paramDic['Samples']))
@@ -26,7 +30,8 @@ def mergeInput(paramDic):
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak", CompCond=CompCond))
 		outList.append(expand(paramDic['Loc']['outDir'] + "/MACS2/{Comp}_union_peaks.bed", Comp=paramDic['Comp']))
 		return outList
-		
+
+# Define additional dict to merge bam files if we need to.
 if paramDic['mergeBam'] == 'merge':
 	CompCondSamples = {}
 	for comparison in list(paramDic['Comp'].keys()):
@@ -37,6 +42,8 @@ if paramDic['mergeBam'] == 'merge':
 		Comp2Cond[comparison] = []
 		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
 			Comp2Cond[comparison].append(comparison + '_' + condition)
+
+# Define dict to merge peaks based on mergeBam status.
 Comp2Merge = {}
 if paramDic['mergeBam'] == 'merge':
 	for comparison in list(paramDic['Comp'].keys()):
@@ -49,7 +56,16 @@ else:
 		for condition in list(paramDic['Comp'][comparison]['Cond'].keys()):
 			for sample in list(paramDic['Comp'][comparison]['Cond'][condition]):
 				Comp2Merge[comparison].append(sample)
-
+# Ship the external peakSet in the right position (if we need it ).
+if paramDic['peakSet']:
+	if not os.path.isdir(paramDic['Loc']['outDir']):
+		os.mkdir(paramDic['Loc']['outDir'])
+	if not os.path.isdir(paramDic['Loc']['outDir']):
+		os.mkdir(os.path.join(paramDic['Loc']['outDir'], 'MACS2'))
+	for peakSet in paramDic['peakSet'].split(','):
+		bed = peakSet.split(':')[0]
+		Compar = peakSet.split(':')[1]
+		shutil.copyfile(bed, paramDic['Loc']['outDir'] + "/MACS2/{}_union_peaks.bed".format(Compar))
 # Define rule input.
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:

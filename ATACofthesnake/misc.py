@@ -7,6 +7,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 
+def checkExist(filesList):
+    notExistent = []
+    for fileName in filesList:
+        if not os.path.exists(fileName):
+            notExistent.append(fileName)
+    if len(notExistent) > 0:
+        rich.print("[red]File(s) not found![/red]")
+        rich.print("Check your path for: [red]{}[/red]".format(notExistent))
+    else:
+        rich.print("Required input found. Moving on...")
+        return True
 
 def checkNumDiff(paramDic):
     for Comp in paramDic['Comp']:
@@ -273,17 +284,23 @@ def GTFtoTSS(GTF):
 
 def readBamDir(bamDir):
     bams = []
+    if not os.path.exists(bamDir):
+        print('Directory {} not found.'.format(bamDir))
+        sys.exit()
     for i in os.listdir(bamDir):
         if i.endswith('bam'):
             bams.append(i.replace(".bam", ""))
     for bamFile in bams:
         if '-' in i:
-            return "Rename bamFiles, no - allowed."
+            return "Rename bamFiles, no '-' allowed."
             sys.exit()
-    return bams
+    if len(bams) == 0:
+        print('No bamfiles found. Check if {} contains files with a bam extension.')
+        sys.exit()
+    return sorted(bams)
 
 
-def setdefault_readss(ss, bams):
+def readss(ss, bams):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     ss = pd.read_csv(ss, sep='\t', header=0)
     if 'Sample' in list(ss.columns) and \

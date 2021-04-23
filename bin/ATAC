@@ -9,64 +9,85 @@ import yaml
 import os
 import snakemake
 
-class NoAliasDumper(yaml.Dumper):
-    def ignore_aliases(self, data):
-        return True
+#class NoAliasDumper(yaml.Dumper):
+#    def ignore_aliases(self, data):
+#        return True
+
+def parseArguments():
+    parser = argparse.ArgumentParser(
+        prog='ATACofthesnake',
+        description='ATACseq analysis starting from bam files.',
+        )
+
+    # In and Output
+    IO = parser.add_argument_group('Input/Output')
+    IO.add_argument('--bamDir', type=str, required=True,
+                help='Provide the directory containing your bam files.')
+    IO.add_argument('--outDir', type=str, required=False, default='AOS',
+                help='Specify output directory.')
+    IO.add_argument('--blackList', type=str, required=True,
+                help='Provide a blacklist file containing genomic regions to ignore (BED format)')
+    IO.add_argument('--genes', type=str, required=True,
+                help='Provide a GTF file containing genome annotations.')
+    IO.add_argument('--genomeFasta', type=str, required=True,
+                help='Provide genome fasta file.')
+    IO.add_argument('--sampleSheet', type=str, required=True,
+                help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp, Batch]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
+    IO.add_argument('--motifs', type=str, required=True,
+                help='Specify a motif file (meme format) to search for in diff. peaks.')
+    IO.add_argument('--peakSet', type=str, required=False, default=None,
+                help='Provide an external peak set (BED file) instead calling peaks yourself. Overrides mergeBam. Provide as peak.bed:comparison,peak2.bed:comparison2 (comma seperated).')
+    
+    # Analysis Parameters
+    Params = parser.add_argument_group('Parameter settings')
+    Params.add_argument('--downStream', action='store_true', required=False,
+                help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
+    Params.add_argument('--fragSizeMax', type=int, default=150,
+                help='Specify fragment size cut-off (default = 150).')
+    Params.add_argument('--genomeSize', type=float, required=True,
+                help='Provide genome size. e.g. 1.87e9 for mouse.')
+    Params.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
+                help='Set to merge if you want to merge bam files per condition before peak calling. (default is peak merging per replicate, and take union afterwards.).')
+
+    # snakeOpts
+    snakeOpts = parser.add_argument_group('snakemake Options')
+    snakeOpts.add_argument('--clusterCMD', type=str, required=False,
+                help='Cluster submission command, defaults to SlurmEasy')
+    snakeOpts.add_argument('--condaPrefix', required=True,
+                help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
+    snakeOpts.add_argument('--DAG', action='store_true',
+                help='Build a DAG if dryrun is invoked. Requires you to have dot (graphviz) installed.')
+    snakeOpts.add_argument('--dryRun', action='store_true', required=False,
+                help='Run workflow as dryrun, a DAG.pdf is also created in the directory of execution.')
+
+    args = parser.parse_args()
+    return args
 
 def main():
-    console = Console()
-    parser = argparse.ArgumentParser(description='ATACseq analysis starting from bam files.')
-    parser.add_argument('--bamDir', type=str, required=True,
-                        help='Provide the directory containing bam files.')
-    parser.add_argument('--outDir', type=str, required=False, default='AOS',
-                        help='Specify output directory.')
-    parser.add_argument('--sampleSheet', type=str, required=True,
-                        help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp, Batch]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
-    parser.add_argument('--blackList', type=str, required=True,
-                        help='Provide a blacklist file containing genomic regions to ignore (BED format)')
-    parser.add_argument('--genes', type=str, required=True,
-                        help='Provide a GTF file containing genome annotations.')
-    parser.add_argument('--genomeSize', type=float, required=True,
-                        help='Provide genome size. e.g. 1.87e9 for mouse.')
-    parser.add_argument('--clusterCMD', type=str, required=False,
-                        help='Cluster submission command, defaults to SlurmEasy')
-    parser.add_argument('--genomeFasta', type=str, required=True,
-                        help='Provide genome fasta file.')
-    parser.add_argument('--dryRun', action='store_true', required=False,
-                        help='Run workflow as dryrun, a DAG.pdf is also created in the directory of execution.')
-    parser.add_argument('--condaPrefix', required=True,
-                        help='Specify your conda installation location. e.g. /localenv/user/anaconda/miniconda3')
-    parser.add_argument('--downStream', action='store_true', required=False,
-                        help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
-    parser.add_argument('--fragSizeMax', type=int, default=150,
-                        help='Specify fragment size cut-off (default = 150).')
-    parser.add_argument('--motifs', type=str, required=True,
-                        help='Specify a motif file (meme format) to search for in diff. peaks.')
-    parser.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
-                        help='Set to merge if you want to merge bam files per condition before peak calling. (default is peak merging per replicate, and take union afterwards.).')
-    parser.add_argument('--DAG', action='store_true',
-                        help='Build a DAG if dryrun is invoked. Requires you to have dot (graphviz) installed.')
-    
-    args = parser.parse_args()
-
-    print("bamDIR: {}".format(args.bamDir))
-
-    # Grab bamfiles:
+    # Fetch arguments.
+    args = parseArguments()
+    # Read bamFiles
     bamFiles = misc.readBamDir(args.bamDir)
-    if not bamFiles:
-        print("No bamfiles found. Are you sure your bamfiles sit where they need to?")
-        sys.exit()
-    if bamFiles == None:
-        print("Directory exists, but there is a mismatch between files and sampleSheet.")
-        sys.exit()
-    # Parse Samplesheet.
-    paramDic, batchStatus = misc.setdefault_readss(args.sampleSheet, bamFiles)
-    print(paramDic)
-    # Files existings.
-    paramDic['mergeBam'] = args.mergeBam
-    paramDic['batchStatus'] = batchStatus
+    # Read in sampleSheet.
+    paramDic, batchStatus = misc.readss(args.sampleSheet, bamFiles)
+
+    # Run a sanity check for all required input files.
+    misc.checkExist(
+        [args.blackList,
+         args.genes,
+         args.genomeFasta,
+         args.motifs
+        ]
+    )
+
+    # Start populating the paramDic.
     paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": args.outDir}
+    if args.peakSet:
+        args.mergeBam = None
+    paramDic['peakSet'] = args.peakSet
+    paramDic['mergeBam'] = args.mergeBam
+    paramDic['batchStatus'] = batchStatus
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.genes)
     paramDic['genomeSize'] = args.genomeSize
@@ -74,25 +95,18 @@ def main():
     paramDic['fragSize'] = args.fragSizeMax
     paramDic['motifLoc'] = os.path.abspath(args.motifs)
 
-    if not os.path.exists(args.blackList):
-        print("blacklist file not found. Exiting.")
-        sys.exit()
-    if not os.path.exists(args.genes):
-        print("Genes not found. Exiting.")
-        sys.exit()
-    if not os.path.exists(args.genomeFasta):
-        print("genomeFasta not found. Exiting.")
-        sys.exit()
-    if args.downStream and not args.motifs:
-        print("Downstream invoked but no motifs specified")
-    if args.downStream and args.motifs:
-        print("Downstream invoked.")
-        if not os.path.exists(args.motifs):
-            print("Motifs not found. Exiting.")
-            sys.exit()
-    with open('Parameters.yaml', 'w') as f:
+    # Dump the paramDic into a yaml file.
+    if not os.path.exists(paramDic['Loc']['outDir']):
+        os.mkdir(paramDic['Loc']['outDir'])
+    with open(
+        os.path.join(
+            paramDic['Loc']['outDir'],
+            'Parameters.yaml'
+        ), 'w') as f:
         yaml.dump(paramDic, f, sort_keys=False)
-    print("Parameters written out in yaml file.")
+    print("Parameters written out into {}".format(os.path.join(paramDic['Loc']['outDir'], 'Parameters.yaml')))
+
+    # Parse GTF file (grab TSS and sort for Uropa).
     if not os.path.exists("genes.sort.gtf"):
         print("Sorting GTF for Uropa later on.")
         misc.sortGTF(args.genes)
@@ -103,55 +117,56 @@ def main():
         misc.GTFtoTSS("genes.sort.gtf")
     else:
         print("Found TSS.bed. Moving on..")
-    console.print("So far so good, launching snakemake instances :smiley:")
+    console = Console()
+    print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
-    if args.clusterCMD:
-        clusterCMD = args.clusterCMD
-    else:
-        clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['Loc']['outDir'] + "/cluster_logs -n {rule}"
-    with console.status("[bold green] Running snakemake..."):
-        if not args.dryRun:
-            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
-            cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy',
-            printshellcmds=False,conda_frontend='conda') #probably shift to mamba 
-            if diffStatus == True:
-                print("diffAnalysis completed succesfully.")
-            else:
-                print("Error in diffAnalysis!")
-        else:
-            # Not clear to me how I could create DAG pdf from API easily. Revert to subprocess.
-            snakemakeCMD = "snakemake -s " + os.path.join(paramDic["baseDir"], 'diffAcc.smk') + \
-                " --cores 10 --latency-wait 300 --max-jobs-per-second 1" \
-                " --rulegraph --use-conda --conda-prefix " + args.condaPrefix + \
-                " --dryrun --conda-frontend conda"
-            print(snakemakeCMD)
-            if args.DAG:
-                dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
-                subprocess.check_call("dot -Tpdf -o DAG.pdf".format(args.outDir), stdin=dryRun.stdout, shell=True)
-            else:
-                dryRun = subprocess.run(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
+#    if args.clusterCMD:
+#        clusterCMD = args.clusterCMD
+#    else:
+#        clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['Loc']['outDir'] + "/cluster_logs -n {rule}"
+#    with console.status("[bold green] Running snakemake..."):
+#        if not args.dryRun:
+#            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
+#            cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+#            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy',
+#            printshellcmds=False,conda_frontend='conda') #probably shift to mamba 
+#            if diffStatus == True:
+#                print("diffAnalysis completed succesfully.")
+#            else:
+#                print("Error in diffAnalysis!")
+#        else:
+#            # Not clear to me how I could create DAG pdf from API easily. Revert to subprocess.
+#            snakemakeCMD = "snakemake -s " + os.path.join(paramDic["baseDir"], 'diffAcc.smk') + \
+#                " --cores 10 --latency-wait 300 --max-jobs-per-second 1" \
+#                " --rulegraph --use-conda --conda-prefix " + args.condaPrefix + \
+#                " --dryrun --conda-frontend conda"
+#            print(snakemakeCMD)
+#            if args.DAG:
+#                dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
+#                subprocess.check_call("dot -Tpdf -o DAG.pdf".format(args.outDir), stdin=dryRun.stdout, shell=True)
+#            else:
+#                dryRun = subprocess.run(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
             #ruleGraph = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
             #cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
             #max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, dryrun=True, printrulegraph=True)
 
-    if args.downStream and not args.dryRun and diffStatus == True:
-        print("Starting up with downstream analysis.")
-        print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
-        paramDic_diff = misc.checkNumDiff(paramDic)
-        if 'diffComp' in paramDic_diff:
-            with open('Parameters_downstream.yaml', 'w') as f:
-                yaml.dump(paramDic_diff, f, sort_keys=False, Dumper=NoAliasDumper)
-            print("Launching snakemake")
-            with console.status("[bold green] Running snakemake for downstream analysis..."):
-                downStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffDownstream.smk'),
-                cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-                max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
-            if downStatus == True:
-                print("downstream analysis completed succesfully.")
-        else:
-            print("Not enough differential regions. Stopping.")
+#    if args.downStream and not args.dryRun and diffStatus == True:
+#        print("Starting up with downstream analysis.")
+#        print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
+#        paramDic_diff = misc.checkNumDiff(paramDic)
+#        if 'diffComp' in paramDic_diff:
+#            with open('Parameters_downstream.yaml', 'w') as f:
+#                yaml.dump(paramDic_diff, f, sort_keys=False, Dumper=NoAliasDumper)
+#            print("Launching snakemake")
+#            with console.status("[bold green] Running snakemake for downstream analysis..."):
+#                downStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffDownstream.smk'),
+#                cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
+#                max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
+#            if downStatus == True:
+#                print("downstream analysis completed succesfully.")
+#        else:
+#            print("Not enough differential regions. Stopping.")
     
     ## Compile pdf.
     #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
