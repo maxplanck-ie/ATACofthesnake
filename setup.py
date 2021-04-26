@@ -11,6 +11,7 @@ setuptools.setup(
    packages=['ATACofthesnake'],
    package_data={"": ["diffAcc.smk",
                       "diffDownstream.smk",
+                      "bamProcess.smk",
                       "template.tex",
                       "Rscripts/edgeR_scalefactors.R",
                       "Rscripts/DESeq2.R",

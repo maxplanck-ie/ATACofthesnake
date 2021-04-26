@@ -2,57 +2,33 @@ import os
 import shutil
 from ATACofthesnake import misc
 
-# Create a sample dict for merging, diff analysis etc.
-#if config['sampleSheet']:
-#    ss = {}
-    # Define comp
-    # Define config[Comp]
+# Set some fallbacks if we don't have a sampleSheet.
+
 if not config['sampleSheet']:
     ss = {}
     # Set the comparison to the output folder name (we don't have one).
     compStr = str(config['outDir'].split('/')[-1])
     ss['Comp'] = [compStr]
     ss[compStr] = config['Samples']
-print(ss)
 
-def ruleFetcher(ss):
-    outList = []
-    # checkGenomeIndex, checkIndex, idxStat, idxStatPlotter
+
+outList = []
+if not config['peakSet']:
+    # Create peaks.
     outList.append(
         expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp'])
     )
-    # alignmentSieve
     outList.append(
-        expand(config['outDir'] + "/ShortBAM/{Sample}.bam", Sample=config['Samples'])
+        expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples'])
     )
-    if not config['sampleSheet']:
-        if config['mergeBam']:
-            # No sampleSheet, merge all bamFiles before peak calling.
-            outList.append(
-                expand(config['outDir'] + "/MergeBAM/{CompCond}.bam", CompCond = ss['Comp'])
-            )
-            outList.append(
-                expand(config['outDir'] + "/MergeBAM/{CompCond}.bam", CompCond = ss['Comp'])
-            )
-            outList.append(
-                expand(config['outDir'] + "/MergeBAM/{CompCond}.bed", CompCond = ss['Comp'])
-            )
-            outList.append(
-                expand(config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak", CompCond=ss['Comp'])
-            )
-            return outList
-        if not config['mergeBam']:
-            print('nomerge')
-    if config['sampleSheet']:
-        if config['mergeBam']:
-            print(mergeSS)
-        if not config['mergeBam']:
-            print(noMergeSS)
-
+    outList.append(
+        expand(config['outDir'] + '/{CompCond}.snul.tif', CompCond = ss['Comp'])
+    )
+print(outList)
 
 rule all:
     input:
-        ruleFetcher(ss)
+        outList
 
 
 rule checkGenomeIndex:
@@ -66,7 +42,6 @@ rule checkGenomeIndex:
 	shell:'''
 	samtools faidx {input}
 	'''
-
 rule checkIndex:
 	input:
 		sample = config['bamDir'] + '/{sample}.bam',
@@ -97,9 +72,9 @@ rule idxStat:
 
 rule idxStatPlotter:
 	input: 
-		lambda wildcards: expand(config['outDir'] + "/QC/{Sample}.idxstat.txt", Sample=ss[wildcards.Comp])
+		lambda wildcards: expand(config['outDir'] + "/QC/{sample}.idxstat.txt", sample=ss[wildcards.CompCond])
 	output:
-		config['outDir'] + "/Figures/{Comp}.mtFrac.png"
+		config['outDir'] + "/Figures/{CompCond}.mtFrac.png"
 	threads: 1
 	run:
 		misc.plotter('idxstat', input, str(output))
@@ -124,46 +99,26 @@ rule alignmentSieve:
 	alignmentSieve --bam {input.inBam} --outFile {output.shortBam} -p {threads} --filterMetrics {output.filterMetrics} --maxFragmentLength {params.fragSize} --minFragmentLength 0 --blackListFileName {params.blackList} > {log.out} 2> {log.err}
 	'''
 
-rule mergeBam:
+rule shortIndex:
 	input:
-		expand(config['outDir'] + "/ShortBAM/{Sample}.bam", Sample=config['Samples'])
+		config['outDir'] + "/ShortBAM/{sample}.bam"
 	output:
-		bam = config['outDir'] + "/MergeBAM/{CompCond}.bam"
-	params:
-		lambda wildcards: ' '.join(expand(config['outDir'] + "/ShortBAM/{Sample}.bam", Sample=ss[wildcards.CompCond]))
-	threads: 5
+		index = config['outDir'] + "/ShortBAM/{sample}.bam.bai"
+	log:
+		out = config['outDir'] + '/logs/shortIndex.{sample}.out',
+		err = config['outDir'] + '/logs/shortIndex.{sample}.err'
+	threads: 10
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
-	samtools merge -@ {threads} {output.bam} {params}
-	samtools index -@ {threads} {output.bam}
+	sambamba index {input} > {log.out} 2> {log.err}
 	'''
 
-rule mergeBam_to_bed:
-	input:
-		bai = config['outDir'] + "/MergeBAM/{CompCond}.bam.bai",
-		bam = config['outDir'] + "/MergeBAM/{CompCond}.bam"
-	output:
-		outBed = config['outDir'] + "/MergeBAM/{CompCond}.bed"
-	threads: 1
-	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
-	shell:'''
-	bamToBed -i {input.bam} > {output.outBed}
-	'''
-rule mergeMACS2:
-	input:
-		config['outDir'] + "/MergeBAM/{CompCond}.bed"
-	output:
-		config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak"
-	log:
-		out = config['outDir'] + '/logs/MACS2.{CompCond}.out',
-		err = config['outDir'] + '/logs/MACS2.{CompCond}.err'
-	params:
-		genomeSize = config['genomeSize'],
-		outName = lambda wildcards: wildcards.CompCond,
-		blackList = config['blackList'],
-		outDir = config['outDir'] + "/MACS2"
-	threads: 1
-	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
-	shell:'''
-	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir {params.outDir} --keep-dup all > {log.out} 2> {log.err}
-	'''
+rule fragSize:
+    input:
+        lambda wildcards: expand(config['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=ss[wildcards.CompCond])
+    output:
+        config['outDir'] + '/{CompCond}.snul.tif'
+    threads: 1
+    shell:'''
+    echo HELLO > {output}
+    '''
