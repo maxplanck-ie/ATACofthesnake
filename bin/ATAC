@@ -9,10 +9,6 @@ import yaml
 import os
 import snakemake
 
-#class NoAliasDumper(yaml.Dumper):
-#    def ignore_aliases(self, data):
-#        return True
-
 def parseArguments():
     parser = argparse.ArgumentParser(
         prog='ATACofthesnake',
@@ -31,26 +27,26 @@ def parseArguments():
                 help='Provide a GTF file containing genome annotations.')
     IO.add_argument('--genomeFasta', type=str, required=True,
                 help='Provide genome fasta file.')
-    IO.add_argument('--sampleSheet', type=str, required=True,
+    IO.add_argument('--sampleSheet', type=str, required=False, default=0,
                 help='Provide a sampleSheet, tsv seperated, with headers [Sample, Cond, Comp, Batch]. Comp is a string grouping 2 conditions (e.g. 1 DE analysis per Comp).')
-    IO.add_argument('--motifs', type=str, required=True,
+    IO.add_argument('--motifs', type=str, required=False, default=0,
                 help='Specify a motif file (meme format) to search for in diff. peaks.')
-    IO.add_argument('--peakSet', type=str, required=False, default=None,
+    IO.add_argument('--peakSet', type=str, required=False, default=0,
                 help='Provide an external peak set (BED file) instead calling peaks yourself. Overrides mergeBam. Provide as peak.bed:comparison,peak2.bed:comparison2 (comma seperated).')
     
     # Analysis Parameters
-    Params = parser.add_argument_group('Parameter settings')
+    Params = parser.add_argument_group('Parameters')
     Params.add_argument('--downStream', action='store_true', required=False,
                 help='Specify if you want downstream analysis (e.g. diffpeak heatmap, motif enrichment, ...).')
     Params.add_argument('--fragSizeMax', type=int, default=150,
                 help='Specify fragment size cut-off (default = 150).')
     Params.add_argument('--genomeSize', type=float, required=True,
                 help='Provide genome size. e.g. 1.87e9 for mouse.')
-    Params.add_argument('--mergeBam', type=str, required=False, default='union', choices=['union','merge'],
-                help='Set to merge if you want to merge bam files per condition before peak calling. (default is peak merging per replicate, and take union afterwards.).')
+    Params.add_argument('--mergeBam', action='store_true', required=False,
+                help="Set flag if you want to merge bam files per replicate per condition before peak calling (will merge all bamFiles if you don't specify sampleSheet. Requires a sampleSheet.")
 
     # snakeOpts
-    snakeOpts = parser.add_argument_group('snakemake Options')
+    snakeOpts = parser.add_argument_group('SnakeMake Options')
     snakeOpts.add_argument('--clusterCMD', type=str, required=False,
                 help='Cluster submission command, defaults to SlurmEasy')
     snakeOpts.add_argument('--condaPrefix', required=True,
@@ -64,12 +60,14 @@ def parseArguments():
     return args
 
 def main():
+    console = Console()
+
     # Fetch arguments.
     args = parseArguments()
+
     # Read bamFiles
     bamFiles = misc.readBamDir(args.bamDir)
-    # Read in sampleSheet.
-    paramDic, batchStatus = misc.readss(args.sampleSheet, bamFiles)
+    console.print("Files: {}".format(bamFiles))
 
     # Run a sanity check for all required input files.
     misc.checkExist(
@@ -79,15 +77,23 @@ def main():
          args.motifs
         ]
     )
-
     # Start populating the paramDic.
+    paramDic = {}
+    paramDic['Samples'] = bamFiles
+    paramDic['sampleSheet'] = args.sampleSheet
+    # If there is no sampleSheet, populate a comparison with all samples.
+    if not paramDic['sampleSheet']:
+        paramDic['Comp'] = [args.outDir.strip('/').split('/')[-1]]
+        paramDic[args.outDir.strip('/').split('/')[-1]] = bamFiles
     paramDic['Invocation'] = " ".join(sys.argv)
-    paramDic['Loc'] = {"bamDir": str(os.path.abspath(args.bamDir)), "outDir": args.outDir}
-    if args.peakSet:
-        args.mergeBam = None
-    paramDic['peakSet'] = args.peakSet
+    paramDic['baseDir'] = misc.returnScriptPath()
+    paramDic['bamDir'] = os.path.abspath(args.bamDir)
+    paramDic['outDir'] = os.path.abspath(args.outDir)
     paramDic['mergeBam'] = args.mergeBam
-    paramDic['batchStatus'] = batchStatus
+    if args.peakSet and arg.mergeBam:
+        args.mergeBam = 0
+        print("peakSet provided and mergeBam flag set: mergeBam will be ignored.")
+    paramDic['peakSet'] = args.peakSet
     paramDic['blackList'] = os.path.abspath(args.blackList)
     paramDic['GTF'] = os.path.abspath(args.genes)
     paramDic['genomeSize'] = args.genomeSize
@@ -96,36 +102,59 @@ def main():
     paramDic['motifLoc'] = os.path.abspath(args.motifs)
 
     # Dump the paramDic into a yaml file.
-    if not os.path.exists(paramDic['Loc']['outDir']):
-        os.mkdir(paramDic['Loc']['outDir'])
+    if not os.path.exists(paramDic['outDir']):
+        os.mkdir(paramDic['outDir'])
     with open(
         os.path.join(
-            paramDic['Loc']['outDir'],
+            paramDic['outDir'],
             'Parameters.yaml'
         ), 'w') as f:
         yaml.dump(paramDic, f, sort_keys=False)
-    print("Parameters written out into {}".format(os.path.join(paramDic['Loc']['outDir'], 'Parameters.yaml')))
+    print("Parameters written out into {}".format(os.path.join(paramDic['outDir'], 'Parameters.yaml')))
 
     # Parse GTF file (grab TSS and sort for Uropa).
-    if not os.path.exists("genes.sort.gtf"):
+    if not os.path.exists(
+        os.path.join(paramDic['outDir'],
+        "genes.sort.gtf")
+    ):
         print("Sorting GTF for Uropa later on.")
-        misc.sortGTF(args.genes)
+        misc.sortGTF(args.genes, paramDic['outDir'])
     else:
         print("Found a sorted GTF file. Moving on..")
-    if not os.path.isfile("TSS.bed"):
+    if not os.path.isfile(
+        os.path.join(paramDic['outDir'],
+        "TSS.bed")
+    ):
         print("Did not find TSS file, launching extraction.")
-        misc.GTFtoTSS("genes.sort.gtf")
+        misc.GTFtoTSS(paramDic['outDir'] + "/genes.sort.gtf", paramDic['outDir'])
     else:
         print("Found TSS.bed. Moving on..")
-    console = Console()
     print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
-#    if args.clusterCMD:
-#        clusterCMD = args.clusterCMD
-#    else:
-#        clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['Loc']['outDir'] + "/cluster_logs -n {rule}"
-#    with console.status("[bold green] Running snakemake..."):
+
+    if args.clusterCMD:
+        clusterCMD = args.clusterCMD
+    else:
+        clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['outDir'] + "/cluster_logs -n {rule}"
+    with console.status("[bold green] Running snakemake..."):
+        print("Do something.")
+        snakemake.snakemake(
+            os.path.join(paramDic["baseDir"],'bamProcess.smk'),
+            cores=10,
+            nodes=5,
+            latency_wait=300,
+            max_jobs_per_second=1,
+            cluster=clusterCMD,
+            max_status_checks_per_second=1,
+            use_conda=True,
+            conda_prefix=args.condaPrefix,
+            scheduler='greedy',
+            printshellcmds=True,
+            conda_frontend='conda',
+            config=paramDic
+        )
+
 #        if not args.dryRun:
 #            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
 #            cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
