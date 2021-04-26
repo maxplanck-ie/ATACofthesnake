@@ -81,14 +81,10 @@ def main():
     paramDic = {}
     paramDic['Samples'] = bamFiles
     paramDic['sampleSheet'] = args.sampleSheet
-    # If there is no sampleSheet, populate a comparison with all samples.
-    if not paramDic['sampleSheet']:
-        paramDic['Comp'] = [args.outDir.strip('/').split('/')[-1]]
-        paramDic[args.outDir.strip('/').split('/')[-1]] = bamFiles
     paramDic['Invocation'] = " ".join(sys.argv)
     paramDic['baseDir'] = misc.returnScriptPath()
-    paramDic['bamDir'] = os.path.abspath(args.bamDir)
-    paramDic['outDir'] = os.path.abspath(args.outDir)
+    paramDic['bamDir'] = os.path.abspath(args.bamDir.strip('/'))
+    paramDic['outDir'] = os.path.abspath(args.outDir.strip('/'))
     paramDic['mergeBam'] = args.mergeBam
     if args.peakSet and arg.mergeBam:
         args.mergeBam = 0
@@ -109,6 +105,9 @@ def main():
             paramDic['outDir'],
             'Parameters.yaml'
         ), 'w') as f:
+        # Don't have ref pointers in ultimate dic.
+        yaml.Dumper.ignore_aliases = lambda *args : True
+        # Write out yaml
         yaml.dump(paramDic, f, sort_keys=False)
     print("Parameters written out into {}".format(os.path.join(paramDic['outDir'], 'Parameters.yaml')))
 
@@ -138,7 +137,6 @@ def main():
     else:
         clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['outDir'] + "/cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
-        print("Do something.")
         snakemake.snakemake(
             os.path.join(paramDic["baseDir"],'bamProcess.smk'),
             cores=10,
@@ -149,7 +147,7 @@ def main():
             max_status_checks_per_second=1,
             use_conda=True,
             conda_prefix=args.condaPrefix,
-            scheduler='greedy',
+#            scheduler='greedy',
             printshellcmds=True,
             conda_frontend='conda',
             config=paramDic

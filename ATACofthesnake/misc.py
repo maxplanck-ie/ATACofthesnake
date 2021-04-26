@@ -19,6 +19,9 @@ def checkExist(filesList):
         rich.print("Required input found. Moving on...")
         return True
 
+def returnScriptPath():
+    return os.path.dirname(__file__)
+
 def checkNumDiff(paramDic):
     for Comp in paramDic['Comp']:
         compFolder = "AOS/diffAcc_" + str(Comp)
@@ -82,24 +85,24 @@ def plotter(what, inFiles, outFile, conds=None, allFiles=None):
         plt.tight_layout()
         g.figure.savefig(outFile, dpi=300)
     if what == 'idxstat':
+        print("idxStat plot invoked.")
         res = []
-        outDir = outFile.split('/')[0]
+        print("input files: {}".format(inFiles))
         for sample in inFiles:
-            for i in sample:
-                filestr = outDir + '/QC/' + str(i) + '.idxstat.txt'
-                with open(filestr) as f:
-                    chromcount = 0
-                    for line in f:
-                        chrom = str(line.strip().split()[0])
-                        count = int(line.strip().split()[1])
-                        if chrom.lower().startswith('m') or \
-                           'mito' in chrom.lower():
-                            mtcount = count
-                        else:
-                            chromcount += count
-                    res.append([i,
-                               mtcount/(chromcount+mtcount),
-                               chromcount/(chromcount+mtcount)])
+            with open(sample) as f:
+                chromcount = 0
+                for line in f:
+                    chrom = str(line.strip().split()[0])
+                    count = int(line.strip().split()[1])
+                    if chrom.lower().startswith('m') or \
+                        'mito' in chrom.lower():
+                        mtcount = count
+                    else:
+                        chromcount += count
+                baseName = sample.split('/')[-1].strip('.idxstat.txt')
+                res.append([baseName,
+                            mtcount/(chromcount+mtcount),
+                            chromcount/(chromcount+mtcount)])
         df = pd.DataFrame(res)
         df.columns = ['sample', 'MTfrac', 'Chromfrac']
         df = pd.melt(df, id_vars='sample')
@@ -203,7 +206,7 @@ def mergeDiff_Ann(annotation, diff, outName):
     res.to_csv(outName, header=True, index=True, sep='\t')
 
 
-def sortGTF(GTF):
+def sortGTF(GTF, outDir):
     GTF = pd.read_csv(GTF,
                       sep='\t',
                       comment='#',
@@ -215,7 +218,7 @@ def sortGTF(GTF):
     GTF = GTF[GTF['feature'] == 'transcript']
     GTF = GTF.sort_values(["chr", "start"],
                           ascending=(True, True))
-    GTF.to_csv('genes.sort.gtf',
+    GTF.to_csv(outDir + '/genes.sort.gtf',
                header=False,
                index=False,
                sep='\t')
@@ -258,7 +261,7 @@ def batchesfromCount(countmat, paramDic):
             return ','.join(batchOrder)
 
 
-def GTFtoTSS(GTF):
+def GTFtoTSS(GTF, outDir):
     TSS = []
     linecount = 0
     with open(GTF) as f:
@@ -279,7 +282,7 @@ def GTFtoTSS(GTF):
                                     int(liLis[4])])
     TSSdf = pd.DataFrame(TSS)
     TSSdf = TSSdf.drop_duplicates()
-    TSSdf.to_csv('TSS.bed', sep='\t', index=False, header=False)
+    TSSdf.to_csv(outDir + '/TSS.bed', sep='\t', index=False, header=False)
 
 
 def readBamDir(bamDir):
@@ -314,21 +317,18 @@ def readss(ss, bams):
             else:
                 return "More then three columns, one of them is not Batch."
                 sys.exit()
-        elif len(ss.Cond.unique()) != 2:
-            return "Only two conditions allowed in sampleSheet.."
-            sys.exit()
         for sample in ss.Sample:
             if sample.replace(".bam", "") not in bams:
                 return "Can't find {}. Please correct.".format(sample)
                 sys.exit()
         diffDic = {}
-        diffDic["Cond"] = list(ss.Cond.unique())
-        diffDic["Comp"] = {}
-        diffDic["Samples"] = list(ss.Sample.str.replace(".bam", ""))
-        if batchStatus == 1:
-            diffDic["Batch"] = list(ss.Batch)
+
+        diffDic["Comp"] = ss.Comp.unique()
+        diffDic["CompConds"] = []
+
         for Comp in ss.Comp.unique():
             tempss = ss[ss['Comp'] == Comp]
+
             diffDic["Comp"][Comp] = {}
             key1 = tempss.Cond.unique()[0]
             key2 = tempss.Cond.unique()[1]
@@ -345,28 +345,6 @@ def readss(ss, bams):
                 diffDic["Comp"][Comp]['Cond'][key1] + \
                 diffDic["Comp"][Comp]['Cond'][key2]
             diffDic["Comp"][Comp]['Samples'] = samplesList
-        for Comp in ss.Comp.unique():
-            table = \
-                rich.table.Table(
-                    title="Samples - Conditions: {}".format(Comp))
-            table.add_column(key1, justify="center", style="cyan")
-            table.add_column(key2, justify="center", style="green")
-            for i in range(max(
-                        [len(diffDic["Comp"][Comp]['Cond'][key1]),
-                        len(diffDic["Comp"][Comp]['Cond'][key2])])):
-                try:
-                    table.add_row(diffDic["Comp"][Comp]['Cond'][key1][i],
-                                    diffDic["Comp"][Comp]['Cond'][key2][i])
-                except Exception:
-                    try:
-                        table.add_row(
-                            diffDic["Comp"][Comp]['Cond'][key1][i], "")
-                    except Exception:
-                        table.add_row(
-                            "", diffDic["Comp"][Comp]['Cond'][key2][i])
-            console = rich.console.Console()
-            console.print(table)
-        diffDic['baseDir'] = os.path.dirname(__file__)
         return diffDic, batchStatus
     else:
         return "Column headers not ok, (expected [Sample, Cond, Comp])"
