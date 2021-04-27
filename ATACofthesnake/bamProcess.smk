@@ -16,13 +16,9 @@ outList = []
 if not config['peakSet']:
     # Create peaks.
     outList.append(
-        expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp'])
-    )
-    outList.append(
-        expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples'])
-    )
-    outList.append(
-        expand(config['outDir'] + '/{CompCond}.snul.tif', CompCond = ss['Comp'])
+        expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp']) +
+        expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
+        expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
     )
 print(outList)
 
@@ -117,8 +113,14 @@ rule fragSize:
     input:
         lambda wildcards: expand(config['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=ss[wildcards.CompCond])
     output:
-        config['outDir'] + '/{CompCond}.snul.tif'
-    threads: 1
+        raw = config['outDir'] + '/deepTools/{CompCond}.raw.fragSize.tsv',
+        table = config['outDir'] + '/deepTools/{CompCond}.fragSize.tsv'
+    params:
+        lambda wildcards: ' '.join(expand(config['outDir'] + "/ShortBAM/{sample}.bam", sample=ss[wildcards.CompCond]))
+    log:
+        out = config['outDir'] + '/logs/shortIndex.{CompCond}.out',
+        err = config['outDir'] + '/logs/shortIndex.{CompCond}.err',
+    threads: 5
     shell:'''
-    echo HELLO > {output}
+    bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output.raw} --table {output.table} > {log.out} 2> {log.err}
     '''
