@@ -322,30 +322,32 @@ def readss(ss, bams):
                 return "Can't find {}. Please correct.".format(sample)
                 sys.exit()
         diffDic = {}
+        diffDic['Comp'] = list(ss.Comp.unique())
+        diffDic['CompCond'] = []
+        diffDic['CompCondDic'] = {}
+        # Populate samples in comparison.
+        for comparison in ss.Comp.unique():
+            diffDic[comparison] = list(sample.replace('.bam','') for sample in ss[ss['Comp'] == comparison].Sample)
+            conds = list(ss[ss['Comp'] == comparison].Cond.unique())
+            diffDic['CompCondDic'][comparison] = conds
+            if len(conds) != 2:
+                print("More then 1 condition within a comparison. Exiting..")
+                sys.exit()
+            else:
+                tempdf = ss[ss['Comp'] == comparison]
+                CondComp1 = comparison + '_' + conds[0]
+                diffDic['CompCond'].append(CondComp1)
+                diffDic[CondComp1] = list(sample.replace('.bam','') for sample in tempdf[tempdf['Cond'] == conds[0]].Sample)
+                CondComp2 = comparison + '_' + conds[1]
+                diffDic['CompCond'].append(CondComp2)
+                diffDic[CondComp2] = list(sample.replace('.bam','') for sample in tempdf[tempdf['Cond'] == conds[1]].Sample)              
 
-        diffDic["Comp"] = ss.Comp.unique()
-        diffDic["CompConds"] = []
-
-        for Comp in ss.Comp.unique():
-            tempss = ss[ss['Comp'] == Comp]
-
-            diffDic["Comp"][Comp] = {}
-            key1 = tempss.Cond.unique()[0]
-            key2 = tempss.Cond.unique()[1]
-            diffDic["Comp"][Comp]['Cond'] = {}
-            diffDic["Comp"][Comp]['Cond'][key1] = \
-                list(
-                tempss[tempss['Cond'] == key1]['Sample'].str.replace(
-                    ".bam", ""))
-            diffDic["Comp"][Comp]['Cond'][key2] = \
-                list(
-                tempss[tempss['Cond'] == key2]['Sample'].str.replace(
-                    ".bam", ""))
-            samplesList = \
-                diffDic["Comp"][Comp]['Cond'][key1] + \
-                diffDic["Comp"][Comp]['Cond'][key2]
-            diffDic["Comp"][Comp]['Samples'] = samplesList
-        return diffDic, batchStatus
+                # Include batchStatus:
+                if batchStatus:
+                    diffDic['Batch'] = {}
+                    for row in range(len(ss)):
+                        diffDic['Batch'][ss.Sample[row].replace('.bam','')] = ss.Batch[row]
+        return diffDic
     else:
-        return "Column headers not ok, (expected [Sample, Cond, Comp])"
+        print("Column headers not ok, (expected [Sample, Cond, Comp])")
         sys.exit()

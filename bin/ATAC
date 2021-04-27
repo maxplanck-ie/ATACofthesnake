@@ -67,7 +67,7 @@ def main():
 
     # Read bamFiles
     bamFiles = misc.readBamDir(args.bamDir)
-    console.print("Files: {}".format(bamFiles))
+    console.print("Samples: {}".format(bamFiles))
 
     # Run a sanity check for all required input files.
     misc.checkExist(

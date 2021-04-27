@@ -2,7 +2,9 @@ import os
 import shutil
 from ATACofthesnake import misc
 
-# Set some fallbacks if we don't have a sampleSheet.
+# A couple arg flags define some restructuring:
+# peakSet: if an external peakset is provided, only execute fragSize, alignmentSieve and idxStats (mitobleed).
+# mergeBam: merge bam files before peak calling. If a sampleSheet is provided, bam files are merged per condition (within a comparison).
 
 if not config['sampleSheet']:
     ss = {}
@@ -10,7 +12,8 @@ if not config['sampleSheet']:
     compStr = str(config['outDir'].split('/')[-1])
     ss['Comp'] = [compStr]
     ss[compStr] = config['Samples']
-
+else:
+    ss = misc.readss(config['sampleSheet'], config['Samples'])
 
 outList = []
 outList.append(
@@ -18,17 +21,27 @@ outList.append(
     expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
     expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
 )
-if not config['peakSet']:
-    # Create peaks.
-    if config['mergeBam']:
-        if not config['sampleSheet']:
-            # We need to merge bam files before peak calling
-            # There is no sampleSheet --> merge all bam files.
-            outList.append(
-                expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['Comp']) +
-                expand(config['outDir'] + "/mergeBAM/{CompCond}.bed", CompCond=ss['Comp']) +
-                expand(config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak", CompCond=ss['Comp'])
-            )
+
+if config['mergeBam']:
+    if not config['sampleSheet']:
+        # We need to merge bam files before peak calling
+        # There is no sampleSheet --> merge all bam files.
+        outList.append(
+            expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['Comp']) +
+            expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.bed", CompCond=ss['Comp'])
+        )
+    elif config['sampleSheet']:
+        # Merge bamFiles per condition
+        outList.append(
+            expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['CompCond']) +
+            expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.bed", CompCond=ss['CompCond']) +
+            expand(config['outDir'] + '/MACS2_mergeBAM/{Comp}_peaks.bed', Comp=ss['Comp'])
+        )
+else:
+    outList.append(
+        expand(config['outDir'] + "/MACS2/{CompCond}_peaks.bed", CompCond=ss['Comp'])
+    )
+
 print(outList)
 
 rule all:
@@ -135,6 +148,7 @@ rule fragSize:
     bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output.raw} --table {output.table} > {log.out} 2> {log.err}
     '''
 
+# Rules for Merging.
 rule mergeBam:
     input:
         lambda wildcards: expand(config['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=ss[wildcards.CompCond])
@@ -150,6 +164,7 @@ rule mergeBam:
     shell:'''
     sambamba merge -t 5 {output} {params}
     '''
+
 rule mergeBamtoBed:
     input:
         config['outDir'] + "/mergeBAM/{CompCond}.bam"
@@ -164,7 +179,7 @@ rule MACS2_mergeBam:
 	input:
 		config['outDir'] + "/mergeBAM/{CompCond}.bed"
 	output:
-		config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak"
+		config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.narrowPeak"
 	log:
 		out = config['outDir'] + '/logs/MACS2_mergeBAM.{CompCond}.out',
 		err = config['outDir'] + '/logs/MACS2_mergeBAM.{CompCond}.err'
@@ -172,9 +187,78 @@ rule MACS2_mergeBam:
 		genomeSize = config['genomeSize'],
 		outName = lambda wildcards: wildcards.CompCond,
 		blackList = config['blackList'],
+		outDir = config['outDir'] + "/MACS2_mergeBAM"
+	threads: 1
+	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir {params.outDir} --keep-dup all > {log.out} 2> {log.err}
+	'''
+rule MACS2_nptobed:
+    input:
+        config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.narrowPeak"
+    output:
+        config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.bed"
+    log:
+        out = config['outDir'] + '/logs/MACS2_nptobed.{CompCond}.out',
+        err = config['outDir'] + '/logs/MACS2_nptobed.{CompCond}.err'
+    threads: 1
+    shell:'''
+    cut -f1-3 {input} > {output}
+    '''
+
+rule unionMACS2_merge:
+    input:
+        lambda wildcards: expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.narrowPeak", CompCond=ss['CompCondDic'][wildcards.Comp])
+    output:
+        config['outDir'] + '/MACS2_mergeBAM/{Comp}_peaks.bed'
+    params:
+        lambda wildcards: ' '.join(expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.narrowPeak", CompCond=ss['CompCondDic'][wildcards.Comp]))
+    threads: 1
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+    shell:'''
+    cat {params} | sort -k1,1 -k2,2n | bedtools merge > {output}
+    '''
+
+# Rules for peak per sample
+rule bamtobed:
+    input:
+        index = config['outDir'] + "/ShortBAM/{sample}.bam.bai",
+        bamFile = config['outDir'] + "/ShortBAM/{sample}.bam"
+    output:
+        config['outDir'] + "/ShortBAM/{sample}.bed"
+    threads: 2
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+    shell:'''
+    bamToBed -i {input.bamFile} > {output}
+    '''
+rule MACS2:
+	input:
+		config['outDir'] + "/ShortBAM/{sample}.bed"
+	output:
+		config['outDir'] + "/MACS2/{sample}_peaks.narrowPeak"
+	log:
+		out = config['outDir'] + '/logs/MACS2.{sample}.out',
+		err = config['outDir'] + '/logs/MACS2.{sample}.err'
+	params:
+		genomeSize = config['genomeSize'],
+		outName = lambda wildcards: wildcards.sample,
+		blackList = config['blackList'],
 		outDir = config['outDir'] + "/MACS2"
 	threads: 1
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir {params.outDir} --keep-dup all > {log.out} 2> {log.err}
 	'''
+
+rule unionMACS2:
+    input:
+        lambda wildcards: expand(config['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=ss[wildcards.CompCond])
+    output:
+        config['outDir'] + '/MACS2/{CompCond}_peaks.bed'
+    params:
+        lambda wildcards: ' '.join(expand(config['outDir'] + "/MACS2/{sample}_peaks.narrowPeak", sample=ss[wildcards.CompCond]))
+    threads: 1
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+    shell:'''
+    cat {params} | sort -k1,1 -k2,2n | bedtools merge > {output}
+    '''
