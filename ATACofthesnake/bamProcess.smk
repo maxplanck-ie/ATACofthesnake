@@ -20,6 +20,13 @@ if not config['peakSet']:
         expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
         expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
     )
+    if config['mergeBam']:
+        if not config['sampleSheet']:
+            # We need to merge bam files before peak calling
+            # There is no sampleSheet --> merge all bam files.
+            outList.append(
+                expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['Comp'])
+            )
 print(outList)
 
 rule all:
@@ -121,6 +128,23 @@ rule fragSize:
         out = config['outDir'] + '/logs/shortIndex.{CompCond}.out',
         err = config['outDir'] + '/logs/shortIndex.{CompCond}.err',
     threads: 5
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
     shell:'''
     bamPEFragmentSize -b {params} -p {threads} --outRawFragmentLengths {output.raw} --table {output.table} > {log.out} 2> {log.err}
+    '''
+
+rule mergeBam:
+    input:
+        lambda wildcards: expand(config['outDir'] + "/ShortBAM/{sample}.bam.bai", sample=ss[wildcards.CompCond])
+    output:
+        config['outDir'] + "/mergeBAM/{CompCond}.bam"
+    params:
+        lambda wildcards: ' '.join(expand(config['outDir'] + "/ShortBAM/{sample}.bam", sample=ss[wildcards.CompCond]))
+    log:
+        out = config['outDir'] + '/logs/mergeBam.{CompCond}.out',
+        err = config['outDir'] + '/logs/mergeBam.{CompCond}.err'
+    threads: 5
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+    shell:'''
+    sambamba merge -t 5 {output} {params}
     '''
