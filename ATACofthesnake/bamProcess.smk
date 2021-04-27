@@ -13,19 +13,21 @@ if not config['sampleSheet']:
 
 
 outList = []
+outList.append(
+    expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp']) +
+    expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
+    expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
+)
 if not config['peakSet']:
     # Create peaks.
-    outList.append(
-        expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp']) +
-        expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
-        expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
-    )
     if config['mergeBam']:
         if not config['sampleSheet']:
             # We need to merge bam files before peak calling
             # There is no sampleSheet --> merge all bam files.
             outList.append(
-                expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['Comp'])
+                expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['Comp']) +
+                expand(config['outDir'] + "/mergeBAM/{CompCond}.bed", CompCond=ss['Comp']) +
+                expand(config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak", CompCond=ss['Comp'])
             )
 print(outList)
 
@@ -148,3 +150,31 @@ rule mergeBam:
     shell:'''
     sambamba merge -t 5 {output} {params}
     '''
+rule mergeBamtoBed:
+    input:
+        config['outDir'] + "/mergeBAM/{CompCond}.bam"
+    output:
+        config['outDir'] + "/mergeBAM/{CompCond}.bed"
+    threads: 1
+    conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+    shell:'''
+    bamToBed -i {input} > {output}
+    '''
+rule MACS2_mergeBam:
+	input:
+		config['outDir'] + "/mergeBAM/{CompCond}.bed"
+	output:
+		config['outDir'] + "/MACS2/{CompCond}_peaks.narrowPeak"
+	log:
+		out = config['outDir'] + '/logs/MACS2_mergeBAM.{CompCond}.out',
+		err = config['outDir'] + '/logs/MACS2_mergeBAM.{CompCond}.err'
+	params:
+		genomeSize = config['genomeSize'],
+		outName = lambda wildcards: wildcards.CompCond,
+		blackList = config['blackList'],
+		outDir = config['outDir'] + "/MACS2"
+	threads: 1
+	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	macs2 callpeak -t {input} -f BED --nomodel --shift -75 --extsize 150 -g {params.genomeSize} -n {params.outName} -q 0.01 --outdir {params.outDir} --keep-dup all > {log.out} 2> {log.err}
+	'''
