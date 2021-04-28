@@ -137,7 +137,7 @@ def main():
     else:
         clusterCMD = "SlurmEasy -t {threads} -l " + paramDic['outDir'] + "/cluster_logs -n {rule}"
     with console.status("[bold green] Running snakemake..."):
-        snakemake.snakemake(
+        prePeak = snakemake.snakemake(
             os.path.join(paramDic["baseDir"],'bamProcess.smk'),
             cores=10,
             nodes=5,
@@ -152,6 +152,13 @@ def main():
             conda_frontend='conda',
             config=paramDic
         )
+    if prePeak:
+        print("[green]bamProcess run succesful.[/green]")
+        # shipPeaks.
+    else:
+        print("[red]bamProcess failed. Check logs.[/red]")
+        sys.exit()
+        
 
 #        if not args.dryRun:
 #            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
