@@ -206,6 +206,7 @@ rule MACS2_nptobed:
     cut -f1-3 {input} > {output}
     '''
 
+
 rule unionMACS2_merge:
     input:
         lambda wildcards: expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.narrowPeak", CompCond=ss['CompCondDic'][wildcards.Comp])
