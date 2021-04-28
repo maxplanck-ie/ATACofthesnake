@@ -150,60 +150,41 @@ def main():
             scheduler='greedy',
             printshellcmds=True,
             conda_frontend='conda',
-            config=paramDic
+            config=paramDic,
+            dryrun=args.dryRun
         )
-    if prePeak:
-        print("[green]bamProcess run succesful.[/green]")
-        # shipPeaks.
-    else:
-        print("[red]bamProcess failed. Check logs.[/red]")
-        sys.exit()
-        
-
-#        if not args.dryRun:
-#            diffStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
-#            cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-#            max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, scheduler='greedy',
-#            printshellcmds=False,conda_frontend='conda') #probably shift to mamba 
-#            if diffStatus == True:
-#                print("diffAnalysis completed succesfully.")
-#            else:
-#                print("Error in diffAnalysis!")
-#        else:
-#            # Not clear to me how I could create DAG pdf from API easily. Revert to subprocess.
-#            snakemakeCMD = "snakemake -s " + os.path.join(paramDic["baseDir"], 'diffAcc.smk') + \
-#                " --cores 10 --latency-wait 300 --max-jobs-per-second 1" \
-#                " --rulegraph --use-conda --conda-prefix " + args.condaPrefix + \
-#                " --dryrun --conda-frontend conda"
-#            print(snakemakeCMD)
-#            if args.DAG:
-#                dryRun = subprocess.Popen(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
-#                subprocess.check_call("dot -Tpdf -o DAG.pdf".format(args.outDir), stdin=dryRun.stdout, shell=True)
-#            else:
-#                dryRun = subprocess.run(snakemakeCMD, stdout=subprocess.PIPE, shell=True)
-            #ruleGraph = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffAcc.smk'),
-            #cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-            #max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix, dryrun=True, printrulegraph=True)
-
-#    if args.downStream and not args.dryRun and diffStatus == True:
-#        print("Starting up with downstream analysis.")
-#        print("Parsing the comparisons and including those with at least 10 up- and down regulated regions...")
-#        paramDic_diff = misc.checkNumDiff(paramDic)
-#        if 'diffComp' in paramDic_diff:
-#            with open('Parameters_downstream.yaml', 'w') as f:
-#                yaml.dump(paramDic_diff, f, sort_keys=False, Dumper=NoAliasDumper)
-#            print("Launching snakemake")
-#            with console.status("[bold green] Running snakemake for downstream analysis..."):
-#                downStatus = snakemake.snakemake(os.path.join(paramDic["baseDir"], 'diffDownstream.smk'),
-#                cores=10, nodes=5, latency_wait=300, max_jobs_per_second=1, cluster=clusterCMD,
-#                max_status_checks_per_second=1, use_conda=True, conda_prefix=args.condaPrefix)
-#            if downStatus == True:
-#                print("downstream analysis completed succesfully.")
-#        else:
-#            print("Not enough differential regions. Stopping.")
-    
-    ## Compile pdf.
-    #misc.createTexfromTemplate(os.path.join(paramDic["baseDir"], 'template.tex'), paramDic)
+        if prePeak:
+            print("[green]bamProcess run succesful.[/green]")
+            if paramDic['sampleSheet'] and not args.dryRun:
+                #Only invoke downStream motifs etc. if we have enough significant sites.
+                ss = misc.readss(paramDic['sampleSheet'], paramDic['Samples'])
+                paramDic['diffComp'] = misc.checkNumDiff(ss, paramDic['outDir'])
+                if paramDic['diffComp']:
+                    print("Differential regions found in at least 1 comparison. Invoking downstream processing.")
+                    postPeak = snakemake.snakemake(
+                        os.path.join(paramDic["baseDir"],'diffDown.smk'),
+                        cores=10,
+                        nodes=5,
+                        latency_wait=300,
+                        max_jobs_per_second=1,
+                        cluster=clusterCMD,
+                        max_status_checks_per_second=1,
+                        use_conda=True,
+                        conda_prefix=args.condaPrefix,
+                        scheduler='greedy',
+                        printshellcmds=True,
+                        conda_frontend='conda',
+                        config=paramDic
+                    )
+                    if postPeak:
+                        print("[green]postPeak run succesful.[/green]")
+                    else:
+                        print("[red]bamProcess failed, check the logs.[/red]")
+                else:
+                    print("not enough differential regions found for motif analysis.")
+        else:
+            print("[red]bamProcess failed. Check logs.[/red]")
+            sys.exit()
 
 if __name__ == "__main__":
     main()

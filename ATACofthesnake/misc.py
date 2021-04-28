@@ -23,9 +23,10 @@ def checkExist(filesList):
 def returnScriptPath():
     return os.path.dirname(__file__)
 
-def checkNumDiff(paramDic):
-    for Comp in paramDic['Comp']:
-        compFolder = "AOS/diffAcc_" + str(Comp)
+def checkNumDiff(ss, outDir):
+    diffComp = []
+    for Comp in ss['Comp']:
+        compFolder = os.path.join(outDir, "diffAcc_" + str(Comp))
         countUp = 0
         countDown = 0
         with open(os.path.join(compFolder,
@@ -36,11 +37,9 @@ def checkNumDiff(paramDic):
                   str(Comp) + '_edgeR_annotated_DOWN.tsv')) as f:
             for line in f:
                 countDown += 1
-        if countUp > 11 and countUp > 11:
-            if 'diffComp' not in paramDic:
-                paramDic['diffComp'] = {}
-            paramDic['diffComp'][Comp] = paramDic['Comp'][Comp]
-    return paramDic
+        if countUp > 10 and countUp > 10:
+            diffComp.append(Comp)
+    return diffComp
 
 
 def setCeil(pdSer):
