@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import sys
+import glob
 import rich
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -48,24 +49,21 @@ def setCeil(pdSer):
     return np.ceil(maxSerScale)
 
 
-def plotter(what, inFiles, outFile, conds=None, allFiles=None):
+def plotter(what, inFiles, outFile, conds=None, outDir=None):
     colors = ["windows blue",
               "amber", "greyish",
               "faded green", "dusty purple"]
     sns.set_palette(sns.xkcd_palette(colors))
-    outDir = outFile.split('/')[0]
     if what == 'frip':
         res = []
         for sample in inFiles:
-            for i in sample:  # snakemake returns a nested list.
-                filestr = outDir + '/QC/' + str(i) + '.FRiP.txt'
-                with open(filestr) as f:
-                    for line in f:
-                        if line.strip().split()[0] != 'sample':
-                            sample = str(line.strip().split()[0])
-                            frip = float(line.strip().split()[2])
-                            gcov = float(line.strip().split()[3])
-                            res.append([sample, frip, gcov])
+            with open(sample) as f:
+                for line in f:
+                    if line.strip().split()[0] != 'sample':
+                        sample = str(line.strip().split()[0])
+                        frip = float(line.strip().split()[2])
+                        gcov = float(line.strip().split()[3])
+                        res.append([sample, frip, gcov])
         df = pd.DataFrame(res)
         df.columns = ['sample', 'frip', 'peak_genome_coverage']
         df = pd.melt(df, id_vars='sample')
@@ -156,14 +154,10 @@ def diffCount(Complist):
     return retainComp
 
 
-def returnCompfromSample(sample, paramDic):
-    compList = []
-    for comp in paramDic['Comp']:
-        if sample in paramDic['Comp'][comp]['Samples']:
-            compList.append(
-                paramDic['Loc']['outDir'] + "/MACS2/{}_union_peaks.bed".format(comp))
-    if len(compList) == 1:
-        return compList[0]
+def returnCompfromSample(sample, ss, outDir):
+    for comparison in ss['Comp']:
+        if sample in ss[comparison]:
+            return os.path.join(outDir, 'Peaks', comparison + "_peaks.bed")
 
 
 def summitIncorp(finalhits, summits, output):
@@ -223,44 +217,6 @@ def sortGTF(GTF, outDir):
                index=False,
                sep='\t')
 
-
-def conditionsfromCount(countmat, paramDic):
-    # exception to return if countmat doesn't exist -> dryrun fails
-    if not os.path.exists(countmat):
-        return -1
-    else:
-        with open(countmat) as f:
-            header = f.readline().strip().split()
-            header = header[3:]
-        conditionOrder = []
-        flipDic = {}
-        for cond in paramDic:
-            for sample in paramDic[cond]:
-                flipDic[sample] = cond
-        for sample in header:
-            print(sample)
-            conditionOrder.append(flipDic[sample])
-        return ','.join(conditionOrder)
-
-def batchesfromCount(countmat, paramDic):
-    # exception to return if countmat doesn't exist -> dryrun fails
-    if not os.path.exists(countmat):
-        return -1
-    else:
-        with open(countmat) as f:
-            header = f.readline().strip().split()
-            header = header[3:]
-        if paramDic['batchStatus'] == 1:
-            flipDic = {}
-            for i in range(len(paramDic['Samples'])):
-                flipDic[paramDic['Samples'][i]] = paramDic['Batch'][i]
-            batchOrder = []
-            for sample in header:
-                print(sample)
-                batchOrder.append(flipDic[sample])
-            return ','.join(batchOrder)
-
-
 def GTFtoTSS(GTF, outDir):
     TSS = []
     linecount = 0
@@ -302,6 +258,10 @@ def readBamDir(bamDir):
         sys.exit()
     return sorted(bams)
 
+def returnPeaks(outDir, Comp, mergeStatus):
+    print(Comp)
+    peakDir = 'MACS2_mergeBAM' if mergeStatus else 'MACS2'
+    return os.path.join(outDir, peakDir, Comp + "_peaks.bed")
 
 def readss(ss, bams):
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -351,3 +311,41 @@ def readss(ss, bams):
     else:
         print("Column headers not ok, (expected [Sample, Cond, Comp])")
         sys.exit()
+
+def conditionsfromCount(countmat, ss, comp):
+    # exception to return if countmat doesn't exist -> dryrun fails
+    if not os.path.exists(countmat):
+        return -1
+    else:
+        with open(countmat) as f:
+            header = f.readline().strip().split()
+            header = header[3:]
+        # Get the two condition names for a comparison.
+        conditions = ss['CompCondDic'][comp]
+        CompCond1 = comp + '_' + conditions[0]
+        CompCond2 = comp + '_' + conditions[1]
+        flipDic = {}
+        for sample in ss[CompCond1]:
+            flipDic[sample] = CompCond1
+        for sample in ss[CompCond2]:
+            flipDic[sample] = CompCond2
+        conditionOrder = []
+        for sample in header:
+            conditionOrder.append(flipDic[sample])
+        return ','.join(conditionOrder)
+
+def batchesfromCount(countmat, ss, comp):
+    # exception to return if countmat doesn't exist -> dryrun fails
+    if not os.path.exists(countmat):
+        return -1
+    else:
+        with open(countmat) as f:
+            header = f.readline().strip().split()
+            header = header[3:]
+        if 'Batch' in ss:
+            batchOrder = []
+            for sample in header:
+                batchOrder.append(ss['Batch'][sample])
+            return ','.join(batchOrder)
+        else:
+            return None
