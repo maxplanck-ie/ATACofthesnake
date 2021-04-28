@@ -29,7 +29,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
     - condaPrefix: path to your conda installation.
 
   - Flags (optional):
-    - sampleSheet: tsv file containing Sample, Cond, Comp columns (header is required.). An additional columns 'Batch' can be used to include batch in the Diff. acc. analysis.
+    - sampleSheet: To invoke differential accessibility. Provide tsv file containing Sample, Cond, Comp columns (header is required.). An additional columns 'Batch' can be used to include batch effects.
     - fragSizeMax: integer to set a maximum allowed fragment size. Defaults to 150.
     - peakSet: Provide a bed file containing peaks. If set, pipeline will use those instead of calling peaks with MACS2.
     - mergeBam: Flag to force merging of bamFiles (all of them if no sampleSheet is given, per condition if a sampleSheet is given) prior to peak calling.
