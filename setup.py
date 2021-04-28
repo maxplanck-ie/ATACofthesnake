@@ -10,7 +10,7 @@ setuptools.setup(
    scripts=['bin/ATAC'],
    packages=['ATACofthesnake'],
    package_data={"": ["diffAcc.smk",
-                      "diffDownstream.smk",
+                      "diffDown.smk",
                       "bamProcess.smk",
                       "template.tex",
                       "Rscripts/edgeR_scalefactors.R",
