@@ -112,23 +112,24 @@ def main():
     print("Parameters written out into {}".format(os.path.join(paramDic['outDir'], 'Parameters.yaml')))
 
     # Parse GTF file (grab TSS and sort for Uropa).
-    if not os.path.exists(
-        os.path.join(paramDic['outDir'],
-        "genes.sort.gtf")
-    ):
-        print("Sorting GTF for Uropa later on.")
-        misc.sortGTF(args.genes, paramDic['outDir'])
-    else:
-        print("Found a sorted GTF file. Moving on..")
-    if not os.path.isfile(
-        os.path.join(paramDic['outDir'],
-        "TSS.bed")
-    ):
-        print("Did not find TSS file, launching extraction.")
-        misc.GTFtoTSS(paramDic['outDir'] + "/genes.sort.gtf", paramDic['outDir'])
-    else:
-        print("Found TSS.bed. Moving on..")
-    print("So far so good, launching snakemake instances :smiley:")
+    if not args.dryRun:
+        if not os.path.exists(
+            os.path.join(paramDic['outDir'],
+            "genes.sort.gtf")
+        ):
+            print("Sorting GTF for Uropa later on.")
+            misc.sortGTF(args.genes, paramDic['outDir'])
+        else:
+            print("Found a sorted GTF file. Moving on..")
+        if not os.path.isfile(
+            os.path.join(paramDic['outDir'],
+            "TSS.bed")
+        ):
+            print("Did not find TSS file, launching extraction.")
+            misc.GTFtoTSS(paramDic['outDir'] + "/genes.sort.gtf", paramDic['outDir'])
+        else:
+            print("Found TSS.bed. Moving on..")
+        print("So far so good, launching snakemake instances :smiley:")
 
     # Launch snakemake
 
