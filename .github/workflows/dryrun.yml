@@ -49,6 +49,13 @@ jobs:
         echo -e 'WT2\tWT\tWTKO' >> ss.tsv
         echo -e 'KO1\tKO\tWTKO' >> ss.tsv
         echo -e 'KO2\tKO\tWTKO' >> ss.tsv
-        # dryrun
+        # dryRun with 4 modes:
+        # sampleSheet, mergeBam
+        ATAC --bamDir bams/ --sampleSheet ss.tsv --mergeBam --blackList blackList.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix $CONDA --dryRun --motifs motifs.meme
+        # no sampleSheet, mergeBam
+        ATAC --bamDir bams/ --mergeBam --blackList blackList.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix $CONDA --dryRun --motifs motifs.meme
+        # sampleSheet
         ATAC --bamDir bams/ --sampleSheet ss.tsv --blackList blackList.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix $CONDA --dryRun --motifs motifs.meme
+        # no sampleSheet
+        ATAC --bamDir bams/ --blackList blackList.bed --genes genes.gtf --genomeSize 1.87e9 --genomeFasta genome.fa --condaPrefix $CONDA --dryRun --motifs motifs.meme
         
