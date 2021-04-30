@@ -68,10 +68,10 @@ rule runMeme:
         upOut = lambda wildcards: config['outDir'] + '/diffAcc_' + wildcards.Comp + '/Motif/' + wildcards.Comp + "_up",
         downOut = lambda wildcards: config['outDir'] + '/diffAcc_' + wildcards.Comp + '/Motif/' + wildcards.Comp + "_down"
     log:
-        upOut = config['outDir'] + "logs/runMeme_up_{Comp}.out"
-        upErr = config['outDir'] + "logs/runMeme_up_{Comp}.err"
-        downOut = config['outDir'] + "logs/runMeme_up_{Comp}.out"
-        downErr = config['outDir'] + "logs/runMeme_up_{Comp}.err"
+        upOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out"
+        upErr = config['outDir'] + "/logs/runMeme_up_{Comp}.err"
+        downOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out"
+        downErr = config['outDir'] + "/logs/runMeme_up_{Comp}.err"
     threads: 1
     conda: os.path.join(config['baseDir'], 'envs','AOS_meme.yaml')
     shell:'''
