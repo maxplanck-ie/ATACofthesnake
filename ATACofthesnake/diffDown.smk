@@ -52,8 +52,8 @@ rule diffHeat:
         Matout = config['outDir'] + "/logs/diffMat_{Comp}.out",
         Materr = config['outDir'] + "/logs/diffMat_{Comp}.err"
     shell:'''
-    computeMatrix reference-point -S {params.bigwigs} -R {input.upBed} {input.downBed} --referencePoint center -a 2000 -b 2000 -out {output.outMat} -p {threads} --missingDataAsZero > {log.Matout} 2> {log.Materr}
-    plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap Blues > {log.Plotout} 2> {log.Ploterr}
+    computeMatrix reference-point -S {params.bigwigs} -R {input.upBed} {input.downBed} --referencePoint center -a 5000 -b 5000 -out {output.outMat} -p {threads} --missingDataAsZero > {log.Matout} 2> {log.Materr}
+    plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center > {log.Plotout} 2> {log.Ploterr}
     '''
 
 rule runMeme:
@@ -68,9 +68,9 @@ rule runMeme:
         upOut = lambda wildcards: config['outDir'] + '/diffAcc_' + wildcards.Comp + '/Motif/' + wildcards.Comp + "_up",
         downOut = lambda wildcards: config['outDir'] + '/diffAcc_' + wildcards.Comp + '/Motif/' + wildcards.Comp + "_down"
     log:
-        upOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out"
-        upErr = config['outDir'] + "/logs/runMeme_up_{Comp}.err"
-        downOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out"
+        upOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out",
+        upErr = config['outDir'] + "/logs/runMeme_up_{Comp}.err",
+        downOut = config['outDir'] + "/logs/runMeme_up_{Comp}.out",
         downErr = config['outDir'] + "/logs/runMeme_up_{Comp}.err"
     threads: 1
     conda: os.path.join(config['baseDir'], 'envs','AOS_meme.yaml')
