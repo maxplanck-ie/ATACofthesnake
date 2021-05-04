@@ -341,7 +341,7 @@ rule uropa:
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	threads: 5
 	shell:'''
-	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 10000 --internals 1 -p {params.prefix} -o {params.outDir} -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
+	uropa -b {input} -g {params.GTF} --summary --feature transcript --distance 20000 10000 --internals 1 -p {params.prefix} -o {params.outDir} -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type > {log.out} 2> {log.err}
 	'''
 
 rule countMat:
@@ -399,7 +399,7 @@ rule BigWigs:
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
 	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
-	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 25 --extendReads --ignoreDuplicates -bl {params.blackList} > {log.out} 2> {log.err}
+	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 1 -bl {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule computeMatrix:
@@ -411,7 +411,7 @@ rule computeMatrix:
 		out = config['outDir'] + "/logs/computeMatrix.{Comp}.out",
 		err = config['outDir'] + "/logs/computeMatrix.{Comp}.err"
 	params:
-		bed = "TSS.bed"
+		bed = config['outDir'] + "/TSS.bed"
 	threads: 10
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''

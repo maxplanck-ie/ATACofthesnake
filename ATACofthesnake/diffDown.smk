@@ -53,7 +53,7 @@ rule diffHeat:
         Materr = config['outDir'] + "/logs/diffMat_{Comp}.err"
     shell:'''
     computeMatrix reference-point -S {params.bigwigs} -R {input.upBed} {input.downBed} --referencePoint center -a 5000 -b 5000 -out {output.outMat} -p {threads} --missingDataAsZero > {log.Matout} 2> {log.Materr}
-    plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center > {log.Plotout} 2> {log.Ploterr}
+    plotHeatmap -m {output.outMat} -out {output.heatmap} --refPointLabel center --colorMap "Blues" > {log.Plotout} 2> {log.Ploterr}
     '''
 
 rule runMeme:
