@@ -24,14 +24,14 @@ if (length(batches) > 1) {
     design <- model.matrix(~condF)
 }
 
-keep <- filterByExpr(countmat, design=design)
+keep <- filterByExpr(countmat, design=design,min.count = 5, min.prop = 0.49)
 countmat <- countmat[keep,]
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 fit <- glmQLFit(countmat, design=design,dispersion = countmat_disp)
 res <- glmQLFTest(fit, coef=ncol(fit$design))
 ressig <- topTags(res, n = Inf, adjust.method = "BH", sort.by = "PValue", p.value = 1)
 #ressig_LFCcut <- ressig$table[abs(ressig$table$logFC) > 1,]
-ressig_LFCcut <- ressig$table[ressig$table$FDR < 0.05,]
+ressig_LFCcut <- ressig$table[ressig$table$FDR < 0.1,]
 ressig$table$peak_id <- rownames(ressig$table)
 ressig_LFCcut$peak_id <- rownames(ressig_LFCcut)
 write.table(ressig$table, file=outfileall, quote=FALSE, sep='\t',row.names=FALSE)

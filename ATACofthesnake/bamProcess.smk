@@ -36,7 +36,7 @@ if config['mergeBam']:
         # Merge bamFiles per condition
         outList.append(
             expand(config['outDir'] + "/mergeBAM/{CompCond}.bam", CompCond=ss['CompCond']) +
-            expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.bed", CompCond=ss['CompCond']) +
+            #expand(config['outDir'] + "/MACS2_mergeBAM/{CompCond}_peaks.bed", CompCond=ss['CompCond']) +
             expand(config['outDir'] + '/MACS2_mergeBAM/{Comp}_peaks.bed', Comp=ss['Comp'])
         )
 else:
@@ -61,6 +61,7 @@ if config['sampleSheet']:
     )
 print(outList)
 
+ruleorder: MACS2_nptobed > unionMACS2_merge 
 localrules: fripPlotter, idxStatPlotter, maPlot
 rule all:
     input:
