@@ -115,18 +115,18 @@ def plotter(what, inFiles, outFile, conds=None, outDir=None):
         # Fetch a string containing the condition, and how many regions
         upStr = conds[0][1] + \
             '_Open n=' + \
-            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
+            str(len(deDF.loc[(deDF['FDR'] < 0.1) &
                 (deDF['logFC'] > 0), ]))
         downStr = conds[0][0] + \
             '_Open n=' + \
-            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
+            str(len(deDF.loc[(deDF['FDR'] < 0.1) &
                 (deDF['logFC'] < 0), ]))
         # Define status column and fill conditionaly
         deDF['Status'] = 'nonSign n=' + \
-                         str(len(deDF.loc[deDF['FDR'] > 0.05, ]))
-        deDF.loc[(deDF['FDR'] < 0.05) &
+                         str(len(deDF.loc[deDF['FDR'] > 0.1, ]))
+        deDF.loc[(deDF['FDR'] < 0.1) &
                  (deDF['logFC'] > 0), 'Status'] = upStr
-        deDF.loc[(deDF['FDR'] < 0.05) &
+        deDF.loc[(deDF['FDR'] < 0.1) &
                  (deDF['logFC'] < 0), 'Status'] = downStr
         # Plot and save
         g = sns.scatterplot(data=deDF,

@@ -356,7 +356,7 @@ rule countMat:
 		err = config['outDir'] + "/logs/countMat.{Comp}.err"
 	params:
 		blackList = config['blackList'],
-		samples = lambda wildcards: ' '.join(expand(config['outDir'] + "/ShortBAM/{sample}.bam", sample=ss[wildcards.Comp]))
+		samples = lambda wildcards: ' '.join(expand(config['bamDir'] + "/{sample}.bam", sample=ss[wildcards.Comp]))
 	threads: 20
 	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
 	shell:'''
