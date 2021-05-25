@@ -115,11 +115,11 @@ def plotter(what, inFiles, outFile, conds=None, outDir=None):
         # Fetch a string containing the condition, and how many regions
         upStr = conds[0][1] + \
             '_Open n=' + \
-            str(len(deDF.loc[(deDF['FDR'] < 0.1) &
+            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
                 (deDF['logFC'] > 0), ]))
         downStr = conds[0][0] + \
             '_Open n=' + \
-            str(len(deDF.loc[(deDF['FDR'] < 0.1) &
+            str(len(deDF.loc[(deDF['FDR'] < 0.05) &
                 (deDF['logFC'] < 0), ]))
         # Define status column and fill conditionaly
         deDF['Status'] = 'nonSign n=' + \
