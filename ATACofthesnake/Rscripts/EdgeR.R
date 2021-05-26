@@ -9,7 +9,7 @@ outfilesign = args[[3]]
 outfileall = args[[4]]
 batches = args[[5]]
 
-conds = strsplit(conds, ",")[[1]]
+conds = unlist(strsplit(conds, ","))
 countmat <- read.csv(mat, sep='\t')
 rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
 countmat <- countmat[-c(1:3)]
@@ -17,6 +17,9 @@ rownames(countmat) <- rows
 
 condF =  factor(conds, levels=(unique(conds)))
 
+batches = unlist(strsplit(batches, ","))
+print(conds)
+print(batches)
 if (length(batches) > 1) {
     batchF = factor(batches, levels(unique(batches)))
     design <- model.matrix(~batchF + condF)
