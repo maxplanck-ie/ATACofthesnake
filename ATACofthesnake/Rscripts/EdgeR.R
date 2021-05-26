@@ -20,8 +20,8 @@ condF =  factor(conds, levels=(unique(conds)))
 batches = unlist(strsplit(batches, ","))
 print(conds)
 print(batches)
-if (length(batches) > 1) {
-    batchF = factor(batches, levels(unique(batches)))
+if (length(unique(batches)) > 1) {
+    batchF = factor(batches, levels=(unique(batches)))
     design <- model.matrix(~batchF + condF)
 } else {
     design <- model.matrix(~condF)
