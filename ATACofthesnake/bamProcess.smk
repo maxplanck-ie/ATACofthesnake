@@ -15,8 +15,6 @@ if not config['sampleSheet']:
 else:
     ss = misc.readss(config['sampleSheet'], config['Samples'])
 
-print(ss)
-
 outList = []
 outList.append(
     expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp']) +
@@ -59,7 +57,6 @@ if config['sampleSheet']:
         expand(config['outDir'] + "/Figures/{Comp}_maPlot.png", Comp=ss['Comp']) +
         expand(config['outDir'] + "/diffAcc_{Comp}/{Comp}_edgeR_annotated_UP.tsv", Comp=ss['Comp'])
     )
-print(outList)
 
 ruleorder: MACS2_nptobed > unionMACS2_merge 
 localrules: fripPlotter, idxStatPlotter, maPlot
