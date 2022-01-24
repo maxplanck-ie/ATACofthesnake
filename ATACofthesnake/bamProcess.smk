@@ -19,7 +19,8 @@ outList = []
 outList.append(
     expand(config['outDir'] + "/Figures/{CompCond}.mtFrac.png", CompCond = ss['Comp']) +
     expand(config['outDir'] + "/ShortBAM/{Sample}.bam.bai", Sample=config['Samples']) +
-    expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp'])
+    expand(config['outDir'] + "/deepTools/{CompCond}.raw.fragSize.tsv", CompCond = ss['Comp']) +
+    expand(config['outDir'] + "/BigWigs/{Sample}.RPKM.bw", Sample=config['Samples'])
 )
 
 if config['mergeBam']:
@@ -398,6 +399,25 @@ rule BigWigs:
 	shell:'''
 	SCALEFAC=$(grep {params.sampleName} {input.sf} | cut -f2 -d ' ')
 	bamCoverage --scaleFactor $SCALEFAC -b {input.inFile} -o {output} -p {threads} -bs 1 -bl {params.blackList} > {log.out} 2> {log.err}
+	'''
+
+rule BigWigs_RPKM:
+	input:
+		inFile = config['outDir'] + "/ShortBAM/{sample}.bam",
+		inBai = config['outDir'] + "/ShortBAM/{sample}.bam.bai"
+	output:
+		config['outDir'] + "/BigWigs/{sample}.RPKM.bw"
+	log:
+		out = config['outDir'] + "/logs/BigWigs.{sample}.RPKM.out",
+		err = config['outDir'] + "/logs/Bigwigs.{sample}.RPKM.err"
+	params:
+		sampleName = "{sample}",
+		blackList = config['blackList'],
+		genomeSize = config['genomeSize']
+	threads: 10
+	conda: os.path.join(config['baseDir'], 'envs','AOS_SeqTools.yaml')
+	shell:'''
+	bamCoverage --normalizeUsing RPKM -b {input.inFile} -o {output} -p {threads} -bs 1 -bl {params.blackList} > {log.out} 2> {log.err}
 	'''
 
 rule computeMatrix:
