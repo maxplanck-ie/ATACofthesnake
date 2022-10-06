@@ -1,4 +1,3 @@
-name: AOS_SeqTools
 channels:
   - conda-forge
   - bioconda
@@ -7,7 +6,6 @@ dependencies:
   - bioconductor-edger=3.32.0
   - deeptools=3.5.0
   - macs2=2.2.7.1
-  - python=3.8.8
-  - sambamba=0.8.0
-  - samtools=1.10
-  - uropa=4.0.0
+  - samtools >=1.16
+  - htslib >=1.16
+  - uropa >=4.0.0

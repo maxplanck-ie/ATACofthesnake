@@ -1,3 +1,4 @@
 .ci/BAMs*
 .coverage*
 *eggs*
+*__pycache__*

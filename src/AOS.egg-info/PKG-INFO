@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: AOS
+Version: 0.0.1.dev155
+Summary: ATACofthesnake
+Home-page: https://www.github.com/maxplanck-ie/ATACofthesnake
+Author: WardDeb
+Author-email: deboutte@ie-freiburg.mpg.de
+License: MIT
+Keywords: ATAC, differential accessibility, motifs
+Requires-Python: >=3.7
+License-File: LICENSE
+License-File: AUTHORS
+
+ATACofthesnake
