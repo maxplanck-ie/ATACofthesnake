@@ -22,17 +22,23 @@ class Preflight():
         samplesheet,
         design
     ):
+        def retabspath(_p):
+            if _p:
+                return(os.path.abspath(_p))
+            else:
+                return('')
         print("[red][bold]---------- preflight ----------[/red][/bold]")
         self.dirs = {
             'bamdir': os.path.abspath(bamdir),
-            'outputdir': os.path.abspath(outputdir)
+            'outputdir': os.path.abspath(outputdir),
+            'scriptsdir': os.path.dirname(__file__)
         }
         self.files = {
-            'readattractingregions': readattractingregions,
-            'gtf': gtf,
-            'fna': genomefasta,
-            'motif': motifs,
-            'samplesheet': samplesheet,
+            'readattractingregions': retabspath(readattractingregions),
+            'gtf': retabspath(gtf),
+            'fna': retabspath(genomefasta),
+            'motif': retabspath(motifs),
+            'samplesheet': retabspath(samplesheet),
         }
         self.vars = {
             'genomesize': genomesize,
@@ -41,9 +47,25 @@ class Preflight():
             'samplesheet': samplesheet,
             'design': design
         }
-        self.samples = glob.glob(
+        self.samples = [os.path.basename(x).replace('.bam', '') for x in glob.glob(
             os.path.join(os.path.abspath(bamdir), '*.bam')
-        )
+        )]
+        self.envs = {
+            'seqtools': os.path.join(
+                self.dirs['scriptsdir'], 'envs', 'seqtools.yml'
+            ),
+            'tobias': os.path.join(
+                self.dirs['scriptsdir'], 'envs', 'tobias.yml'
+            )
+        }
+        self.rules = {
+            'wf': os.path.join(
+                self.dirs['scriptsdir'], 'workflow.smk'
+            ),
+            'peaks': os.path.join(
+                self.dirs['scriptsdir'], 'rules', 'peaks.smk'
+            )
+        }
     def dumpconf(self):
         '''
         makes output directory if not existing, dumps config yaml in there.
@@ -62,13 +84,16 @@ class Preflight():
                 f,
                 default_flow_style=False
             )
+        self.files['configfile'] = _conf
 
     def retconf(self):
         return(
             {
                 'dirs': self.dirs,
                 'files': self.files,
-                'variables': self.vars,
-                'samples': self.samples
+                'vars': self.vars,
+                'samples': self.samples,
+                'rules': self.rules,
+                'envs': self.envs
             }
         )

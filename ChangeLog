@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* ignore build
+* purge&ignore
+* restructure to make code less obfuscated + pave way for multicomps
 * egg exclude
 * RPKM bigwigs
 * update readme

@@ -22,6 +22,11 @@ class Preflight():
         samplesheet,
         design
     ):
+        def retabspath(_p):
+            if _p:
+                return(os.path.abspath(_p))
+            else:
+                return('')
         print("[red][bold]---------- preflight ----------[/red][/bold]")
         self.dirs = {
             'bamdir': os.path.abspath(bamdir),
@@ -29,11 +34,11 @@ class Preflight():
             'scriptsdir': os.path.dirname(__file__)
         }
         self.files = {
-            'readattractingregions': readattractingregions,
-            'gtf': gtf,
-            'fna': genomefasta,
-            'motif': motifs,
-            'samplesheet': samplesheet,
+            'readattractingregions': retabspath(readattractingregions),
+            'gtf': retabspath(gtf),
+            'fna': retabspath(genomefasta),
+            'motif': retabspath(motifs),
+            'samplesheet': retabspath(samplesheet),
         }
         self.vars = {
             'genomesize': genomesize,
@@ -55,7 +60,7 @@ class Preflight():
         }
         self.rules = {
             'wf': os.path.join(
-                self.dirs['scriptsdir'], 'AOS.smk'
+                self.dirs['scriptsdir'], 'workflow.smk'
             ),
             'peaks': os.path.join(
                 self.dirs['scriptsdir'], 'rules', 'peaks.smk'
@@ -86,7 +91,7 @@ class Preflight():
             {
                 'dirs': self.dirs,
                 'files': self.files,
-                'variables': self.vars,
+                'vars': self.vars,
                 'samples': self.samples,
                 'rules': self.rules,
                 'envs': self.envs

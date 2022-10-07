@@ -12,10 +12,12 @@
 import rich_click as click
 from rich.console import Console
 from rich import inspect
-import yaml
 import os
+import snakemake
 import shutil
+import yaml
 from AOS.preflight import Preflight
+
 
 @click.command(
         context_settings=dict(
@@ -67,7 +69,8 @@ from AOS.preflight import Preflight
     '-b',
     '--readattractingregions',
     type=click.Path(exists=True),
-    help='Specify a bed file containing read attracting regions.'
+    required=True,
+    help='Specify a bed file containing read attracting regions. Should contain the mitochondrial genome at least.'
 )
 @click.option(
     '-m',
@@ -108,5 +111,16 @@ def main(bamdir,
         os.path.basename(pf.dirs['outputdir'])
     ))
     pf.dumpconf()
-    print("Lol {}".format(os.path.dirname(__file__)))
-
+    inspect(pf)
+    console = Console()
+    with console.status("[bold green] Running snakemake..."): 
+        snakemake.main(
+            [
+                '-s', pf.rules['wf'],
+                '--profile', pf.vars['snakemakeprofile'],
+                '--max-jobs-per-second', '1',
+                '-p',
+                '--configfile', pf.files['configfile'],
+                '-d', pf.dirs['outputdir']
+            ]
+        )
