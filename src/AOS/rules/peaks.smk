@@ -29,13 +29,23 @@ rule alSieve:
     shortb = 'sieve/{sample}.bam',
     qc = 'qc/{sample}_sieve.txt',
   conda: config['envs']['seqtools']
-  threads: 15
+  threads: 10
   params:
     rar = '--blackListFileName {}'.format(config['files']['readattractingregions']),
     size = '--maxFragmentLength {} --minFragmentLength 0'.format(config['vars']['fragsize'])
   shell:'''
   alignmentSieve --bam {input.bam} --outFile {output.shortb} --filterMetrics {output.qc} -p {threads} {params.rar} {params.size}
-  samtools index -@ {threads} {output.shortb}
+  '''
+
+rule ixSieve:
+  input:
+    'sieve/{sample}.bam'
+  output:
+    'sieve/{sample}.bam.bai'
+  conda: config['envs']['seqtools']
+  threads: 5
+  shell:'''
+  samtools index -@ {threads} {input}
   '''
 
 rule ixStat:
@@ -60,3 +70,4 @@ rule mitoPlot:
     qcdir= 'qc'
   run:
     qcplotter(params.qcdir, output.png)
+

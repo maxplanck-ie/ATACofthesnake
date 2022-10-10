@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* rewrite - after alsieve
 * ignore build
 * purge&ignore
 * restructure to make code less obfuscated + pave way for multicomps
