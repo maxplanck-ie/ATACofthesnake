@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* cap snakemake -> tmp & profile
 * rewrite - after alsieve
 * ignore build
 * purge&ignore
