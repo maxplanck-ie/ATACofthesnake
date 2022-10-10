@@ -3,4 +3,4 @@
 *eggs*
 *__pycache__*
 *.egg-info
-build*
+*build*
