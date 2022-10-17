@@ -2,6 +2,22 @@
 
 Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
 
+## Important
+
+All samples in a 'run' have to belong to the same group, e.g. out of all individual peaks, a union will be made.
+ALl samples will be included in the model
+comparison sets.
+
+
+
+
+
+
+
+
+
+
+
 
 ## Installation
 

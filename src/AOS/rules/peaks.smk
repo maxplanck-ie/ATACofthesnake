@@ -48,26 +48,91 @@ rule ixSieve:
   samtools index -@ {threads} {input}
   '''
 
-rule ixStat:
+
+rule bamtobed:
   input:
-    bam = 'input/{sample}.bam',
-    bai = 'input/{sample}.bam.bai'
+    b = 'sieve/{sample}.bam',
+    i = 'sieve/{sample}.bam.bai'
   output:
-    ixstat = 'qc/{sample}_ix.tsv'
+    'sieve/{sample}.bed'
   conda: config['envs']['seqtools']
   threads: 1
   shell:'''
-  set +o pipefail;
-  samtools idxstats {input.bam} | cut -f1,3 > {output.ixstat}
+  bedtools bamtobed -i {input.b} > {output}
   '''
 
-rule mitoPlot:
+rule peaks:
   input:
-    expand('qc/{sample}_ix.tsv', sample=config['samples'])
+    'sieve/{sample}.bed'
   output:
-    png = 'figures/mitofraction.png'
+    'peaks/{sample}_peaks.narrowPeak'
   params:
-    qcdir= 'qc'
-  run:
-    qcplotter(params.qcdir, output.png)
+    gsize = config['vars']['genomesize'],
+    outname = lambda wildcards: wildcards.sample,
+    rar = config['files']['readattractingregions'],
+    outdir = 'peaks'
+  conda: config['envs']['seqtools']
+  threads: 1
+  shell:'''
+  macs2 callpeak -t {input} \
+    -f BED \
+    --nomodel --shift -75 \
+    --extsize 150 \
+    -g {params.gsize} \
+    -n {params.outname} \
+    -q 0.01 \
+    --outdir {params.outdir} \
+    --keep-dup all
+  '''
+ 
+rule peakmerg:
+  input:
+    expand('peaks/{sample}_peaks.narrowPeak', sample=config['samples'])
+  output:
+    'peakset/peaks.bed'
+  threads:1
+  conda: config['envs']['seqtools']
+  shell:'''
+  cat {input} | sort -k1,1 -k2,2n | bedtools merge > {output}
+  '''
 
+rule uropa:
+  input:
+    'peakset/peaks.bed'
+  output:
+    'peakset/peaks_uropa_finalhits.txt'
+  params:
+    gtf = config['files']['gtf'],
+    prefix = "peaks_uropa",
+    outdir = 'peakset'
+  conda: config['envs']['seqtools']
+  threads: 5
+  shell:'''
+  uropa -b {input} \
+    -g {params.gtf} \
+    --summary --feature transcript \
+    --distance 20000 10000 \
+    --internals 1 -p {params.prefix} \
+    -o {params.outdir} -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type
+  '''
+
+rule countmatrix:
+  input:
+    peaks = 'peakset/peaks.bed',
+    bams = expand('sieve/{sample}.bam', sample=config['samples'])
+  output:
+    tsv = 'peakset/counts.tsv',
+    npz = 'peakset/counts.npz'
+  params:
+    rar = '-bl {}'.format(
+        config['files']['readattractingregions']
+    )
+  threads: 10
+  conda: config['envs']['seqtools']
+  shell:'''
+  multiBamSummary BED-file --BED {input.peaks} {params.rar} \
+    -p {threads} --outRawCounts {output.tsv} -o {output.npz} \
+    -b {input.bams}
+  sed -i "s/'//g" {output.tsv}
+  sed -i 's/\.bam//g' {output.tsv}
+  '''

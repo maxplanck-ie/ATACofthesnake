@@ -88,12 +88,12 @@ from AOS.preflight import Preflight
 @click.option(
     '--samplesheet',
     default='',
-    help='specify a samplesheet (tsv formatted).'
+    help='specify a samplesheet (as a tsv file). See Readme for formatting.'
 )
 @click.option(
-    '--design',
+    '--comparison',
     default='',
-    help='specify a design.'
+    help='specify yaml file with comparisons. Required if a samplesheet is given.'
 )
 def main(bamdir,
         outputdir,
@@ -105,13 +105,21 @@ def main(bamdir,
         fragsize,
         snakemakeprofile,
         samplesheet,
-        design):
+        comparison):
+    # Init
     pf = Preflight(**locals())
-    print("Writing config file in {}".format(
+    # GTF
+    print("Sorting GTF & creating TSS.bed..")
+    pf.genTSS()
+    # comparisons.
+    pf.checkcomps()
+    # Write conf
+    print("Writing config file in {}..".format(
         os.path.basename(pf.dirs['outputdir'])
     ))
+    #
     pf.dumpconf()
-    inspect(pf)
+    #inspect(pf)
     console = Console()
     with console.status("[bold green] Running snakemake..."): 
         snakemake.main(

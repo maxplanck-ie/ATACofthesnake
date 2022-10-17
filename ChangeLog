@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* non-canonical deeptools to get rid of comp problem
+* ignore
 * cap snakemake -> tmp & profile
 * rewrite - after alsieve
 * ignore build
