@@ -4,8 +4,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 ## Important
 
-All samples in a 'run' have to belong to the same group, e.g. out of all individual peaks, a union will be made.
-If you have multiple groups, you need multiple runs of the program to analyse them appropriately.
+All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made.
 
 ## Installation
 
@@ -26,7 +25,9 @@ standard analysis:
    --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \
    --snakemakeprofile profile -b read_attracting_regions.bed
 
-This will generate:
+Note that this pipeline depends on snakemake, and forces you to have a (snakemake profile)[https://github.com/Snakemake-Profiles].
+The default analysis will generate:
+
  - sieved bamfiles.
 (cfr. --fragsize & --read_attracting_regions). Note that -b is obliged. At minimum this should contain the mitochondrial genome. Note that the mitochondrial contig is assumed to be named 'MT'. You can change this using --mitostring.
  - peaks called per bamfile (under peaks/) and a union of all peaks (peakset/).
@@ -80,51 +81,4 @@ wtdmso_vs_wtdrug:
     treatment: 'drug'
 ```
 
-In this case, 2 analysis would be performed (under folders 'comparison1' & 'wtdmso_vs_wtdrug'). Note that the full design will be used anyhow (which is good for incorporating e.g. batch factors).
-
-
-
-## Running:  
-
-> ATAC -h  
-
-> ATAC --bamDir [bamDir] --outDir [outputDir] --blackList [blacklist.bed] --genes [genes.gtf] --genomeFasta [genome.fa] --motifs [motifs.meme] --genomeSize [genomesize] --condaPrefix [path/to/conda]
-
-  - Flags (required):
-    - bamDir: Directory containing the bam files.
-    - outDir: Directory for output
-    - blackList: bed file containing regions to blacklist. Should at least contain the mitochondrial genome.
-    - genes: gtf file containing gene annotations.
-    - genomeFasta: fasta file containing genome of interest (uncompressed).
-    - motifs: transcription factor motifs (meme format).
-    - genomeSize: float or integer specifying effective genome size.
-    - condaPrefix: path to your conda installation.
-
-  - Flags (optional):
-    - sampleSheet: To invoke differential accessibility. Provide tsv file containing Sample, Cond, Comp columns (header is required.). An additional columns 'Batch' can be used to include batch effects.
-    - fragSizeMax: integer to set a maximum allowed fragment size. Defaults to 150.
-    - peakSet: Provide a bed file containing peaks. If set, pipeline will use those instead of calling peaks with MACS2.
-    - mergeBam: Flag to force merging of bamFiles (all of them if no sampleSheet is given, per condition if a sampleSheet is given) prior to peak calling.
-    - clusterCMD: grid submission. defaults to SlurmEasy.
-    
-  sampleSheet example:
-
-  | Sample | Cond | Comp |
-  | -- | -- | -- |
-  | WT1 | WT | WTvsKOa |
-  | WT2 | WT | WTvsKOa |
-  | KOa1 | KO | WTvsKOa |
-  | KOa2 | KO | WTvsKOa |
-  | WT1 | WT | WTvsKOb |
-  | WT2 | WT | WTvsKOb |
-  | KOb1 | KO | WTvsKOb |
-  | KOb2 | KO | WTvsKOb |
-
-  or if there is a batch effect:
-  
-  | Sample | Cond | Comp | Batch |
-  | -- | -- | -- | -- |
-  | WT1 | WT | WTvsKOa | Batch1 |
-  | WT2 | WT | WTvsKOa | Batch2 |
-  | KOa1 | KO | WTvsKOa | Batch1 |
-  | KOa2 | KO | WTvsKOa | Batch2 |
+In this case, 2 analyses would be performed (under folders 'comparison1' & 'wtdmso_vs_wtdrug'). In both cases all of the factor columns in the samplesheet will be used in the design.
