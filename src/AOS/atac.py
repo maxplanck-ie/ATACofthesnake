@@ -95,6 +95,18 @@ from AOS.preflight import Preflight
     default='',
     help='specify yaml file with comparisons. Required if a samplesheet is given.'
 )
+@click.option(
+    '--interaction',
+    default=False,
+    is_flag=True,
+    help='Wether or not to add interactions in the differential calculations. (e.g. ~factor1*factor2 is set, ~factor1+factor2 if not set).'
+)
+@click.option(
+    '--mitostring',
+    required=False,
+    default='MT',
+    help='Name of the mitochondrial contig. Defaults to MT.'
+)
 def main(bamdir,
         outputdir,
         gtf,
@@ -105,7 +117,10 @@ def main(bamdir,
         fragsize,
         snakemakeprofile,
         samplesheet,
-        comparison):
+        comparison,
+        interaction,
+        mitostring
+        ):
     # Init
     pf = Preflight(**locals())
     # GTF

@@ -1,5 +1,3 @@
-from AOS.helper import qcplotter
-
 rule lnBams:
   input: 
     os.path.join(config['dirs']['bamdir'], "{sample}.bam")
@@ -27,7 +25,7 @@ rule alSieve:
     bai = 'input/{sample}.bam.bai'
   output:
     shortb = 'sieve/{sample}.bam',
-    qc = 'qc/{sample}_sieve.txt',
+    qc = temp('qc/{sample}_sieve.txt')
   conda: config['envs']['seqtools']
   threads: 10
   params:

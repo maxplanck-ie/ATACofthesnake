@@ -22,7 +22,9 @@ class Preflight():
         fragsize,
         snakemakeprofile,
         samplesheet,
-        comparison
+        comparison,
+        interaction,
+        mitostring
     ):
         def retabspath(_p):
             if _p:
@@ -31,6 +33,9 @@ class Preflight():
                 return('')
 
         print("[red][bold]---------- preflight ----------[/red][/bold]")
+        if comparison and not samplesheet:
+            print("You need to provide a samplesheet when providing asking for a comparison.")
+            sys.exit()
         self.dirs = {
             'bamdir': os.path.abspath(bamdir),
             'outputdir': os.path.abspath(outputdir),
@@ -48,7 +53,8 @@ class Preflight():
             'genomesize': genomesize,
             'fragsize': fragsize,
             'snakemakeprofile': snakemakeprofile,
-            'samplesheet': samplesheet
+            'samplesheet': samplesheet,
+            'mitostring': mitostring
         }
         self.samples = [os.path.basename(x).replace('.bam', '') for x in glob.glob(
             os.path.join(os.path.abspath(bamdir), '*.bam')
@@ -83,6 +89,10 @@ class Preflight():
                 self.dirs['scriptsdir'], 'rscripts', 'edger.R'
             )
         }
+        if interaction:
+            self.interaction = '*'
+        else:
+            self.interaction = '+'
 
     def dumpconf(self):
         '''
@@ -118,7 +128,8 @@ class Preflight():
                 'envs': self.envs,
                 'rscripts': self.rscripts,
                 'comparison': self.comparison,
-                'design': self.design
+                'factors': self.factors,
+                'interaction': self.interaction
             }
         )
     
@@ -130,10 +141,9 @@ class Preflight():
                 ssdf = pd.read_csv(self.files['samplesheet'], sep='\t', header=0)
                 if list(ssdf.columns)[0].lower() != 'sample':
                     sys.exit("First column in samplesheet needs to be sample. Exiting.")
-                des = '~{}'.format('*'.join(list(ssdf.columns)[1::]))
+                factors = list(ssdf.columns)[1::]
                 with open(self.files['comparison']) as f:
                     cdat = yaml.safe_load(f)
-                print(cdat)
                 # Double Check.
                 for comp in cdat:
                     for group in cdat[comp]:
@@ -141,10 +151,10 @@ class Preflight():
                             if factor not in ssdf.columns:
                                 sys.exit("{} not in samplesheet. exiting.".format(factor))
                 self.comparison = cdat
-                self.design = des
+                self.factors = factors
         else:
             self.comparison = ''
-            self.design = ''
+            self.factors = ''
 
     def genTSS(self):
         _sortgtfo = os.path.join(

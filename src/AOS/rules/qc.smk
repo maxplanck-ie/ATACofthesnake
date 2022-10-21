@@ -1,25 +1,34 @@
+from AOS.helper import merge_idx, merge_sieve
+from AOS.helper import plotfragsize, plotfrip, plotixs, plotsieve
+
 rule ixStat:
   input:
     bam = 'input/{sample}.bam',
     bai = 'input/{sample}.bam.bai'
   output:
-    ixstat = 'qc/{sample}_ix.tsv'
+    temp('qc/{sample}_ix.tsv')
   conda: config['envs']['seqtools']
   threads: 1
   shell:'''
   set +o pipefail;
-  samtools idxstats {input.bam} | cut -f1,3 > {output.ixstat}
+  samtools idxstats {input.bam} | cut -f1,3 > {output}
   '''
 
-rule mitoPlot:
+rule mergeixStat:
   input:
     expand('qc/{sample}_ix.tsv', sample=config['samples'])
   output:
-    png = 'figures/mitofraction.png'
-  params:
-    qcdir= 'qc'
+    'qc/ixstat.tsv'
   run:
-    qcplotter(params.qcdir, output.png)
+    merge_idx(input, output) 
+
+rule mergesieve:
+  input:
+    expand('qc/{sample}_sieve.txt', sample=config['samples'])
+  output:
+    'qc/sieve.tsv'
+  run:
+    merge_sieve(input, output)
 
 rule fragsize:
   input:
@@ -54,7 +63,8 @@ rule bigwigs:
     bam = 'sieve/{sample}.bam',
     bai = 'sieve/{sample}.bam.bai'
   output:
-    bigwig = 'bw/{sample}.scalefac.bw'
+    bigwigsf = 'bw/{sample}.scalefac.bw',
+    bigwigrpkm = 'bw/{sample}.RPKM.bw'
   params:
     rar = config['files']['readattractingregions'],
     sample = "{sample}"
@@ -63,23 +73,69 @@ rule bigwigs:
   shell:'''
   SCALEFAC=$(grep {params.sample} {input.scalefactors} | cut -f2 -d ' ')
   bamCoverage --scaleFactor $SCALEFAC \
-    -b {input.bam} -o {output.bigwig} \
+    -b {input.bam} -o {output.bigwigsf} \
+    -p {threads} -bs 1 -bl {params.rar}
+  bamCoverage --normalizeUsing RPKM \
+    -b {input.bam} -o {output.bigwigrpkm} \
     -p {threads} -bs 1 -bl {params.rar}
   '''
 
-rule bigwigs_rpkm:
+rule frips:
   input:
     bam = 'sieve/{sample}.bam',
-    bai = 'sieve/{sample}.bam.bai'
+    bai = 'sieve/{sample}.bam.bai',
+    peaks = 'peakset/peaks.bed'
   output:
-    bigwig = 'bw/{sample}.RPKM.bw'
+    temp('qc/{sample}.frip.txt')
   params:
-    rar = config['files']['readattractingregions'],
-    sample = "{sample}"
-  threads: 10
+    sample = '{sample}'
   conda: config['envs']['seqtools']
   shell:'''
-  bamCoverage --normalizeUsing RPKM \
-    -b {input.bam} -o {output.bigwig} \
-    -p {threads} -bs 1 -bl {params.rar}
+  mapped=$(samtools view -c -F 4 {input.bam})
+  peakreads=$(samtools view -c -F 4 -L {input.peaks} {input.bam})
+  frip=$(bc -l <<< $peakreads/$mapped)
+  printf "%s\t%5.3f\n" {params.sample} $frip > {output}
   '''
+
+rule fripcombine:
+  input:
+    expand('qc/{sample}.frip.txt', sample=config['samples'])
+  output:
+    'qc/fripscores.txt'
+  shell:'''
+  cat {input} > {output}
+  '''
+
+rule plotfragsize:
+  input:
+    'qc/fragsize.tsv'
+  output:
+    'figures/fragmentsizes.png'  
+  run:
+    plotfragsize(input[0])
+
+rule plotfrip:
+  input:
+    'qc/fripscores.txt'
+  output:
+    'figures/fripscores.png'
+  run:
+    plotfrip(input[0])
+
+rule plotixs:
+  input:
+    'qc/ixstat.tsv'
+  output:
+    'figures/mitofraction.png'
+  params:
+    mito = config['vars']['mitostring']
+  run:
+    plotixs(input[0], params[0])
+
+rule plotsieve:
+  input:
+   'qc/sieve.tsv'
+  output:
+    'figures/alignmentsieve.png'
+  run:
+    plotsieve(input[0])

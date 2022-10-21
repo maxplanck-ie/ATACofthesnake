@@ -2,45 +2,44 @@ include: config['rules']['peaks']
 include: config['rules']['qc']
 include: config['rules']['de']
 
-def peaks():
-  return (
-    [
-      'peakset/peaks_uropa_finalhits.txt',
-      expand(
-        'bw/{sample}.scalefac.bw',
-        sample=config['samples']
-      ),
-      expand(
-        'bw/{sample}.RPKM.bw',
-        sample=config['samples']
-      )
-    ]
+def geto():
+  _f = []
+  _f.append(
+    'peakset/peaks_uropa_finalhits.txt'
   )
-
-def qc():
-  return (
+  _f.extend(
+    expand(
+      'bw/{sample}.scalefac.bw',
+      sample=config['samples']
+    )
+  )
+  _f.extend(
     [
       'figures/mitofraction.png',
-      'qc/fragsize.tsv'
+      'qc/fragsize.tsv',
+      'figures/alignmentsieve.png',
+      'figures/fragmentsizes.png'
     ]
   )
-
-def de():
   if config['comparison']:
-    return (
-      [
-        'ret'
-      ]
+    _f.extend(
+      expand(
+        '{comparison}/{comparison}_maplot.png',
+        comparison=config['comparison'].keys()
+      )
     )
-  else:
-    return ('')
+    _f.extend(
+      expand(
+        '{comparison}/diffpeaks.png',
+        comparison=config['comparison'].keys()
+      )
+    )
+  print(_f)
+  return (_f)
 
 localrules: lnBams
 rule all:
   input:
-    peaks(),
-    # QC
-    qc(),
-    # DE
-    #de()
+    geto()
+  
 

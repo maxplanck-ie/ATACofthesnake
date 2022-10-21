@@ -5,19 +5,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 ## Important
 
 All samples in a 'run' have to belong to the same group, e.g. out of all individual peaks, a union will be made.
-ALl samples will be included in the model
-comparison sets.
-
-
-
-
-
-
-
-
-
-
-
+If you have multiple groups, you need multiple runs of the program to analyse them appropriately.
 
 ## Installation
 
@@ -27,6 +15,74 @@ comparison sets.
 >  conda create -n ATACofthesnake python=3  
 >  conda activate ATACofthesnake  
 >  pip install ./  
+
+## Quickstart
+
+ > ATAC -h  
+
+standard analysis:
+
+ > ATAC --bamdir folder/with/bamfiles/ --outputdir outputfolder \
+   --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \
+   --snakemakeprofile profile -b read_attracting_regions.bed
+
+This will generate:
+ - sieved bamfiles.
+(cfr. --fragsize & --read_attracting_regions). Note that -b is obliged. At minimum this should contain the mitochondrial genome. Note that the mitochondrial contig is assumed to be named 'MT'. You can change this using --mitostring.
+ - peaks called per bamfile (under peaks/) and a union of all peaks (peakset/).
+ - bigwigs normalized using scalefactors and RPKM.
+ - a number of QC plots (figures/) and metrics (qc/)
+
+## Differential analysis
+
+Differential analysis requires the additional yaml file specifying the comparison (comparison.yaml) and the samplesheet.
+
+ > ATAC --bamdir folder/with/bamfiles/ --outputdir outputfolder \
+   --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \
+   --snakemakeprofile profile -b read_attracting_regions.bed \
+   --comparison comparison.yaml --samplesheet samplesheet.tsv
+
+The samplesheet has to be a tab-separated file with the first column containing the sample names (as the bam files are named), and the other columns containing the factors that will make up the design. For example:
+
+| sample | genotype | treatment |
+| -- | -- | -- |
+| sample1 | WT | DMSO |
+| sample2 | WT | DMSO |
+| sample3 | WT | drug |
+| sample4 | WT | drug |
+| sample5 | KO | DMSO |
+| sample6 | KO | DMSO |
+| sample7 | KO | drug |
+| sample8 | KO | drug |
+
+will result in the following design:
+
+ > ~ genoype + treatment
+
+or if --interaction is set:
+
+ > ~ genotype * treatment  
+
+Note the comparisons made need to be specified in the comparison.yaml file, a samplesheet alone is not enough. An example together with the above samplesheet would be:
+
+```bash
+comparison1:
+  group1:
+    genotype: 'WT'
+  group2:
+    genotype: 'KO'
+wtdmso_vs_wtdrug:
+  wtdmso:
+    genotype: 'WT'
+    treatment: 'DMSO'
+  wtdrug:
+    genotype: 'WT'
+    treatment: 'drug'
+```
+
+In this case, 2 analysis would be performed (under folders 'comparison1' & 'wtdmso_vs_wtdrug'). Note that the full design will be used anyhow (which is good for incorporating e.g. batch factors).
+
+
 
 ## Running:  
 
