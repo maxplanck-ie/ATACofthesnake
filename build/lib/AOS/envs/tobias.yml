@@ -1,6 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - tobias >= 0.13.3
-  - meme >= 5.4.1
