@@ -1,7 +1,8 @@
 .libPaths(R.home("library"))
 
-library(edgeR)
-library(tools)
+suppressMessages(library(edgeR))
+suppressMessages(library(tools))
+
 args <- commandArgs(trailingOnly=T)
 mat = args[[1]]
 outfile = args[[2]]

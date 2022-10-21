@@ -1,0 +1,163 @@
+CHANGES
+=======
+
+* non-canonical deeptools to get rid of comp problem
+* ignore
+* cap snakemake -> tmp & profile
+* rewrite - after alsieve
+* ignore build
+* purge&ignore
+* restructure to make code less obfuscated + pave way for multicomps
+* egg exclude
+* RPKM bigwigs
+* update readme
+* Shuffling
+* fix batch vs non batch in 1 run
+* batch effects parse
+* FDR cutoff maPlot == edgeR
+* countmatrix update, FDR 0.05
+* ruleOrder ambigious compcond cond
+* matrix bugfix
+* bug logs
+* Fix logpaths
+* escape metadat files with dryrun
+* restruct fin
+* restruct
+* readme update
+* readme update
+* prePeak done
+* done until peak
+* macs2 - merge noss
+* bamMerge - noss
+* fragSize - nonpeakSet
+* work in progress
+* invoke bam processing without sampleSheet
+* restructure exec
+* init layout wrap
+* different modes for peak generation
+* change variable bammerge DAG conflict
+* union working
+* DAG arg
+* strip graphviz, fix dryrun
+* mergeComp mode complete
+* merge conds
+* start on merge
+* clean smk
+* non bam merge working
+* restruct for outDir
+* init sampleMerge
+* graphviz for DAG
+* help msg
+* ship dryrun to subprocess, include DAG
+* outdir spec + mergeB
+* PCA 5k
+* LFC out change, ntop 500 PCA
+* Batch effect parser
+* readme update
+* Fix no batch run
+* Batcheffect
+* Batch effects
+* incorp batch effects
+* Include Batch parsing ss
+* include alternative TSS for scoring
+* bypass gtf parse in dryrun
+* another fix
+* fix dryrun
+* dryrun action test
+* escape flag for dryrun, pave the way for tests
+* remove flake from reqs
+* remove snake clutter
+* flake test
+* hardCode python version seqtools
+* comment rich bug
+* bugFix Genes
+* init reqs
+* remove pytest
+* revert wheel deps
+* Create flake.yml
+* exec updates
+* bugFix downstream
+* Snakefile rename
+* update readme, small arg updates
+* bugFix
+* pep8 args
+* uropa outdir bugfix
+* Delete .coverage
+* ignore
+* debug AOS outdir, future ideas
+* Create LICENSE
+* Further pep8
+* pep8 misc
+* pep8 setup
+* add flake, update todo
+* Simplify the environment forest to only 2
+* remove duplicate snakemake
+* downstream init
+* add meme, clean uropa env add meme
+* include mito check fly
+* Allow variable max frag size
+* updateWorkflow
+* Update README.md
+* General functions, fullMerge peak and annotations
+* Break up workflows, diffAcc counter impl
+* revert diffPeak
+* figLegends
+* label maPlot according to conditions
+* remove hardcode conda path
+* Force input order for factor levels DE
+* Typos
+* todo update
+* Major readme update
+* revert SummitInc
+* Individual peak calling, merge later
+* Todo / snake update
+* gsize bugfixes, param eval etc
+* Changes macs2, fix up genomeSize
+* Split init tobias
+* Switch to edgeR, cant believe it actually works
+* bugfix DESEQ
+* homer revisit
+* Todo argument handling
+* Error handling samplesheet malformat, log alSieve
+* Simplify peak annotations / mergings
+* meme start / cleaning
+* Partial rollbacks + readme updates
+* Revisit workflow
+* Switch to pval, plot init output full list
+* working frip plotter
+* running updates
+* blackList alignmentsieve
+* IDR implementation + short TODO
+* working FRIP + update todo
+* todo list
+* Annotate peaks uropa
+* typos
+* readme
+* pval down and slurm submission
+* conda env fixes
+* Init other analysis
+* Seperate conda envs
+* Start multiple environments
+* Tex reports
+* Init texbuilder
+* Init tex, match colors of PCA with plot
+* envs update
+* Cluster execution + deal with logs
+* DESeq2 Typo
+* Finalise group comparisons
+* Multiple comparisons finished
+* Update README.md
+* multicompare untill bwz
+* Begin allowing multiple comparisons
+* Env update
+* DESeq implementation
+* todolist
+* deeptools progress
+* Init Rscripts
+* snakemake progress
+* snakemake implementation
+* SS parsing
+* Further init
+* readme
+* initrepo
+* Initial commit

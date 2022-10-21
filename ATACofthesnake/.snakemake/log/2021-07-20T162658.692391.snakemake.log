@@ -1,3 +1,0 @@
-KeyError in line 9 of /data/manke/group/deboutte/repo/ATACofthesnake/ATACofthesnake/bamProcess.smk:
-'sampleSheet'
-  File "/data/manke/group/deboutte/repo/ATACofthesnake/ATACofthesnake/bamProcess.smk", line 9, in <module>
