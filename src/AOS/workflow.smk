@@ -1,8 +1,10 @@
 include: config['rules']['peaks']
 include: config['rules']['qc']
 include: config['rules']['de']
-
+include: config['rules']['motifs']
+include: config['rules']['tobias']
 def geto():
+  # Peaks
   _f = []
   _f.append(
     'peakset/peaks_uropa_finalhits.txt'
@@ -21,6 +23,7 @@ def geto():
       'figures/fragmentsizes.png'
     ]
   )
+  # Differential
   if config['comparison']:
     _f.extend(
       expand(
@@ -34,7 +37,11 @@ def geto():
         comparison=config['comparison'].keys()
       )
     )
-  print(_f)
+    if config['files']['motif']:
+      _f.append(
+        'motifs_clustered/motifs.meme'
+      )
+  
   return (_f)
 
 localrules: lnBams

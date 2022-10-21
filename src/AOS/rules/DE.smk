@@ -91,7 +91,8 @@ rule maplot:
 
 rule heatmaps:
   input:
-    maplot = '{comparison}/{comparison}_maplot.png'
+    maplot = '{comparison}/{comparison}_maplot.png',
+    samples = expand('bw/{sample}.scalefac.bw', sample=config['samples']),
   output:
     matrix = temp('{comparison}/mat.npz'),
     heatmap = '{comparison}/diffpeaks.png'
