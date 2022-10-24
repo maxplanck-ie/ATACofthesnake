@@ -25,11 +25,11 @@ standard analysis:
    --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \
    --snakemakeprofile profile -b read_attracting_regions.bed
 
-Note that this pipeline depends on snakemake, and forces you to have a (snakemake profile)[https://github.com/Snakemake-Profiles].
+Note that this pipeline depends on snakemake, and forces you to have a [snakemake profile](https://github.com/Snakemake-Profiles).
 The default analysis will generate:
 
  - sieved bamfiles.
-(cfr. --fragsize & --read_attracting_regions). Note that -b is obliged. At minimum this should contain the mitochondrial genome. Note that the mitochondrial contig is assumed to be named 'MT'. You can change this using --mitostring.
+(cfr. --fragsize/-f & --read_attracting_regions/-b). Note that read attracting regions are obliged. At minimum this should contain the mitochondrial genome. Note that the mitochondrial contig is assumed to be named 'MT'. You can change this using --mitostring.
  - peaks called per bamfile (under peaks/) and a union of all peaks (peakset/).
  - bigwigs normalized using scalefactors and RPKM.
  - a number of QC plots (figures/) and metrics (qc/)
@@ -82,3 +82,5 @@ wtdmso_vs_wtdrug:
 ```
 
 In this case, 2 analyses would be performed (under folders 'comparison1' & 'wtdmso_vs_wtdrug'). In both cases all of the factor columns in the samplesheet will be used in the design.
+
+A motif file in [meme](https://meme-suite.org/meme/doc/meme-format.html) format can be supplied as well. If this is the case, the motifs will first be clustered, and motif enrichments will be calculated for all differential regions (using [ame](https://meme-suite.org/meme/doc/ame.html)). Note that the 'reciprocal' differential peaks will be used as background. E.g. group2 differential peaks are background for group1 enrichments and vice versa. Note that this approach could be biased if there is a strong disbalance between those groups.
