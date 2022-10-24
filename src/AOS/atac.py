@@ -1,14 +1,3 @@
-# #!/usr/bin/env python3
-# import argparse
-# from rich import print
-# from rich.console import Console
-# import sys
-# import subprocess
-# from ATACofthesnake import misc
-# import yaml
-# import os
-# import snakemake
-
 import rich_click as click
 from rich.console import Console
 from rich import inspect
