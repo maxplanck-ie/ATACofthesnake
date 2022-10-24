@@ -52,7 +52,7 @@ rule bamtobed:
     b = 'sieve/{sample}.bam',
     i = 'sieve/{sample}.bam.bai'
   output:
-    'sieve/{sample}.bed'
+    temp('sieve/{sample}.bed')
   conda: config['envs']['seqtools']
   threads: 1
   shell:'''

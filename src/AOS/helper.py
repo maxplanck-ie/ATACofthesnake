@@ -38,9 +38,15 @@ def plotfragsize(frags):
     sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
     d = sns.FacetGrid(df, row="sample", hue='sample',height=1.1, aspect=8, palette=pal)
+    # Densities.
     d.map(sns.kdeplot, "size",
         bw_adjust=.5, clip_on=False,
         fill=True, alpha=0.8, linewidth=1.5)
+    # Nucleosome lines.
+    d.map(plt.axvline, x=147, ls='--', c='red', alpha=0.3)
+    d.map(plt.axvline, x=147*2, ls='--', c='red', alpha=0.3)
+    d.map(plt.axvline, x=147*3, ls='--', c='red', alpha=0.3)
+    # Clean up plots.
     d.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
     def label(x, color, label):
         ax = plt.gca()
@@ -50,7 +56,9 @@ def plotfragsize(frags):
     d.set_titles("")
     d.set(yticks=[], ylabel="", xlabel='fragment size (bps)')
     d.despine(bottom=True, left=True)
+    # Overlap plots.
     d.figure.subplots_adjust(hspace=-0.4)
+    # save fig.
     d.figure.savefig('figures/fragmentsizes.png', dpi=300, bbox_inches='tight')
 
 def plotfrip(frips):
@@ -154,26 +162,6 @@ def maplot(tsv, of, gr1, gr2):
         dpi=300,
         bbox_inches='tight'
     )
-    gr2df = pd.DataFrame(
-        [i.split('_') for i in list(df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]['peak_id'])]
-    )
-    gr1df = pd.DataFrame(
-        [i.split('_') for i in list(df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]['peak_id'])]
-    )
-    basefolder = os.path.abspath(tsv).split('/')[-2]
-
-    gr2df.to_csv(
-        os.path.join(basefolder, gr2 + '.bed'),
-        sep='\t',
-        header=False,
-        index=False
-    )
-    gr1df.to_csv(
-        os.path.join(basefolder, gr1 + '.bed'),
-        sep='\t',
-        header=False,
-        index=False
-    )
 
 def merge_idx(i, o):
     _i = list(i)
@@ -216,3 +204,30 @@ def merge_sieve(i, o):
                     )
     df = pd.DataFrame(data)
     df.T.to_csv(_o , sep='\t', header=False, index=False)
+
+def tsv_to_bed(tsv, bed, grint):
+    df = pd.read_csv(
+        tsv,
+        sep='\t',
+        header=0
+    )
+    if grint == 2:
+        gr2df = pd.DataFrame(
+            [i.split('_') for i in list(df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]['peak_id'])]
+        )
+        gr2df.to_csv(
+            bed,
+            sep='\t',
+            header=False,
+            index=False
+        )
+    if grint == 1:
+        gr1df = pd.DataFrame(
+            [i.split('_') for i in list(df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]['peak_id'])]
+        )
+        gr1df.to_csv(
+            bed,
+            sep='\t',
+            header=False,
+            index=False
+        )

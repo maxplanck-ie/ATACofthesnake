@@ -3,7 +3,6 @@ channels:
   - bioconda
 dependencies:
   - tobias >= 0.13.3
-  - meme >= 5.4.1
   - pip
   - pip:
     - gimmemotifs

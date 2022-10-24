@@ -1,5 +1,5 @@
 # Create a list containing:
-from AOS.helper import maplot
+from AOS.helper import maplot, tsv_to_bed
 import os
 
 def readsamples(_f):
@@ -41,6 +41,14 @@ def retsubset(comparisondic, group):
         list(comparisondic[gr].keys())
     )
   )
+
+def retgroupnumber(gr, compdic):
+  grint = 1
+  for group in compdic:
+    if gr == group:
+      return (grint)
+    else:
+      grint += 1
 
 rule diffacc:
   input:
@@ -88,6 +96,23 @@ rule maplot:
         params.group2
     )
 
+rule bedfiles:
+  input:
+    '{comparison}/{comparison}_diffacc_edgeR.tsv'
+  output:
+    '{comparison}/diffpeaks_{gr}.bed'
+  params:
+    grint = lambda wildcards: retgroupnumber(
+      wildcards.gr,
+      config['comparison'][wildcards.comparison]
+    )
+  threads: 1
+  run:
+    tsv_to_bed(
+      input[0],
+      output[0],
+      params.grint
+    )
 
 rule heatmaps:
   input:

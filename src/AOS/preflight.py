@@ -65,6 +65,9 @@ class Preflight():
             ),
             'tobias': os.path.join(
                 self.dirs['scriptsdir'], 'envs', 'tobias.yml'
+            ),
+            'meme': os.path.join(
+                self.dirs['scriptsdir'], 'envs', 'meme.yml'
             )
         }
         self.rules = {
