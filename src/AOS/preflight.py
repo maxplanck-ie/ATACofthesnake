@@ -16,7 +16,6 @@ class Preflight():
         outputdir,
         gtf,
         genomefasta,
-        genomesize,
         readattractingregions,
         motifs,
         fragsize,
@@ -50,7 +49,6 @@ class Preflight():
             'comparison': retabspath(comparison)
         }
         self.vars = {
-            'genomesize': genomesize,
             'fragsize': fragsize,
             'snakemakeprofile': snakemakeprofile,
             'samplesheet': samplesheet,
@@ -119,7 +117,8 @@ class Preflight():
             yaml.dump(
                 self.retconf(),
                 f,
-                default_flow_style=False
+                default_flow_style=False,
+                sort_keys=False
             )
         self.files['configfile'] = _conf
 
@@ -164,6 +163,23 @@ class Preflight():
         else:
             self.comparison = ''
             self.factors = ''
+
+    def checkFna(self):
+        _fna = self.files['fna']
+        ESS = 0
+        with open(_fna) as f:
+            for line in f:
+                if line.startswith('>'):
+                    _h = line.strip().split(' ')[0]
+                    if '_' in _h:
+                        sys.exit(
+                            "Found {} in genome fasta file. Underscores in the first field (space delimited) are not allowed.".format(
+                                _h
+                            )
+                        )
+                else:
+                    ESS += len(line.strip()) - line.strip().lower().count('n')
+        self.vars['genomesize'] = ESS
 
     def genTSS(self):
         _sortgtfo = os.path.join(
