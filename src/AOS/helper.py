@@ -266,4 +266,3 @@ def peak_boundaries(peaks, genomefa, of):
         header=False,
         index=False
     )
-    
