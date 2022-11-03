@@ -114,14 +114,17 @@ rule uropa:
   params:
     gtf = config['files']['gtf'],
     prefix = "peaks_uropa",
-    outdir = 'peakset'
+    outdir = 'peakset',
+    upstream = config['vars']['upstream_uropa'],
+    downstream = config['vars']['downstream_uropa'],
+    feature = config['vars']['featureuro']
   conda: config['envs']['seqtools']
   threads: 5
   shell:'''
   uropa -b {input} \
     -g {params.gtf} \
-    --summary --feature gene \
-    --distance 20000 10000 \
+    --summary --feature {params.feature} \
+    --distance {params.upstream} {params.downstream} \
     --internals 1 -p {params.prefix} \
     -o {params.outdir} -t {threads} --show-attributes gene_id transcript_id gene_name
   '''

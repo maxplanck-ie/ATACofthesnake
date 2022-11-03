@@ -61,7 +61,7 @@ keep <- filterByExpr(
     countmat, design=design,min.count = 5, min.prop = 0.49
 )
 countmat <- countmat[keep,]
-countmat <- countmat + 10 #pseudocount of 10
+countmat <- countmat + 8 #pseudocount of 8
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 # 
 fit <- glmQLFit(countmat, design=design, dispersion = countmat_disp)

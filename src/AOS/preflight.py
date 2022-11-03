@@ -23,7 +23,10 @@ class Preflight():
         samplesheet,
         comparison,
         interaction,
-        mitostring
+        mitostring,
+        upstreamuro,
+        downstreamuro,
+        featureuro
     ):
         def retabspath(_p):
             if _p:
@@ -52,7 +55,10 @@ class Preflight():
             'fragsize': fragsize,
             'snakemakeprofile': snakemakeprofile,
             'samplesheet': samplesheet,
-            'mitostring': mitostring
+            'mitostring': mitostring,
+            'upstream_uropa': upstreamuro,
+            'downstream_uropa': downstreamuro,
+            'featureuro': featureuro
         }
         self.samples = [os.path.basename(x).replace('.bam', '') for x in glob.glob(
             os.path.join(os.path.abspath(bamdir), '*.bam')
@@ -213,7 +219,13 @@ class Preflight():
                 'frame',
                 'attribute'
             ]
-            GTF = GTF[GTF['feature'] == 'gene']
+            GTF = GTF[GTF['feature'] == self.vars['featureuro']]
+            if GTF.empty:
+                sys.exit(
+                    "Feature {} not in GTF file.".format(
+                        self.vars['featureuro']
+                    )
+                )
             GTF = GTF.sort_values(
                 ["chr", "start"],
                 ascending=(True, True)
