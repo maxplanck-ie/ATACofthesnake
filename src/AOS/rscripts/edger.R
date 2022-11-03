@@ -1,4 +1,3 @@
-print("WE IN THE ZONE BITCH")
 .libPaths(R.home("library"))
 suppressMessages(library("readr"))
 suppressMessages(library("edgeR"))
@@ -14,8 +13,6 @@ edgeRtable = snakemake@output[['table']]
 
 # Read in samplesheet.
 # rownames are samples, columns are factors.
-print("reading samplesheet:")
-print(samplesheet)
 samplesheet = read.table(
     samplesheet,
     row.names = 1,
@@ -64,6 +61,7 @@ keep <- filterByExpr(
     countmat, design=design,min.count = 5, min.prop = 0.49
 )
 countmat <- countmat[keep,]
+countmat <- countmat + 8 #pseudocount of 8
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 # 
 fit <- glmQLFit(countmat, design=design, dispersion = countmat_disp)

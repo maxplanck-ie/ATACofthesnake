@@ -6,6 +6,17 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made.
 
+Fasta headers are allowed to contain underscores, but not in 'field' 0 (space delimited):
+
+This is allowed:
+
+ > >12 dna_sm:chromosome chromosome:GRCm38:12:1:120129022:1 REF
+
+This is not allowed:
+
+ > >chr9_10L
+ > >NC_001573.1
+
 ## Installation
 
   set up the environment:  
@@ -22,7 +33,7 @@ All samples in a 'run' have to belong to the same group. That means that out of 
 standard analysis:
 
  > ATAC --bamdir folder/with/bamfiles/ --outputdir outputfolder \
-   --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \
+   --gtf genes.gtf --genomefasta genome.fa \
    --snakemakeprofile profile -b read_attracting_regions.bed
 
 Note that this pipeline depends on snakemake, and forces you to have a [snakemake profile](https://github.com/Snakemake-Profiles).

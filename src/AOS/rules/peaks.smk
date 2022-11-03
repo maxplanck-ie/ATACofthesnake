@@ -1,3 +1,4 @@
+from AOS.helper import peak_boundaries
 rule lnBams:
   input: 
     os.path.join(config['dirs']['bamdir'], "{sample}.bam")
@@ -87,12 +88,23 @@ rule peakmerg:
   input:
     expand('peaks/{sample}_peaks.narrowPeak', sample=config['samples'])
   output:
-    'peakset/peaks.bed'
+    temp('peakset/peaks.cat.bed')
   threads:1
   conda: config['envs']['seqtools']
   shell:'''
   cat {input} | sort -k1,1 -k2,2n | bedtools merge > {output}
   '''
+
+rule peakbounds:
+  input:
+    'peakset/peaks.cat.bed'
+  output:
+    'peakset/peaks.bed'
+  params:
+    config['files']['fna']
+  threads: 1
+  run:
+    peak_boundaries(input[0], params[0], output[0])
 
 rule uropa:
   input:
@@ -102,16 +114,19 @@ rule uropa:
   params:
     gtf = config['files']['gtf'],
     prefix = "peaks_uropa",
-    outdir = 'peakset'
+    outdir = 'peakset',
+    upstream = config['vars']['upstream_uropa'],
+    downstream = config['vars']['downstream_uropa'],
+    feature = config['vars']['featureuro']
   conda: config['envs']['seqtools']
   threads: 5
   shell:'''
   uropa -b {input} \
     -g {params.gtf} \
-    --summary --feature transcript \
-    --distance 20000 10000 \
+    --summary --feature {params.feature} \
+    --distance {params.upstream} {params.downstream} \
     --internals 1 -p {params.prefix} \
-    -o {params.outdir} -t {threads} --show-attributes gene_id transcript_id gene_name gene_type transcript_type
+    -o {params.outdir} -t {threads} --show-attributes gene_id transcript_id gene_name
   '''
 
 rule countmatrix:
@@ -133,4 +148,27 @@ rule countmatrix:
     -b {input.bams}
   sed -i "s/'//g" {output.tsv}
   sed -i 's/\.bam//g' {output.tsv}
+  '''
+
+rule multibigwigsum:
+  input:
+    samples = expand('bw/{sample}.scalefac.bw', sample=config['samples']),
+    peaks = 'peakset/peaks.bed'
+  output:
+    'peakset/counts.bw.npz'
+  threads: 1
+  conda: config['envs']['seqtools']
+  shell:'''
+  multiBigwigSummary BED-file --BED {input.peaks} -o {output} -b {input.samples}
+  '''
+
+rule plotPCA:
+  input:
+    'peakset/counts.bw.npz'
+  output:
+    'figures/PCA.png'
+  threads: 1
+  conda: config['envs']['seqtools']
+  shell:'''
+  plotPCA --corData {input} -o {output} --transpose --ntop 5000
   '''
