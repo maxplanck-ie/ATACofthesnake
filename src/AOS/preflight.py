@@ -197,7 +197,7 @@ class Preflight():
                 'frame',
                 'attribute'
             ]
-            GTF = GTF[GTF['feature'] == 'transcript']
+            GTF = GTF[GTF['feature'] == 'gene']
             GTF = GTF.sort_values(
                 ["chr", "start"],
                 ascending=(True, True)

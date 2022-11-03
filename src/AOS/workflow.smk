@@ -16,8 +16,11 @@ def compzip(comp):
 def geto():
   # Peaks
   _f = []
-  _f.append(
-    'peakset/peaks_uropa_finalhits.txt'
+  _f.extend(
+    [
+      'peakset/peaks_uropa_finalhits.txt',
+      'figures/PCA.png'
+    ]
   )
   _f.extend(
     expand(

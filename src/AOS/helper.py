@@ -38,6 +38,7 @@ def plotfragsize(frags):
     sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
     d = sns.FacetGrid(df, row="sample", hue='sample',height=1.1, aspect=8, palette=pal)
+    d.set(xlim=(0, 1000))
     # Densities.
     d.map(sns.kdeplot, "size",
         bw_adjust=.5, clip_on=False,
@@ -231,3 +232,38 @@ def tsv_to_bed(tsv, bed, grint):
             header=False,
             index=False
         )
+
+def peak_boundaries(peaks, genomefa, of):
+    chromdic = {}
+    with open(genomefa) as f:
+        for line in f:
+            if line.startswith('>'):
+                header = line.strip().replace('>', '')
+                chromdic[header] = 0
+            else:
+                chromdic[header] += len(line.strip())
+    bedlis = []
+    peakchange = 0 
+    with open(peaks) as f:
+        for line in f:
+            chrom = line.strip().split()[0]
+            start = int(line.strip().split()[1])
+            end = int(line.strip().split()[2])
+            if end > chromdic[chrom]:
+                bedlis.append(
+                    [chrom, start, chromdic[chrom]]
+                )
+                peakchange += 1
+            else:
+                bedlis.append(
+                    [chrom, start, end]
+                )
+    print("Changed {} peaks.".format(peakchange))
+    beddf = pd.DataFrame(bedlis)
+    beddf.to_csv(
+        of,
+        sep='\t',
+        header=False,
+        index=False
+    )
+    
