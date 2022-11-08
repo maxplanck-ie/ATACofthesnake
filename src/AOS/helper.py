@@ -30,8 +30,9 @@ def plotfragsize(frags):
     for i,r in df.iterrows():
         size = int(r[0])
         occ = int(r[1])
-        for k in repeat(size, occ):
-            reps.append([r['Sample'], size])
+        if size < 1000:
+            for k in repeat(size, occ):
+                reps.append([r['Sample'], size])
     df = pd.DataFrame(reps)
     df.columns = ['sample', 'size']
     df.sort_values(by=['sample'], inplace=True)
@@ -266,3 +267,39 @@ def peak_boundaries(peaks, genomefa, of):
         header=False,
         index=False
     )
+
+def PCA_colors(config):
+    colors = [
+        '#1f77b4',
+        '#ff7f0e',
+        '#2ca02c',
+        '#d62728',
+        '#9467bd',
+        '#8c564b',
+        '#e377c2',
+        '#7f7f7f',
+        '#bcbd22',
+        '#17becf'
+    ]
+    if config['files']['samplesheet']:
+        sdf = pd.read_csv(
+            config['files']['samplesheet'],
+            sep='\t',
+            header=0
+        )
+        sdf = sdf.set_index('sample')
+        sdf = sdf.loc[config['samples']]
+        colDic = {}
+        colIx = 0
+        for s in sdf.iloc[:,[0]].values:
+            if s[0] not in colDic:
+                colDic[s[0]] = colors[colIx]
+                colIx += 1
+        PCAstr = "--colors"
+        for s in sdf.iloc[:,[0]].values:
+            PCAstr += " \"{}\"".format(
+                colDic[s[0]]
+            )
+        return (PCAstr)
+    return ("")
+

@@ -33,7 +33,8 @@ def geto():
       'figures/mitofraction.png',
       'qc/fragsize.tsv',
       'figures/alignmentsieve.png',
-      'figures/fragmentsizes.png'
+      'figures/fragmentsizes.png',
+      'figures/fripscores.png'
     ]
   )
   # Differential

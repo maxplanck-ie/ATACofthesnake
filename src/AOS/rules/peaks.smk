@@ -1,4 +1,6 @@
 from AOS.helper import peak_boundaries
+from AOS.helper import PCA_colors
+
 rule lnBams:
   input: 
     os.path.join(config['dirs']['bamdir'], "{sample}.bam")
@@ -164,11 +166,13 @@ rule multibigwigsum:
 
 rule plotPCA:
   input:
-    'peakset/counts.bw.npz'
+    peakset = 'peakset/counts.bw.npz'
   output:
     'figures/PCA.png'
   threads: 1
+  params:
+    colstr = PCA_colors(config)
   conda: config['envs']['seqtools']
   shell:'''
-  plotPCA --corData {input} -o {output} --transpose --ntop 5000
+  plotPCA --corData {input.peakset} -o {output} --transpose --ntop 5000 {params.colstr}
   '''

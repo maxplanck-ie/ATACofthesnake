@@ -11,6 +11,7 @@ rule clustermotifs:
   output:
     'motifs_clustered/clusteredmotifs_consensus_motifs.meme'
   conda: config['envs']['tobias']
+  threads: 10
   shell:'''
   TOBIAS ClusterMotifs -m {input} -t 0.4 -a meme -p clusteredmotifs -o 'motifs_clustered' --dist_method seqcor
   '''
