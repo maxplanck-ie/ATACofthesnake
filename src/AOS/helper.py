@@ -239,7 +239,7 @@ def peak_boundaries(peaks, genomefa, of):
     with open(genomefa) as f:
         for line in f:
             if line.startswith('>'):
-                header = line.strip().replace('>', '')
+                header = str(line.strip().replace('>', '').split(' ')[0])
                 chromdic[header] = 0
             else:
                 chromdic[header] += len(line.strip())
@@ -247,7 +247,7 @@ def peak_boundaries(peaks, genomefa, of):
     peakchange = 0 
     with open(peaks) as f:
         for line in f:
-            chrom = line.strip().split()[0]
+            chrom = str(line.strip().split()[0])
             start = int(line.strip().split()[1])
             end = int(line.strip().split()[2])
             if end > chromdic[chrom]:
