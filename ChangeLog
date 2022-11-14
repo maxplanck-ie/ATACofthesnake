@@ -1,15 +1,17 @@
 CHANGES
 =======
 
-* non-canonical deeptools to get rid of comp problem
-* ignore
-* cap snakemake -> tmp & profile
-* rewrite - after alsieve
-* ignore build
-* purge&ignore
-* restructure to make code less obfuscated + pave way for multicomps
-* egg exclude
-* RPKM bigwigs
+* include frig fig, ignore > 1000 for fragsize, set threads motif cluster
+* uropa change defaults + checks gtf
+* make to preserve key order in yaml dump. Purge ESS
+* switch to gene for uropa annotation as default
+* Update README.md
+* Wd (#9)
+* meme working
+* babysteps into tobias/motifs
+* purgebuild
+* Wd (#8)
+* Wd (#6)
 * update readme
 * Shuffling
 * fix batch vs non batch in 1 run
