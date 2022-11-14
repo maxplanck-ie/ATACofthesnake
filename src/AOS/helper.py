@@ -302,4 +302,3 @@ def PCA_colors(config):
             )
         return (PCAstr)
     return ("")
-
