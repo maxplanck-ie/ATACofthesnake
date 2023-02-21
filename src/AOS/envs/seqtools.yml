@@ -5,7 +5,7 @@ dependencies:
   - bedtools == 2.30.0
   - bioconductor-edger == 3.32.0
   - r-tidyverse
-  - macs2 == 2.2.7.1
+  - macs2
   - samtools == 1.13
   - htslib == 1.13
   - uropa >=4.0.0
