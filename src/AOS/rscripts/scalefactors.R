@@ -8,7 +8,7 @@ mat = args[[1]]
 outfile = args[[2]]
 
 countmat <- read.csv(mat, sep='\t', header=TRUE)
-rowmat <- paste(countmat[,1], countmat[,2], countmat[,3], sep='_')
+rowmat <- paste(countmat[,1], countmat[,2], countmat[,3], sep='|')
 rownames(countmat) <- rowmat
 countmat <- as.matrix(countmat[,-(1:3),drop=FALSE])
 # Get norm factors.

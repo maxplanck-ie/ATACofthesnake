@@ -21,7 +21,7 @@ samplesheet = read.table(
 #print(samplesheet[,factors[1]])
 # read in count matrix.
 countmat <- read.csv(mat, sep='\t')
-rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='_')
+rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='|')
 countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
 # make sure the columns of count matrix are equal to the rows of the samplesheet.

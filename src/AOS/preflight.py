@@ -176,13 +176,7 @@ class Preflight():
         with open(_fna) as f:
             for line in f:
                 if line.startswith('>'):
-                    _h = line.strip().split(' ')[0]
-                    if '_' in _h:
-                        sys.exit(
-                            "Found {} in genome fasta file. Underscores in the first field (space delimited) are not allowed.".format(
-                                _h
-                            )
-                        )
+                    continue
                 else:
                     ESS += len(line.strip()) - line.strip().lower().count('n')
         self.vars['genomesize'] = ESS
