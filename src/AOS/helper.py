@@ -215,7 +215,7 @@ def tsv_to_bed(tsv, bed, grint):
     )
     if grint == 2:
         gr2df = pd.DataFrame(
-            [i.split('_') for i in list(df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]['peak_id'])]
+            [i.split('|') for i in list(df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]['peak_id'])]
         )
         gr2df.to_csv(
             bed,
@@ -225,7 +225,7 @@ def tsv_to_bed(tsv, bed, grint):
         )
     if grint == 1:
         gr1df = pd.DataFrame(
-            [i.split('_') for i in list(df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]['peak_id'])]
+            [i.split('|') for i in list(df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]['peak_id'])]
         )
         gr1df.to_csv(
             bed,

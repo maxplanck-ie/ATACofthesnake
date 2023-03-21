@@ -5,11 +5,13 @@ suppressMessages(library("edgeR"))
 mat = snakemake@input[[1]]
 samplesheet = snakemake@params[['samplesheet']]
 prefix = snakemake@params[['prefix']]
+pseudocount = as.integer(snakemake@params[['pseudocount']])
 gr1_subset = snakemake@params[['gr1_subset']]
 gr2_subset = snakemake@params[['gr2_subset']]
 interactionstr = snakemake@params[['interaction']]
 of = snakemake@params[['outputfolder']]
 edgeRtable = snakemake@output[['table']]
+
 
 # Read in samplesheet.
 # rownames are samples, columns are factors.
@@ -61,7 +63,7 @@ keep <- filterByExpr(
     countmat, design=design,min.count = 5, min.prop = 0.49
 )
 countmat <- countmat[keep,]
-countmat <- countmat + 8 #pseudocount of 8
+countmat <- countmat + pseudocount
 countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
 # 
 fit <- glmQLFit(countmat, design=design, dispersion = countmat_disp)

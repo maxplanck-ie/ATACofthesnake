@@ -1,15 +1,17 @@
 CHANGES
 =======
 
-* include frig fig, ignore > 1000 for fragsize, set threads motif cluster
-* uropa change defaults + checks gtf
-* make to preserve key order in yaml dump. Purge ESS
-* switch to gene for uropa annotation as default
+* allow underscores
+* set python/numpy/macs version
+* Update seqtools.yml
+
+v0.0.1
+------
+
+* Wd (#14)
+* Wd (#13)
 * Update README.md
 * Wd (#9)
-* meme working
-* babysteps into tobias/motifs
-* purgebuild
 * Wd (#8)
 * Wd (#6)
 * update readme

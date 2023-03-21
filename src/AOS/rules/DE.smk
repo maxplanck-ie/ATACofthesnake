@@ -58,6 +58,7 @@ rule diffacc:
     samples = '{comparison}/samples.txt'
   params:
     samplesheet = config['files']['samplesheet'],
+    pseudocount = config['vars']['pseudocount'],
     prefix = lambda wildcards: prefix(
         config['comparison'][wildcards.comparison],
     ),
