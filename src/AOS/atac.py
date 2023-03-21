@@ -111,6 +111,13 @@ from AOS.preflight import Preflight
     show_default=True,
     help='the feature in the GTF file (column 3) to use for peak annotation.'
 )
+@click.option(
+    '--pseudocount',
+    required=False,
+    default=8,
+    show_default=True,
+    help='Pseudocount to add to the count matrix prior to differential calling.'
+)
 def main(bamdir,
         outputdir,
         gtf,
@@ -125,7 +132,8 @@ def main(bamdir,
         mitostring,
         upstreamuro,
         downstreamuro,
-        featureuro
+        featureuro,
+        pseudocount
         ):
     # Init
     pf = Preflight(**locals())

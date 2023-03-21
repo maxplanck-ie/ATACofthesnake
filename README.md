@@ -6,16 +6,7 @@ Downstream processing of ATAC data, including QC's and differential accessibilit
 
 All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made.
 
-Fasta headers are allowed to contain underscores, but not in 'field' 0 (space delimited):
-
-This is allowed:
-
- > >12 dna_sm:chromosome chromosome:GRCm38:12:1:120129022:1 REF
-
-This is not allowed:
-
- > >chr9_10L
- > >NC_001573.1
+Fasta headers un field 0 (space delimited) are not allowed to contain a pipe character '|'.
 
 ## Installation
 
