@@ -29,7 +29,7 @@ rule alSieve:
   output:
     shortb = 'sieve/{sample}.bam',
     qc = temp('qc/{sample}_sieve.txt')
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   threads: 10
   params:
     rar = '--blackListFileName {}'.format(config['files']['readattractingregions']),
@@ -142,8 +142,8 @@ rule countmatrix:
     rar = '-bl {}'.format(
         config['files']['readattractingregions']
     )
-  threads: 10
-  conda: config['envs']['seqtools']
+  threads: 40
+  conda: config['envs']['deeptools']
   shell:'''
   multiBamSummary BED-file --BED {input.peaks} {params.rar} \
     -p {threads} --outRawCounts {output.tsv} -o {output.npz} \
@@ -159,7 +159,7 @@ rule multibigwigsum:
   output:
     'peakset/counts.bw.npz'
   threads: 1
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   shell:'''
   multiBigwigSummary BED-file --BED {input.peaks} -o {output} -b {input.samples}
   '''
@@ -172,7 +172,7 @@ rule plotPCA:
   threads: 1
   params:
     colstr = PCA_colors(config)
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   shell:'''
   plotPCA --corData {input.peakset} -o {output} --transpose --ntop 5000 {params.colstr}
   '''

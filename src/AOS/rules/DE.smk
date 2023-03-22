@@ -126,7 +126,7 @@ rule heatmaps:
     beds = lambda wildcards: wildcards.comparison + '/*bed',
     samples = lambda wildcards: readsamples(wildcards.comparison)
   threads: 10
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   shell:'''
   computeMatrix reference-point -R {params.beds} -S {params.samples} -o {output.matrix} \
   --referencePoint center \
