@@ -75,6 +75,9 @@ class Preflight():
             ),
             'meme': os.path.join(
                 self.dirs['scriptsdir'], 'envs', 'meme.yml'
+            ),
+            'deeptools': os.path.join(
+                self.dirs['scriptsdir'], 'envs', 'deeptools.yml'
             )
         }
         self.rules = {

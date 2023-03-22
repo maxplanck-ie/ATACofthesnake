@@ -37,7 +37,7 @@ rule fragsize:
   output:
     'qc/fragsize.tsv'
   threads: 10
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   shell:'''
   bamPEFragmentSize -b {input.bams} \
     -p {threads} \
@@ -69,7 +69,7 @@ rule bigwigs:
     rar = config['files']['readattractingregions'],
     sample = "{sample}"
   threads: 10
-  conda: config['envs']['seqtools']
+  conda: config['envs']['deeptools']
   shell:'''
   SCALEFAC=$(grep {params.sample} {input.scalefactors} | cut -f2 -d ' ')
   bamCoverage --scaleFactor $SCALEFAC \
