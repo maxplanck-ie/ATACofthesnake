@@ -66,6 +66,9 @@ class Preflight():
         self.samples = [os.path.basename(x).replace('.bam', '') for x in glob.glob(
             os.path.join(os.path.abspath(bamdir), '*.bam')
         )]
+        if not self.samples:
+            print("No samples found.")
+            sys.exit()
         self.envs = {
             'seqtools': os.path.join(
                 self.dirs['scriptsdir'], 'envs', 'seqtools.yml'
