@@ -13,8 +13,8 @@ Fasta headers un field 0 (space delimited) are not allowed to contain a pipe cha
   set up the environment:  
 >  git clone git@github.com:maxplanck-ie/ATACofthesnake.git  
 >  cd ATACofthesnake  
->  conda create -n ATACofthesnake python=3  
->  conda activate ATACofthesnake  
+>  conda env create -f env.yml -n aos  
+>  conda activate aos  
 >  pip install ./  
 
 ## Quickstart
