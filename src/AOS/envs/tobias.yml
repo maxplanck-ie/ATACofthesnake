@@ -3,6 +3,6 @@ channels:
   - bioconda
 dependencies:
   - tobias >= 0.13.3
-  - pip
-  - pip:
-    - gimmemotifs
+  - cython
+  - gimmemotifs
+  - matplotlib<3.8
