@@ -3,4 +3,4 @@ channels:
   - bioconda
 dependencies:
   - deeptools
-  - samtools == 1.13
+

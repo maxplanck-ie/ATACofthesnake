@@ -5,3 +5,4 @@ dependencies:
   - tobias >= 0.13.3
   - cython
   - gimmemotifs
+  - matplotlib<3.8
