@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from itertools import repeat
+import shutil
 
 def idx_to_mit(_f):
     count = 0
@@ -234,39 +235,42 @@ def tsv_to_bed(tsv, bed, grint):
             index=False
         )
 
-def peak_boundaries(peaks, genomefa, of):
-    chromdic = {}
-    with open(genomefa) as f:
-        for line in f:
-            if line.startswith('>'):
-                header = str(line.strip().replace('>', '').split(' ')[0])
-                chromdic[header] = 0
-            else:
-                chromdic[header] += len(line.strip())
-    bedlis = []
-    peakchange = 0 
-    with open(peaks) as f:
-        for line in f:
-            chrom = str(line.strip().split()[0])
-            start = int(line.strip().split()[1])
-            end = int(line.strip().split()[2])
-            if end > chromdic[chrom]:
-                bedlis.append(
-                    [chrom, start, chromdic[chrom]]
-                )
-                peakchange += 1
-            else:
-                bedlis.append(
-                    [chrom, start, end]
-                )
-    print("Changed {} peaks.".format(peakchange))
-    beddf = pd.DataFrame(bedlis)
-    beddf.to_csv(
-        of,
-        sep='\t',
-        header=False,
-        index=False
-    )
+def peak_boundaries(peaks, genomefa, peakset, of):
+    if not peakset:
+        chromdic = {}
+        with open(genomefa) as f:
+            for line in f:
+                if line.startswith('>'):
+                    header = str(line.strip().replace('>', '').split(' ')[0])
+                    chromdic[header] = 0
+                else:
+                    chromdic[header] += len(line.strip())
+        bedlis = []
+        peakchange = 0 
+        with open(peaks) as f:
+            for line in f:
+                chrom = str(line.strip().split()[0])
+                start = int(line.strip().split()[1])
+                end = int(line.strip().split()[2])
+                if end > chromdic[chrom]:
+                    bedlis.append(
+                        [chrom, start, chromdic[chrom]]
+                    )
+                    peakchange += 1
+                else:
+                    bedlis.append(
+                        [chrom, start, end]
+                    )
+        print("Changed {} peaks.".format(peakchange))
+        beddf = pd.DataFrame(bedlis)
+        beddf.to_csv(
+            of,
+            sep='\t',
+            header=False,
+            index=False
+        )
+    else:
+        shutil.copyfile(peakset, of)
 
 def PCA_colors(config):
     colors = [
