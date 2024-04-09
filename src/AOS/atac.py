@@ -118,6 +118,13 @@ from AOS.preflight import Preflight
     show_default=True,
     help='Pseudocount to add to the count matrix prior to differential calling.'
 )
+@click.option(
+    '--peakset',
+    required=False,
+    default=None,
+    show_default=True,
+    help='Include an external peak file (bed format).'
+)
 def main(bamdir,
         outputdir,
         gtf,
@@ -133,7 +140,8 @@ def main(bamdir,
         upstreamuro,
         downstreamuro,
         featureuro,
-        pseudocount
+        pseudocount,
+        peakset
         ):
     # Init
     pf = Preflight(**locals())
