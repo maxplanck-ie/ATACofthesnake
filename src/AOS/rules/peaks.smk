@@ -103,10 +103,11 @@ rule peakbounds:
   output:
     'peakset/peaks.bed'
   params:
-    config['files']['fna']
+    fna = config['files']['fna'],
+    peakset = config['files']['peakset']
   threads: 1
   run:
-    peak_boundaries(input[0], params[0], output[0])
+    peak_boundaries(input[0], params.fna, params.peakset, output[0])
 
 rule uropa:
   input:

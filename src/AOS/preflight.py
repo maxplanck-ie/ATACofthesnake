@@ -27,7 +27,8 @@ class Preflight():
         upstreamuro,
         downstreamuro,
         featureuro,
-        pseudocount
+        pseudocount,
+        peakset
     ):
         def retabspath(_p):
             if _p:
@@ -50,7 +51,8 @@ class Preflight():
             'fna': retabspath(genomefasta),
             'motif': retabspath(motifs),
             'samplesheet': retabspath(samplesheet),
-            'comparison': retabspath(comparison)
+            'comparison': retabspath(comparison),
+            'peakset': retabspath(peakset)
         }
         self.vars = {
             'fragsize': fragsize,
