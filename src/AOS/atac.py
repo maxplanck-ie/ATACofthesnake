@@ -2,7 +2,7 @@ import rich_click as click
 from rich.console import Console
 from rich import inspect
 import os
-import snakemake
+import subprocess
 import shutil
 import yaml
 from AOS.preflight import Preflight
@@ -164,8 +164,9 @@ def main(bamdir,
     #inspect(pf)
     console = Console()
     with console.status("[bold green] Running snakemake..."): 
-        snakemake.main(
+        subprocess.run(
             [
+                'snakemake',
                 '-s', pf.rules['wf'],
                 '--profile', pf.vars['snakemakeprofile'],
                 '--max-jobs-per-second', '1',
@@ -174,3 +175,4 @@ def main(bamdir,
                 '-d', pf.dirs['outputdir']
             ]
         )
+            
