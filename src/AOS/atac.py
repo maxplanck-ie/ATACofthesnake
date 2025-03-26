@@ -169,7 +169,6 @@ def main(bamdir,
                 'snakemake',
                 '-s', pf.rules['wf'],
                 '--profile', pf.vars['snakemakeprofile'],
-                '--max-jobs-per-second', '1',
                 '-p',
                 '--configfile', pf.files['configfile'],
                 '-d', pf.dirs['outputdir']
