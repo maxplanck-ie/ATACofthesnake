@@ -74,6 +74,14 @@ def geto():
           gr=grs
         )
       )
+      _f.extend(
+        expand(
+          '{comparison}/motif_{gr}_shuffled/ame.html',
+          zip,
+          comparison=comps,
+          gr=grs
+        )
+      )
   return (_f)
 
 localrules: lnBams
