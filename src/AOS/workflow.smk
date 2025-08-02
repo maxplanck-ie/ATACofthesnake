@@ -76,7 +76,7 @@ def geto():
       )
       _f.extend(
         expand(
-          '{comparison}/motif_{gr}_shuffled/ame.html',
+          '{comparison}/shuffled_motif_{gr}/ame.html',
           zip,
           comparison=comps,
           gr=grs

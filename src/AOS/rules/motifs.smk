@@ -52,9 +52,9 @@ rule ame_shuffled:
     motifs = 'motifs_clustered/clusteredmotifs_consensus_motifs.meme',
     fna = '{comparison}/diffpeaks_{gr}.fna'
   output:
-    html = '{comparison}/motif_{gr}_shuffled/ame.html'
+    html = '{comparison}/shuffled_motif_{gr}/ame.html'
   params:
-    of = lambda wildcards: wildcards.comparison + '/motif_' + wildcards.gr + '_shuffled'
+    of = lambda wildcards: wildcards.comparison + '/shuffled_motif_' + wildcards.gr
   conda: config['envs']['meme']
   shell:'''
   ame --oc {params.of} --control --shuffle-- {input.fna} {input.motifs}
