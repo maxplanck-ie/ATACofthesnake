@@ -1,4 +1,4 @@
-import rich_click as click
+import click
 from rich.console import Console
 from rich import inspect
 import os
@@ -57,7 +57,7 @@ from AOS.preflight import Preflight
     '-m',
     '--motifs',
     type=click.Path(exists=True),
-    help='Specify a file containing motifs. Needs to be in meme format.'
+    help='Specify a file containing motifs. Needs to be in meme format. If not provided, no motif analyses will be ran.'
 )
 @click.option(
     '-f',
@@ -65,7 +65,7 @@ from AOS.preflight import Preflight
     default=150,
     type=int,
     show_default=True,
-    help='Specify the maximum fragment size (bps). Sits at 150 bps by default to capture only NFR (nucleosome-free region).'
+    help='Specify the maximum fragment size (bps) to be considered for peak calling. Sits at 150 bps by default to only use reads from nucleosome-free regions.'
 )
 @click.option(
     '--samplesheet',
@@ -88,19 +88,19 @@ from AOS.preflight import Preflight
     required=False,
     default='MT',
     show_default=True,
-    help='Name of the mitochondrial contig. Defaults to MT.'
+    help='Name of the mitochondrial contig (as in the reference genome / BAM file). Defaults to MT.'
 )
 @click.option(
     '--upstreamuro',
     required=False,
-    default=20000,
+    default=50000,
     show_default=True,
     help='Maximum permitted distance upstream of a feature (peak annotation).'
 )
 @click.option(
     '--downstreamuro',
     required=False,
-    default=15000,
+    default=50000,
     show_default=True,
     help='Maximum permitted distance downstream of a feature (peak annotation).'
 )
@@ -123,55 +123,41 @@ from AOS.preflight import Preflight
     required=False,
     default=None,
     show_default=True,
-    help='Include an external peak file (bed format).'
+    help='Include an external peak file (bed format). If not provided, the union of all peaks across all samples will be used to generate a count matrix.'
 )
-def main(bamdir,
-        outputdir,
-        gtf,
-        genomefasta,
-        readattractingregions,
-        motifs,
-        fragsize,
-        snakemakeprofile,
-        samplesheet,
-        comparison,
-        interaction,
-        mitostring,
-        upstreamuro,
-        downstreamuro,
-        featureuro,
-        pseudocount,
-        peakset
-        ):
-    # Init
-    pf = Preflight(**locals())
-    # GTF
-    print("Sorting GTF & creating TSS.bed..")
-    pf.genTSS()
-    # comparisons.
-    print("Double checking comparisons (if present)..")
-    pf.checkcomps()
-    # Check fasta file.
-    print("Checking fasta formatting and inferring ESS..")
-    pf.checkFna()
-    print("ESS set at: {}".format(pf.vars['genomesize']))
-    # Write conf
-    print("Writing config file in {}..".format(
-        os.path.basename(pf.dirs['outputdir'])
-    ))
-    #
-    pf.dumpconf()
-    #inspect(pf)
-    console = Console()
-    with console.status("[bold green] Running snakemake..."): 
-        subprocess.run(
-            [
-                'snakemake',
-                '-s', pf.rules['wf'],
-                '--profile', pf.vars['snakemakeprofile'],
-                '-p',
-                '--configfile', pf.files['configfile'],
-                '-d', pf.dirs['outputdir']
-            ]
-        )
+def main(**kwargs):
+    print(kwargs)
+
+
+    # # Init
+    # pf = Preflight(**locals())
+    # # GTF
+    # print("Sorting GTF & creating TSS.bed..")
+    # pf.genTSS()
+    # # comparisons.
+    # print("Double checking comparisons (if present)..")
+    # pf.checkcomps()
+    # # Check fasta file.
+    # print("Checking fasta formatting and inferring ESS..")
+    # pf.checkFna()
+    # print("ESS set at: {}".format(pf.vars['genomesize']))
+    # # Write conf
+    # print("Writing config file in {}..".format(
+    #     os.path.basename(pf.dirs['outputdir'])
+    # ))
+    # #
+    # pf.dumpconf()
+    # #inspect(pf)
+    # console = Console()
+    # with console.status("[bold green] Running snakemake..."): 
+    #     subprocess.run(
+    #         [
+    #             'snakemake',
+    #             '-s', pf.rules['wf'],
+    #             '--profile', pf.vars['snakemakeprofile'],
+    #             '-p',
+    #             '--configfile', pf.files['configfile'],
+    #             '-d', pf.dirs['outputdir']
+    #         ]
+    #     )
             
