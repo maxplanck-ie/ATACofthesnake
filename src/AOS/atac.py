@@ -41,17 +41,24 @@ from AOS.preflight import Preflight
     help='Specify a fasta file that contains the reference genome.'
 )
 @click.option(
+    '-b',
+    '--readattractingregions',
+    type=click.Path(exists=True),
+    required=True,
+    help='Specify a bed file containing read attracting regions. Should contain the mitochondrial genome at least.'
+)
+@click.option(
     '-p',
     '--snakemakeprofile',
     required=False,
     help='specify the name of your snakemake profile.'
 )
 @click.option(
-    '-b',
-    '--readattractingregions',
-    type=click.Path(exists=True),
-    required=True,
-    help='Specify a bed file containing read attracting regions. Should contain the mitochondrial genome at least.'
+    '-@',
+    '--threads',
+    required=False,
+    type=int,
+    help='specify the number of threads to use. Only relevant if no snakemake profile is given.'
 )
 @click.option(
     '-m',
