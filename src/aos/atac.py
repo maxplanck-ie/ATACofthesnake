@@ -5,7 +5,8 @@ import os
 import subprocess
 import shutil
 import yaml
-from AOS.preflight import Preflight
+from pathlib import Path
+from aos.preflight import Preflight
 
 
 @click.command(
@@ -56,7 +57,7 @@ from AOS.preflight import Preflight
 @click.option(
     '-@',
     '--threads',
-    required=False,
+    default=1,
     type=int,
     help='specify the number of threads to use. Only relevant if no snakemake profile is given.'
 )
@@ -76,19 +77,19 @@ from AOS.preflight import Preflight
 )
 @click.option(
     '--samplesheet',
-    default='',
+    type=click.Path(exists=True),
     help='specify a samplesheet (as a tsv file). See Readme for formatting.'
 )
 @click.option(
     '--comparison',
-    default='',
+    type=click.Path(exists=True),
     help='specify yaml file with comparisons. Required if a samplesheet is given.'
 )
 @click.option(
     '--interaction',
     default=False,
     is_flag=True,
-    help='Wether or not to add interactions in the differential calculations. (e.g. ~factor1*factor2 is set, ~factor1+factor2 if not set).'
+    help='Wether or not to add interactions in the differential calculations. (e.g. ~factor1*factor2 if set, ~factor1+factor2 if not set).'
 )
 @click.option(
     '--mitostring',
@@ -128,12 +129,11 @@ from AOS.preflight import Preflight
 @click.option(
     '--peakset',
     required=False,
-    default=None,
-    show_default=True,
+    type=click.Path(exists=True),
     help='Include an external peak file (bed format). If not provided, the union of all peaks across all samples will be used to generate a count matrix.'
 )
-def main(**kwargs):
-    print(kwargs)
+def main(**kwargs) -> None:
+    pf = Preflight(kwargs)
 
 
     # # Init

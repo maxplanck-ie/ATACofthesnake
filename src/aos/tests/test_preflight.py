@@ -1,5 +1,5 @@
 import pytest
-from AOS.preflight import Preflight
+from aos.preflight import Preflight
 from pathlib import Path
 
 class TestPreflight:

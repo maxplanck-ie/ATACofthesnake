@@ -30,7 +30,7 @@ dev = [
 ]
 
 [project.scripts]
-ATAC = "AOS.atac:main"
+ATAC = "aos.atac:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -46,6 +46,7 @@ channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 [tool.pixi.pypi-dependencies]
 ATACofthesnake = { path = ".", editable = true, extras = ["dev"] } 
+
 [tool.pixi.tasks]
 ty = "ty check"
 ruff = "ruff check ."

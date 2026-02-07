@@ -409,7 +409,7 @@ packages:
 - pypi: ./
   name: atacofthesnake
   version: 0.0.0
-  sha256: f71705343105be438234a766d9bdc30d809c05890f0721d8c91388e73828bbf8
+  sha256: 75c5b3574e8fb9c6c2f44f6704adfe63ec106f0a1ac6ad787ec254e5169dc79e
   requires_dist:
   - seaborn>=0.12.0
   - pandas>=2
