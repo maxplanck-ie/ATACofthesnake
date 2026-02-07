@@ -43,7 +43,7 @@ from AOS.preflight import Preflight
 @click.option(
     '-p',
     '--snakemakeprofile',
-    required=True,
+    required=False,
     help='specify the name of your snakemake profile.'
 )
 @click.option(
