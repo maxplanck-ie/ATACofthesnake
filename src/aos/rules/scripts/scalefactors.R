@@ -3,9 +3,8 @@
 suppressMessages(library(edgeR))
 suppressMessages(library(tools))
 
-args <- commandArgs(trailingOnly=T)
-mat = args[[1]]
-outfile = args[[2]]
+mat = snakemake@input[[1]]
+outfile = snakemake@output[[1]]
 
 countmat <- read.csv(mat, sep='\t', header=TRUE)
 rowmat <- paste(countmat[,1], countmat[,2], countmat[,3], sep='|')

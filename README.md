@@ -10,16 +10,14 @@ Fasta headers un field 0 (space delimited) are not allowed to contain a pipe cha
 
 ## Installation
 
-  set up the environment:  
+  From github:
 >  git clone git@github.com:maxplanck-ie/ATACofthesnake.git  
->  cd ATACofthesnake  
->  conda env create -f env.yml -n aos  
->  conda activate aos  
->  pip install ./  
+>  pixi run ATAC -h
+
+  From pypi:
+>  pip install ATACofthesnake
 
 ## Quickstart
-
- > ATAC -h  
 
 standard analysis:
 
@@ -27,7 +25,8 @@ standard analysis:
    --gtf genes.gtf --genomefasta genome.fa \
    --snakemakeprofile profile -b read_attracting_regions.bed
 
-Note that this pipeline depends on snakemake, and forces you to have a [snakemake profile](https://github.com/Snakemake-Profiles).
+Note that this pipeline depends on snakemake. Additionally, the snakemake environments are managed using conda, which means you need to have conda installed and configured. Make sure this is set in your snakemake profile (if you use one), when not using a profile, snakemake will be ran with the --use-conda flag by default.
+
 The default analysis will generate:
 
  - sieved bamfiles.

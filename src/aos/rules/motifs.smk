@@ -6,14 +6,14 @@ def bg_from_gr(compdic, comp, gr):
       )
  
 rule clustermotifs:
-  input:
-    config['files']['motif']
   output:
     'motifs_clustered/clusteredmotifs_consensus_motifs.meme'
-  conda: config['envs']['tobias']
+  params:
+    motiffile = config['motif']
+  conda: "envs/tobias.yml"
   threads: 10
   shell:'''
-  TOBIAS ClusterMotifs -m {input} -t 0.4 -a meme -p clusteredmotifs -o 'motifs_clustered' --dist_method seqcor
+  TOBIAS ClusterMotifs -m {params.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs_clustered' --dist_method seqcor
   '''
 
 rule bed2fna:
@@ -22,9 +22,9 @@ rule bed2fna:
   output:
     '{comparison}/diffpeaks_{gr}.fna'
   threads: 1
-  conda: config['envs']['seqtools']
+  conda: "envs/seqtools.yml"
   params:
-    fna = config['files']['fna']
+    fna = config['fna']
   shell:'''
   bedtools getfasta -fi {params.fna} -bed {input} > {output}
   '''
@@ -42,7 +42,7 @@ rule ame:
     html = '{comparison}/motif_{gr}/ame.html'
   params:
     of = lambda wildcards: wildcards.comparison + '/motif_' + wildcards.gr
-  conda: config['envs']['meme']
+  conda: "envs/meme.yml"
   shell:'''
   ame --oc {params.of} --control {input.fnabg} {input.fna} {input.motifs}
   '''
@@ -55,7 +55,7 @@ rule ame_shuffled:
     html = '{comparison}/shuffled_motif_{gr}/ame.html'
   params:
     of = lambda wildcards: wildcards.comparison + '/shuffled_motif_' + wildcards.gr
-  conda: config['envs']['meme']
+  conda: "envs/meme.yml"
   shell:'''
   ame --oc {params.of} --control --shuffle-- {input.fna} {input.motifs}
   '''

@@ -1,5 +1,3 @@
-import glob
-import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -17,9 +15,9 @@ def idx_to_mit(_f):
                 count = int(_l[1])
     return(round(count/totalcount, 2))
 
-def plotfragsize(frags):
+def plotfragsize(fs, of):
     df = pd.read_csv(
-        frags,
+        fs,
         sep='\t',
         index_col=None,
         comment='#'
@@ -29,8 +27,8 @@ def plotfragsize(frags):
     ]
     reps = []
     for i,r in df.iterrows():
-        size = int(r[0])
-        occ = int(r[1])
+        size = int(r['Size'])
+        occ = int(r['Occurrences'])
         if size < 1000:
             for k in repeat(size, occ):
                 reps.append([r['Sample'], size])
@@ -62,12 +60,12 @@ def plotfragsize(frags):
     # Overlap plots.
     d.figure.subplots_adjust(hspace=-0.4)
     # save fig.
-    d.figure.savefig('figures/fragmentsizes.png', dpi=300, bbox_inches='tight')
+    d.figure.savefig(of, dpi=300, bbox_inches='tight')
 
-def plotfrip(frips):
+def plotfrip(fs, of):
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
     df = pd.read_csv(
-        frips,
+        fs,
         sep='\t',
         index_col=None,
         header=None,
@@ -82,7 +80,7 @@ def plotfrip(frips):
     )
     g.tick_params(axis='x', labelrotation=90)
     g.set(xlabel='', ylabel='frip score')
-    g.figure.savefig('figures/fripscores.png', dpi=300, bbox_inches='tight')
+    g.figure.savefig(of, dpi=300, bbox_inches='tight')
 
 def plotixs(ixs, mitostring):
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
@@ -239,6 +237,7 @@ def peak_boundaries(peaks, genomefa, peakset, of):
     if not peakset:
         chromdic = {}
         with open(genomefa) as f:
+            header = None
             for line in f:
                 if line.startswith('>'):
                     header = str(line.strip().replace('>', '').split(' ')[0])
@@ -272,7 +271,7 @@ def peak_boundaries(peaks, genomefa, peakset, of):
     else:
         shutil.copyfile(peakset, of)
 
-def PCA_colors(config):
+def PCA_colors(samplesheet, samples):
     colors = [
         '#1f77b4',
         '#ff7f0e',
@@ -285,14 +284,14 @@ def PCA_colors(config):
         '#bcbd22',
         '#17becf'
     ]
-    if config['files']['samplesheet']:
+    if samplesheet:
         sdf = pd.read_csv(
-            config['files']['samplesheet'],
+            samplesheet,
             sep='\t',
             header=0
         )
         sdf = sdf.set_index('sample')
-        sdf = sdf.loc[config['samples']]
+        sdf = sdf.loc[samples]
         colDic = {}
         colIx = 0
         for s in sdf.iloc[:,[0]].values:
@@ -301,8 +300,6 @@ def PCA_colors(config):
                 colIx += 1
         PCAstr = "--colors"
         for s in sdf.iloc[:,[0]].values:
-            PCAstr += " \"{}\"".format(
-                colDic[s[0]]
-            )
+            PCAstr += f" \"{colDic[s[0]]}\""
         return (PCAstr)
     return ("")
