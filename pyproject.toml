@@ -38,6 +38,8 @@ ATAC = "aos.atac:main"
 [tool.setuptools]
 package-dir = { "" = "src" }
 
+[tool.setuptools_scm]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
