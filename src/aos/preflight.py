@@ -16,7 +16,7 @@ class Preflight():
         # Create outputdir if not existing
         self.outputdir.mkdir(exist_ok=True, parents=True)
         # Set up log
-        self.logfile = self.outputdir / f'aos.log'
+        self.logfile = self.outputdir / 'aos.log'
         self.logger = setup_logger(self.logfile)
         self.logger.info(f"AOS - version {version('ATACofthesnake')}")
         self.logger.info("--" * 10)
@@ -144,11 +144,11 @@ class Preflight():
 
         tss = []
         for _, row in gtf.iterrows():
-            l = list(row)
-            if l[6] == '+':
-                tss.append( [ l[0], int(l[3]) - 1, int(l[3]) ] )
-            elif l[6] == '-':
-                tss.append( [ l[0], int(l[4]), int(l[4]) + 1 ] )
+            gtfentry = list(row)
+            if gtfentry[6] == '+':
+                tss.append( [ gtfentry[0], int(gtfentry[3]) - 1, int(gtfentry[3]) ] )
+            elif gtfentry[6] == '-':
+                tss.append( [ gtfentry[0], int(gtfentry[4]), int(gtfentry[4]) + 1 ] )
         tss = pd.DataFrame(tss).drop_duplicates()
         tss.to_csv(self.outputdir / 'tss.bed', sep='\t', index=False, header=False)
         self.gtf_sorted = self.outputdir / 'genes.sorted.gtf'

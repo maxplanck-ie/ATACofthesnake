@@ -14,5 +14,5 @@ class TestPreflight:
             Preflight.validate_comparison(sspath / "incorrect.tsv", sspath / "correctcomp.yaml" )
     
     def test_optionalpath(self):
-        assert Preflight.optional_paths(None) == None
+        assert Preflight.optional_paths(None) is None
         assert Preflight.optional_paths("test") == Path("test")

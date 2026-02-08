@@ -1,5 +1,3 @@
-import glob
-import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -239,6 +237,7 @@ def peak_boundaries(peaks, genomefa, peakset, of):
     if not peakset:
         chromdic = {}
         with open(genomefa) as f:
+            header = None
             for line in f:
                 if line.startswith('>'):
                     header = str(line.strip().replace('>', '').split(' ')[0])
