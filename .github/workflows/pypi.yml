@@ -22,7 +22,7 @@ jobs:
         cache: 'pip'
     - name: build
       run: |
-        pip install .[actions]
+        pip install .[dev]
         rm -f dist/*
         python -m build
     - name: upload
