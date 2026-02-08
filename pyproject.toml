@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -37,6 +37,8 @@ ATAC = "aos.atac:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+
+[tool.setuptools_scm]
 
 [tool.setuptools.packages.find]
 where = ["src"]
