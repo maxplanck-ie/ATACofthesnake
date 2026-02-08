@@ -1,5 +1,5 @@
-from AOS.helper import merge_idx, merge_sieve
-from AOS.helper import plotfragsize, plotfrip, plotixs, plotsieve
+from aos.helper import merge_idx, merge_sieve
+from aos.helper import plotfragsize, plotfrip, plotixs, plotsieve
 
 rule ixStat:
   input:
@@ -7,7 +7,7 @@ rule ixStat:
     bai = 'input/{sample}.bam.bai'
   output:
     temp('qc/{sample}_ix.tsv')
-  conda: config['envs']['seqtools']
+  conda: "envs/seqtools.yml"
   threads: 1
   shell:'''
   set +o pipefail;
@@ -16,7 +16,7 @@ rule ixStat:
 
 rule mergeixStat:
   input:
-    expand('qc/{sample}_ix.tsv', sample=config['samples'])
+    expand('qc/{sample}_ix.tsv', sample=SAMPLES)
   output:
     'qc/ixstat.tsv'
   run:
@@ -24,7 +24,7 @@ rule mergeixStat:
 
 rule mergesieve:
   input:
-    expand('qc/{sample}_sieve.txt', sample=config['samples'])
+    expand('qc/{sample}_sieve.txt', sample=SAMPLES)
   output:
     'qc/sieve.tsv'
   run:
@@ -32,12 +32,12 @@ rule mergesieve:
 
 rule fragsize:
   input:
-    bams = expand('input/{sample}.bam', sample=config['samples']),
-    bais = expand('input/{sample}.bam.bai', sample=config['samples'])
+    bams = expand('input/{sample}.bam', sample=SAMPLES),
+    bais = expand('input/{sample}.bam.bai', sample=SAMPLES)
   output:
     'qc/fragsize.tsv'
   threads: 10
-  conda: config['envs']['deeptools']
+  conda: "envs/deeptools.yml"
   shell:'''
   bamPEFragmentSize -b {input.bams} \
     -p {threads} \
@@ -49,13 +49,10 @@ rule scalefactors:
     'peakset/counts.tsv'
   output:
     'peakset/scalefactors.txt'
-  params:
-    config['rscripts']['scalefactors']
   threads: 1
-  conda: config['envs']['seqtools']
-  shell:'''
-  Rscript {params} {input} {output}
-  '''
+  conda: "envs/seqtools.yml"
+  script:
+    "scripts/scalefactors.R"
 
 rule bigwigs:
   input:
@@ -66,10 +63,10 @@ rule bigwigs:
     bigwigsf = 'bw/{sample}.scalefac.bw',
     bigwigrpkm = 'bw/{sample}.RPKM.bw'
   params:
-    rar = config['files']['readattractingregions'],
+    rar = config['rar'],
     sample = "{sample}"
   threads: 10
-  conda: config['envs']['deeptools']
+  conda: "envs/deeptools.yml"
   shell:'''
   SCALEFAC=$(grep {params.sample} {input.scalefactors} | cut -f2 -d ' ')
   bamCoverage --scaleFactor $SCALEFAC \
@@ -89,7 +86,7 @@ rule frips:
     temp('qc/{sample}.frip.txt')
   params:
     sample = '{sample}'
-  conda: config['envs']['seqtools']
+  conda: "envs/seqtools.yml"
   shell:'''
   mapped=$(samtools view -c -F 4 {input.bam})
   peakreads=$(samtools view -c -F 4 -L {input.peaks} {input.bam})
@@ -99,7 +96,7 @@ rule frips:
 
 rule fripcombine:
   input:
-    expand('qc/{sample}.frip.txt', sample=config['samples'])
+    expand('qc/{sample}.frip.txt', sample=SAMPLES)
   output:
     'qc/fripscores.txt'
   shell:'''
@@ -108,19 +105,19 @@ rule fripcombine:
 
 rule plotfragsize:
   input:
-    'qc/fragsize.tsv'
+    fs = 'qc/fragsize.tsv'
   output:
-    'figures/fragmentsizes.png'  
+    of = 'figures/fragmentsizes.png'  
   run:
-    plotfragsize(input[0])
+    plotfragsize(input.fs, output.of)
 
 rule plotfrip:
   input:
-    'qc/fripscores.txt'
+    fs = 'qc/fripscores.txt'
   output:
-    'figures/fripscores.png'
+    of = 'figures/fripscores.png'
   run:
-    plotfrip(input[0])
+    plotfrip(input.fs, output.of)
 
 rule plotixs:
   input:
@@ -128,7 +125,7 @@ rule plotixs:
   output:
     'figures/mitofraction.png'
   params:
-    mito = config['vars']['mitostring']
+    mito = config['mitostring']
   run:
     plotixs(input[0], params[0])
 

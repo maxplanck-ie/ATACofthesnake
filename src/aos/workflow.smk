@@ -1,92 +1,50 @@
-include: config['rules']['peaks']
-include: config['rules']['qc']
-include: config['rules']['de']
-include: config['rules']['motifs']
-include: config['rules']['tobias']
+import yaml
+
+SAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
+
+include: "rules/peaks.smk"
+include: "rules/qc.smk"
+include: "rules/DE.smk"
+include: "rules/motifs.smk"
+include: "rules/tobias.smk"
+
 
 def compzip(comp):
-  comps = []
-  grs = []
-  for c in comp:
-    for gr in comp[c]:
-      comps.append(c)
-      grs.append(gr)
-  return(comps, grs)
+    comps = [c for c in comp for _ in comp[c]]
+    grs = [gr for c in comp for gr in comp[c]]
+    return comps, grs
 
-def geto():
-  # Peaks
-  _f = []
-  _f.extend(
-    [
-      'peakset/peaks_uropa_finalhits.txt',
-      'figures/PCA.png'
-    ]
-  )
-  _f.extend(
-    expand(
-      'bw/{sample}.scalefac.bw',
-      sample=config['samples']
-    )
-  ),
-  _f.extend(
-    [
-      'figures/mitofraction.png',
-      'qc/fragsize.tsv',
-      'figures/alignmentsieve.png',
-      'figures/fragmentsizes.png',
-      'figures/fripscores.png'
-    ]
-  )
-  # Differential
+def define_comparison_output():
+  outputfiles = []
   if config['comparison']:
+    with open(config['comparison'], 'r') as f:
+      config['comparison'] = yaml.safe_load(f)
     # define list of comparisons & list per groups to easily zip later on.
     comps, grs = compzip(config['comparison'])
-    _f.extend(
-      expand(
-        '{comparison}/{comparison}_maplot.png',
-        comparison=config['comparison'].keys()
-      )
-    ),
-    _f.extend(
-      expand(
-        '{comparison}/diffpeaks_{gr}.bed',
-        zip,
-        comparison=comps,
-        gr=grs
-      )
-    )
-    _f.extend(
-      expand(
-        '{comparison}/diffpeaks.png',
-        comparison=config['comparison'].keys()
-      )
-    )
-    # Motifs.
-    if config['files']['motif']:
-      _f.append(
-        'motifs_clustered/clusteredmotifs_consensus_motifs.meme'
-      )
-      _f.extend(
+    outputfiles.extend(expand('{comp}/{comp}_maplot.png', comp=config['comparison'].keys()))
+    outputfiles.extend(expand('{comp}/diffpeaks_{gr}.bed', zip, comp=comps, gr=grs))
+    outputfiles.extend(expand('{comp}/diffpeaks.png', comp=config['comparison'].keys()))
+    
+    if config['motif']:
+      outputfiles.append('motifs_clustered/clusteredmotifs_consensus_motifs.meme')
+      outputfiles.extend(
         expand(
-          '{comparison}/motif_{gr}/ame.html',
-          zip,
-          comparison=comps,
+          '{comp}/motif_{gr}/ame.html',
+          zip,comp=comps,
           gr=grs
         )
       )
-      _f.extend(
-        expand(
-          '{comparison}/shuffled_motif_{gr}/ame.html',
-          zip,
-          comparison=comps,
-          gr=grs
-        )
-      )
-  return (_f)
+      outputfiles.extend(expand('{comp}/shuffled_motif_{gr}/ame.html',zip,comp=comps,gr=grs))
+  return (outputfiles)
 
-localrules: lnBams
 rule all:
   input:
-    geto()
-  
-
+    'peakset/peaks_uropa_finalhits.txt',
+    'figures/PCA.png',
+    expand('bw/{sample}.scalefac.bw', sample=SAMPLES),
+    'figures/mitofraction.png',
+    'qc/fragsize.tsv',
+    'figures/alignmentsieve.png',
+    'figures/fragmentsizes.png',
+    'figures/fripscores.png',
+    define_comparison_output()

@@ -1,13 +1,7 @@
 import click
 from rich.console import Console
-from rich import inspect
-import os
-import subprocess
-import shutil
-import yaml
-from pathlib import Path
 from aos.preflight import Preflight
-
+import subprocess
 
 @click.command(
         context_settings=dict(
@@ -134,37 +128,15 @@ from aos.preflight import Preflight
 )
 def main(**kwargs) -> None:
     pf = Preflight(kwargs)
-
-
-    # # Init
-    # pf = Preflight(**locals())
-    # # GTF
-    # print("Sorting GTF & creating TSS.bed..")
-    # pf.genTSS()
-    # # comparisons.
-    # print("Double checking comparisons (if present)..")
-    # pf.checkcomps()
-    # # Check fasta file.
-    # print("Checking fasta formatting and inferring ESS..")
-    # pf.checkFna()
-    # print("ESS set at: {}".format(pf.vars['genomesize']))
-    # # Write conf
-    # print("Writing config file in {}..".format(
-    #     os.path.basename(pf.dirs['outputdir'])
-    # ))
-    # #
-    # pf.dumpconf()
-    # #inspect(pf)
-    # console = Console()
-    # with console.status("[bold green] Running snakemake..."): 
-    #     subprocess.run(
-    #         [
-    #             'snakemake',
-    #             '-s', pf.rules['wf'],
-    #             '--profile', pf.vars['snakemakeprofile'],
-    #             '-p',
-    #             '--configfile', pf.files['configfile'],
-    #             '-d', pf.dirs['outputdir']
-    #         ]
-    #     )
+    console = Console()
+    with console.status("[bold green] Running snakemake..."): 
+        subprocess.run(
+            [
+                'snakemake',
+                '-s', pf.workflowfile,
+                '--configfile', pf.configfile,
+                '-d', pf.outputdir,
+                '-p',
+            ] + pf.snakemake_arguments()
+        )
             

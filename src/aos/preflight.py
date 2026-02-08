@@ -1,7 +1,6 @@
 from pathlib import Path
 import yaml
 import pandas as pd
-import sys
 from aos.logger import setup_logger
 from importlib.metadata import version
 
@@ -22,7 +21,7 @@ class Preflight():
         self.logger.info(f"AOS - version {version('ATACofthesnake')}")
         self.logger.info("--" * 10)
         
-        self.logger.info("Checking mandatory paths..")
+        self.logger.info("Checking mandatory paths...")
         self.rar = Path(clickdict['readattractingregions'])
         self.gtf = Path(clickdict['gtf'])
         self.fna = Path(clickdict['genomefasta'])
@@ -82,6 +81,13 @@ class Preflight():
 
         self.logger.info("Preflight complete. Configuration:")
         self.logger.debug(self.__dict__)
+
+        # Write out config file
+        self.logger.info("Writing config file to output directory...")
+        self.configfile = self.outputdir / 'aos_config.yaml'
+
+        with open(self.configfile, 'w') as f:
+            yaml.dump(self.to_dict(),f,default_flow_style=False,sort_keys=False)
     
     @staticmethod
     def optional_paths(path: str|None) -> Path|None:
@@ -147,3 +153,20 @@ class Preflight():
         tss.to_csv(self.outputdir / 'tss.bed', sep='\t', index=False, header=False)
         self.gtf_sorted = self.outputdir / 'genes.sorted.gtf'
         self.tss = self.outputdir / 'tss.bed'
+    
+    def snakemake_arguments(self) -> list:
+        if self.smk_profile:
+            return ['--profile', self.smk_profile]
+        else:
+            return ['--cores', f"{self.threads}", "--use-conda"]
+    
+    def to_dict(self):
+        d = {}
+        for k, v in self.__dict__.items():
+            if k == 'logger':
+                continue
+            if isinstance(v, Path):
+                d[k] = str(v.absolute())
+            else:
+                d[k] = v
+        return d

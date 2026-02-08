@@ -1,5 +1,5 @@
 # Create a list containing:
-from AOS.helper import maplot, tsv_to_bed
+from aos.helper import maplot, tsv_to_bed
 import os
 
 def readsamples(_f):
@@ -57,8 +57,8 @@ rule diffacc:
     table = '{comparison}/{comparison}_diffacc_edgeR.tsv',
     samples = '{comparison}/samples.txt'
   params:
-    samplesheet = config['files']['samplesheet'],
-    pseudocount = config['vars']['pseudocount'],
+    samplesheet = config['samplesheet'],
+    pseudocount = config['pseudocount'],
     prefix = lambda wildcards: prefix(
         config['comparison'][wildcards.comparison],
     ),
@@ -73,9 +73,9 @@ rule diffacc:
     interaction = config['interaction'],
     outputfolder = lambda wildcards: wildcards.comparison
   threads: 1
-  conda: config['envs']['seqtools']
+  conda: "envs/seqtools.yml"
   script:
-    config['rscripts']['edger']
+    "scripts/edger.R"
 
 rule maplot:
   input:
@@ -118,7 +118,7 @@ rule bedfiles:
 rule heatmaps:
   input:
     maplot = '{comparison}/{comparison}_maplot.png',
-    samples = expand('bw/{sample}.scalefac.bw', sample=config['samples']),
+    samples = expand('bw/{sample}.scalefac.bw', sample=SAMPLES),
   output:
     matrix = temp('{comparison}/mat.npz'),
     heatmap = '{comparison}/diffpeaks.png'
@@ -126,7 +126,7 @@ rule heatmaps:
     beds = lambda wildcards: wildcards.comparison + '/*bed',
     samples = lambda wildcards: readsamples(wildcards.comparison)
   threads: 10
-  conda: config['envs']['deeptools']
+  conda: "envs/deeptools.yml"
   shell:'''
   computeMatrix reference-point -R {params.beds} -S {params.samples} -o {output.matrix} \
   --referencePoint center \
