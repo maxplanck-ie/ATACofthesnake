@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.1.0...v0.2.0) (2026-02-08)
+
+
+### Features
+
+* scm for versioning ([a5f5575](https://github.com/maxplanck-ie/ATACofthesnake/commit/a5f5575741713571c033b6555d37afa9ce645e82))
+
 ## [0.1.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.0.1...v0.1.0) (2026-02-08)
 
 
