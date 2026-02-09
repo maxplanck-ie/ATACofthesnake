@@ -44,3 +44,21 @@ def sspath(tmp_path):
         yaml.dump(incorrectcomp, f, default_flow_style=False, sort_keys=False)
 
     return sspath
+
+@pytest.fixture
+def fnapath(tmp_path):
+    '''
+    Create a temporary fasta file for testing.
+    '''
+    fnapath = tmp_path / "fasta"
+    fnapath.mkdir()
+
+    with open(fnapath / "test.fa", 'w') as f:
+        f.write(">chr1\n")
+        f.write("ATCGATCGATCG\n")
+        f.write(">chr2\n")
+        f.write("ATCGATCGATCG\n")
+        f.write(">chrM\n")
+        f.write("ATCGATCGATCG\n")
+
+    return fnapath

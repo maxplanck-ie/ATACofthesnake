@@ -82,6 +82,10 @@ class Preflight():
         self.logger.info("Preflight complete. Configuration:")
         self.logger.debug(self.__dict__)
 
+        # Validate mitostring
+        self.logger.info("Making sure mitostring is present in fasta file...")
+        self.validate_mitostring(self.fna, self.mitostring)
+
         # Write out config file
         self.logger.info("Writing config file to output directory...")
         self.configfile = self.outputdir / 'aos_config.yaml'
@@ -111,6 +115,12 @@ class Preflight():
                     _factors.append(factor)
         # Check that all factors in the columns
         assert all([factor in factors for factor in _factors]), f"Not all factors in comparison file {set(_factors)} are present in samplesheet {ssdf.columns}. Exiting."
+    
+    @staticmethod
+    def validate_mitostring(fna, mitostring):
+        with open(fna, 'r') as f:
+            headers = [ line.strip() for line in f if line.startswith('>') ]
+        assert any([ mitostring in header for header in headers ]), f"Provided mitostring {mitostring} not found in fasta file. Please check your fasta file and the --mitostring parameter. Exiting."
     
     def parse_fasta(self):
         ESS = 0
