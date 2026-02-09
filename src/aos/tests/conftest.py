@@ -11,6 +11,19 @@ def sspath(tmp_path):
     sspath = tmp_path / "samplesheets"
     sspath.mkdir()
 
+    bamdir_correct = sspath / "bamdir_correct"
+    bamdir_incorrect = sspath / "bamdir_incorrect"
+
+    bamdir_correct.mkdir()
+    bamdir_incorrect.mkdir()
+
+    # Create dummy bam files for correct samplesheet
+    for sample in ['sample1', 'sample2', 'sample3', 'sample4']:
+        (bamdir_correct / f"{sample}.bam").touch()
+    for sample in ['sample1', 'sample2']:
+        (bamdir_incorrect / f"{sample}.bam").touch()
+
+
     correct = pd.DataFrame({
         'sample': ['sample1', 'sample2', 'sample3', 'sample4'],
         'factor1': ['A', 'A', 'B', 'B'],

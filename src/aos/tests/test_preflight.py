@@ -12,6 +12,11 @@ class TestPreflight:
         # No sample
         with pytest.raises(AssertionError):
             Preflight.validate_comparison(sspath / "incorrect.tsv", sspath / "correctcomp.yaml" )
+        # Bam files present
+        Preflight.validate_samplesheet(sspath / "correct.tsv", sspath / "bamdir_correct")
+        # Bam files missing
+        with pytest.raises(AssertionError):
+            Preflight.validate_samplesheet(sspath / "correct.tsv", sspath / "bamdir_incorrect")
     
     def test_optionalpath(self):
         assert Preflight.optional_paths(None) is None

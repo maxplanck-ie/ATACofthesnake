@@ -44,6 +44,7 @@ class Preflight():
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.
             self.validate_comparison(self.samplesheet, self.comparison)
+            self.validate_samplesheet(self.samplesheet, self.bamdir)
             # If both samplesheet and comparison are set, parse the interaction flag.
             if clickdict['interaction']:
                 self.interaction = '*'
@@ -122,6 +123,13 @@ class Preflight():
             headers = [ line.strip() for line in f if line.startswith('>') ]
         assert any([ mitostring in header for header in headers ]), f"Provided mitostring {mitostring} not found in fasta file. Please check your fasta file and the --mitostring parameter. Exiting."
     
+    @staticmethod
+    def validate_samplesheet(ss: Path, bamdir: Path) -> None:
+        df = pd.read_csv(ss, sep='\t', header=0)
+        for sample in df['sample']:
+            bamfile = bamdir / f"{sample}.bam"
+            assert bamfile.exists(), f"Bamfile {bamfile} not found for sample {sample} in samplesheet. Exiting."
+
     def parse_fasta(self):
         ESS = 0
         with open(self.fna, 'r') as f:
