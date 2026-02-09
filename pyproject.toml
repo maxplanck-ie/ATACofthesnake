@@ -34,6 +34,7 @@ dev = [
 
 [project.scripts]
 ATAC = "aos.atac:main"
+ATAC_example = "aos.example:download_example"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
