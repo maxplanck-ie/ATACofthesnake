@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.2.0...v0.3.0) (2026-02-09)
+
+
+### Features
+
+* validate sample presence in samplesheet ([#40](https://github.com/maxplanck-ie/ATACofthesnake/issues/40)) ([f68dd85](https://github.com/maxplanck-ie/ATACofthesnake/commit/f68dd859564af5ad157466a71b50472799b5f170))
+
 ## [0.2.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.1.0...v0.2.0) (2026-02-08)
 
 
