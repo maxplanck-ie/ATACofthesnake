@@ -1,6 +1,5 @@
 import hashlib
 from pathlib import Path
-from rich.console import Console
 from aos.logger import setup_logger
 import requests
 import click
