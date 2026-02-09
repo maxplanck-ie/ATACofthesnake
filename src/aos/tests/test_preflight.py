@@ -16,3 +16,10 @@ class TestPreflight:
     def test_optionalpath(self):
         assert Preflight.optional_paths(None) is None
         assert Preflight.optional_paths("test") == Path("test")
+    
+    def test_mitostring_validation(self, fnapath):
+        # Correct mitostring
+        Preflight.validate_mitostring(fnapath / "test.fa", "chrM")
+        # Incorrect mitostring
+        with pytest.raises(AssertionError):
+            Preflight.validate_mitostring(fnapath / "test.fa", "MT")
