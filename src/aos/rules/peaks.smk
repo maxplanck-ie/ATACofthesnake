@@ -2,14 +2,14 @@ from aos.helper import peak_boundaries
 from aos.helper import PCA_colors
 
 rule lnBams:
-  input: 
-    config['bamdir'] + "/{sample}.bam"
   output: 
     'input/{sample}.bam'
   threads: 1
-  shell:'''
-  ln -t input -s {input}
-  '''
+  run:
+    if wildcards.sample in BAMSAMPLES:
+      shell('ln -s {config[bamdir]}/{wildcards.sample}.bam {output}')
+    elif wildcards.sample in CRAMSAMPLES:
+      shell('samtools view -T {config[fna]} -b -h {config[bamdir]}/{wildcards.sample}.cram > {output}')
 
 rule bamIx:
   input:
