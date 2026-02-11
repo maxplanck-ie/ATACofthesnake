@@ -1,21 +1,23 @@
 # ATACofthesnake
 
-Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam files, could be obtained from snakePipes (https://github.com/maxplanck-ie/snakepipes).
+Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam or cram files.
 
 ## Important
 
-All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made.
-
-Fasta headers un field 0 (space delimited) are not allowed to contain a pipe character '|'.
+All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made. In case this is not relevant, you can run the workflow multiple times.
+Fasta headers un field 0 (space delimited) are not allowed to contain a pipe character '|' (as peaks will be delimited as such).
 
 ## Installation
 
-  From github:
+From pypi:
+>  pip install ATACofthesnake
+or with uv:
+>  uv pip install ATACofthesnake
+
+From github:
 >  git clone git@github.com:maxplanck-ie/ATACofthesnake.git  
 >  pixi run ATAC -h
 
-  From pypi:
->  pip install ATACofthesnake
 
 ## Quickstart
 
@@ -37,7 +39,7 @@ The default analysis will generate:
 
 ## Differential analysis
 
-Differential analysis requires the additional yaml file specifying the comparison (comparison.yaml) and the samplesheet.
+Differential analysis requires an additional yaml file specifying the comparison (comparison.yaml) and the samplesheet.
 
  > ATAC --bamdir folder/with/bamfiles/ --outputdir outputfolder \
    --gtf genes.gtf --genomefasta genome.fa --genomesize 1.87e9 \

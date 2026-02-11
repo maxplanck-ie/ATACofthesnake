@@ -1,6 +1,9 @@
 import yaml
 
-SAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
+BAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
+CRAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.cram")
+
+SAMPLES = BAMSAMPLES + CRAMSAMPLES
 
 include: "rules/peaks.smk"
 include: "rules/qc.smk"
