@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.3.0...v0.4.0) (2026-02-11)
+
+
+### Features
+
+* functionality to download example data ([#42](https://github.com/maxplanck-ie/ATACofthesnake/issues/42)) ([1be0228](https://github.com/maxplanck-ie/ATACofthesnake/commit/1be0228eca56e23a8045750c0f82bb825cea3a5a))
+* handle both cram and bam files ([1be0228](https://github.com/maxplanck-ie/ATACofthesnake/commit/1be0228eca56e23a8045750c0f82bb825cea3a5a))
+
 ## [0.3.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.2.0...v0.3.0) (2026-02-09)
 
 
