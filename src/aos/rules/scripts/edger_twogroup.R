@@ -103,7 +103,8 @@ group_specs <- lapply(group_names, function(g) normalize_group_spec(comparison_e
 names(group_specs) <- group_names
 group_masks_dummy <- lapply(group_specs, function(spec) build_mask(dummy_samplesheet, spec))
 group_masks_real <- lapply(group_specs, function(spec) build_mask(samplesheet, spec))
-relevantsamples <- unique(unlist(Map(function(g, m) rownames(samplesheet)[m], group_names, group_masks_real)))
+group_samples <- lapply(group_masks_real, function(m) rownames(samplesheet)[m])
+relevantsamples <- unname(unique(unlist(group_samples, use.names = FALSE)))
 print(paste("Relevant samples for", comparison_name, ":", paste(relevantsamples, collapse=", ")))
 write_lines(relevantsamples,relevantsamples_out, sep='\n')
 

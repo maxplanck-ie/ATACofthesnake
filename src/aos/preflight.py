@@ -1,7 +1,6 @@
 from pathlib import Path
 import yaml
 import pandas as pd
-import jsonschema
 from aos.logger import setup_logger
 from importlib.metadata import version
 
