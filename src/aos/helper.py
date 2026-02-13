@@ -125,26 +125,17 @@ def plotsieve(sieve):
     g.set(xlabel='', ylabel='Fraction of surviving reads')
     g.figure.savefig('figures/alignmentsieve.png', dpi=300, bbox_inches='tight')
 
-def maplot(tsv, of, gr1, gr2):
+def maplot(tsv: str, of: str, compentry: dict):
+    compentry.pop("type", None)
+    compentry.pop("design", None)
+    gr1 = list(compentry.keys())[0]
+    gr2 = list(compentry.keys())[1]
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
-    df = pd.read_csv(
-        tsv,
-        sep='\t',
-        header=0
-    )
-    diflis = []
-    upc = 0
-    downc = 0
-    for i,r in df.iterrows():
-        if r['FDR'] < 0.05:
-            diflis.append('S')
-            if r['logFC'] > 0:
-                upc += 1
-            else:
-                downc += 1
-        else:
-            diflis.append('NS')
-    df['sig'] = diflis
+    df = pd.read_csv(tsv, sep='\t', header=0)
+    sig_mask = df["FDR"] < 0.05
+    df["sig"] = sig_mask.map({True: "S", False: "NS"})
+    upc = int((sig_mask & (df["logFC"] > 0)).sum())
+    downc = int((sig_mask & (df["logFC"] <= 0)).sum())
     g = sns.scatterplot(
         data=df,
         x='logCPM',
@@ -206,32 +197,6 @@ def merge_sieve(i, o):
     df = pd.DataFrame(data)
     df.T.to_csv(_o , sep='\t', header=False, index=False)
 
-def tsv_to_bed(tsv, bed, grint):
-    df = pd.read_csv(
-        tsv,
-        sep='\t',
-        header=0
-    )
-    if grint == 2:
-        gr2df = pd.DataFrame(
-            [i.split('|') for i in list(df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]['peak_id'])]
-        )
-        gr2df.to_csv(
-            bed,
-            sep='\t',
-            header=False,
-            index=False
-        )
-    if grint == 1:
-        gr1df = pd.DataFrame(
-            [i.split('|') for i in list(df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]['peak_id'])]
-        )
-        gr1df.to_csv(
-            bed,
-            sep='\t',
-            header=False,
-            index=False
-        )
 
 def peak_boundaries(peaks, genomefa, peakset, of):
     if not peakset:

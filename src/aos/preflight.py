@@ -44,7 +44,7 @@ class Preflight():
         if self.samplesheet and self.comparison:
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.
-            self.validate_comparison(self.samplesheet, self.comparison)
+            #self.validate_comparison(self.samplesheet, self.comparison)
             self.validate_samplesheet(self.samplesheet, self.bamdir)
         else:
             self.logger.info("No differential testing requested...")
@@ -127,7 +127,8 @@ class Preflight():
         df = pd.read_csv(ss, sep='\t', header=0)
         for sample in df['sample']:
             bamfile = bamdir / f"{sample}.bam"
-            assert bamfile.exists(), f"Bamfile {bamfile} not found for sample {sample} in samplesheet. Exiting."
+            cramfile = bamdir / f"{sample}.cram"
+            assert bamfile.exists() or cramfile.exists(), f"Bamfile or cramfile not found for sample {sample} in samplesheet. Exiting."
         # All unique factor combinations should have at least two replicates.
         counts = df.groupby(df.columns.drop("sample").tolist()).size()
         assert (counts >= 2).all(), \
@@ -135,6 +136,10 @@ class Preflight():
 
     @staticmethod
     def validate_comparisonentry(compentry: dict, samplesheet: Path) -> None:
+        # Validate type is present
+        # Validate design -> ~, +, :, *, factors in samplesheet
+        # if type == twogroup, only two keys if type and design are dropped.
+        # if type == twogroup, validate factors and values in groups are present in samplesheet
         None
 
     def parse_fasta(self):

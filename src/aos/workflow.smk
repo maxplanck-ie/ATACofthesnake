@@ -21,6 +21,31 @@ include: "rules/twogroup_de.smk"
 # include: "rules/tobias.smk"
 
 
+def define_comparison_output():
+  outputfiles = []
+  if config['comparison']:
+    with open(config['comparison'], 'r') as f:
+      config['comparison'] = yaml.safe_load(f)
+      for comp in config['comparison'].keys():
+        match config['comparison'][comp]['type']:
+          case 'twogroup':
+            # diffacc output
+            outputfiles.extend(
+              [
+                f"twogroup/{comp}/{comp}_diffacc_edgeR.tsv",
+                f"twogroup/{comp}/relevant_samples.txt",
+                f"twogroup/{comp}/{comp}_maplot.png",
+                f"twogroup/{comp}/{comp}_heatmap.done"
+              ]
+            )
+          case 'lrt':
+            pass
+          case 'timecourse':
+            pass
+
+  return (outputfiles)
+
+
 
 # def define_comparison_output():
 #   outputfiles = []
