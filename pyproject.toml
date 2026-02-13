@@ -20,6 +20,7 @@ dependencies = [
   "rich >= 12.6.0",
   "snakemake >= 9.0.0",
   "click >= 8.0.0",
+  "jsonschema",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,11 @@ dev = [
     "pip",
     "build",
     "twine",
+]
+docs = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinx-click",
 ]
 
 [project.scripts]
@@ -51,9 +57,10 @@ where = ["src"]
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 [tool.pixi.pypi-dependencies]
-ATACofthesnake = { path = ".", editable = true, extras = ["dev"] } 
+ATACofthesnake = { path = ".", editable = true, extras = ["dev", "docs"] } 
 
 [tool.pixi.tasks]
 ty = "ty check"
 ruff = "ruff check ."
 test = "pytest"
+doc = "sphinx-build -b html docs/ docs/_build/html"

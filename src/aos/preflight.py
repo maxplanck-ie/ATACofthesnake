@@ -1,6 +1,7 @@
 from pathlib import Path
 import yaml
 import pandas as pd
+import jsonschema
 from aos.logger import setup_logger
 from importlib.metadata import version
 
@@ -45,11 +46,6 @@ class Preflight():
             # Validate samplesheet and comparison file.
             self.validate_comparison(self.samplesheet, self.comparison)
             self.validate_samplesheet(self.samplesheet, self.bamdir)
-            # If both samplesheet and comparison are set, parse the interaction flag.
-            if clickdict['interaction']:
-                self.interaction = '*'
-            else:
-                self.interaction = '+'
         else:
             self.logger.info("No differential testing requested...")
             self.interaction = None
@@ -85,7 +81,7 @@ class Preflight():
 
         # Validate mitostring
         self.logger.info("Making sure mitostring is present in fasta file...")
-        self.validate_mitostring(self.fna, self.mitostring)
+        self.validate_mitostring(self.fna, self.mitostring, self.rar)
 
         # Write out config file
         self.logger.info("Writing config file to output directory...")
@@ -101,27 +97,30 @@ class Preflight():
         else:
             return None
     
-    @staticmethod
-    def validate_comparison(ss: Path, comp: Path) -> None:
-        ssdf = pd.read_csv(ss, sep='\t', header=0)
-        assert any([c == 'sample' for c in ssdf.columns]), "No 'sample' column found in samplesheet. Exiting."
-        factors = [ c for c in ssdf.columns if c != 'sample' ]
-        with open(comp) as f:
-            cdat = yaml.safe_load(f)
-        # Double check that all factors in the comparison file are actually present.
-        _factors = []
-        for comp in cdat:
-            for group in cdat[comp]:
-                for factor in cdat[comp][group]:
-                    _factors.append(factor)
-        # Check that all factors in the columns
-        assert all([factor in factors for factor in _factors]), f"Not all factors in comparison file {set(_factors)} are present in samplesheet {ssdf.columns}. Exiting."
+    # @staticmethod
+    # def validate_comparison(ss: Path, comp: Path) -> None:
+    #     ssdf = pd.read_csv(ss, sep='\t', header=0)
+    #     assert any([c == 'sample' for c in ssdf.columns]), "No 'sample' column found in samplesheet. Exiting."
+    #     factors = [ c for c in ssdf.columns if c != 'sample' ]
+    #     with open(comp) as f:
+    #         cdat = yaml.safe_load(f)
+    #     # Double check that all factors in the comparison file are actually present.
+    #     _factors = []
+    #     for comp in cdat:
+    #         for group in cdat[comp]:
+    #             for factor in cdat[comp][group]:
+    #                 _factors.append(factor)
+    #     # Check that all factors in the columns
+    #     assert all([factor in factors for factor in _factors]), f"Not all factors in comparison file {set(_factors)} are present in samplesheet {ssdf.columns}. Exiting."
     
     @staticmethod
-    def validate_mitostring(fna, mitostring):
+    def validate_mitostring(fna, mitostring, rarfile):
         with open(fna, 'r') as f:
             headers = [ line.strip() for line in f if line.startswith('>') ]
         assert any([ mitostring in header for header in headers ]), f"Provided mitostring {mitostring} not found in fasta file. Please check your fasta file and the --mitostring parameter. Exiting."
+        with open(rarfile, 'r') as f:
+            rarheaders = [ line.strip() for line in f if not line.startswith('#') ]
+        assert any([ mitostring in header for header in rarheaders ]), f"Provided mitostring {mitostring} not found in read attracting regions file. Please check your rar file and the --mitostring parameter. Exiting."
     
     @staticmethod
     def validate_samplesheet(ss: Path, bamdir: Path) -> None:
@@ -129,6 +128,14 @@ class Preflight():
         for sample in df['sample']:
             bamfile = bamdir / f"{sample}.bam"
             assert bamfile.exists(), f"Bamfile {bamfile} not found for sample {sample} in samplesheet. Exiting."
+        # All unique factor combinations should have at least two replicates.
+        counts = df.groupby(df.columns.drop("sample").tolist()).size()
+        assert (counts >= 2).all(), \
+            f"Some factor combinations have < 2 replicates:\n{counts[counts < 2]}"
+
+    @staticmethod
+    def validate_comparisonentry(compentry: dict, samplesheet: Path) -> None:
+        
 
     def parse_fasta(self):
         ESS = 0
