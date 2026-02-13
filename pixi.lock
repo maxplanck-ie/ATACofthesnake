@@ -535,15 +535,14 @@ packages:
   requires_python: '>=3.8'
 - pypi: ./
   name: atacofthesnake
-  version: 0.4.1.dev1+g752ab640a
-  sha256: 7a88b381038533905e45ec098eb6fd692e00f5609284d95c6d5012bc7dfa97a1
+  version: 0.4.1.dev3+g16b28b4e4.d20260213
+  sha256: 5893327fe77fc277bbd52c48ef956fe08ae84bfae9c0e33f15749afe2dc53946
   requires_dist:
   - seaborn>=0.12.0
   - pandas>=2
   - rich>=12.6.0
   - snakemake>=9.0.0
   - click>=8.0.0
-  - jsonschema
   - ruff ; extra == 'dev'
   - ty ; extra == 'dev'
   - pytest ; extra == 'dev'
