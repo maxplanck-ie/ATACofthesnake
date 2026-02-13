@@ -135,7 +135,7 @@ class Preflight():
 
     @staticmethod
     def validate_comparisonentry(compentry: dict, samplesheet: Path) -> None:
-        
+        None
 
     def parse_fasta(self):
         ESS = 0
