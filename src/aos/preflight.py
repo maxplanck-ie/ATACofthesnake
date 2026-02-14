@@ -134,7 +134,7 @@ class Preflight():
             f"Some factor combinations have < 2 replicates:\n{counts[counts < 2]}"
 
     @staticmethod
-    def validate_comparisonentry(compentry: dict, samplesheet: Path) -> None:
+    def validate_comparison(comp: Path, samplesheet: Path) -> None:
         # Validate type is present
         # Validate design -> ~, +, :, *, factors in samplesheet
         # if type == twogroup, only two keys if type and design are dropped.
