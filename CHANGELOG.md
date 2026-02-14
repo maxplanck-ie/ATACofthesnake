@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.4.0...v0.5.0) (2026-02-14)
+
+
+### Features
+
+* twogroup contrasts inferred over balanced dummy samplesheet ([390c69c](https://github.com/maxplanck-ie/ATACofthesnake/commit/390c69c9e80b8d41a395ded951f5504ffd4e097a))
+* twogroup, LRT, timecourse ([#44](https://github.com/maxplanck-ie/ATACofthesnake/issues/44)) ([390c69c](https://github.com/maxplanck-ie/ATACofthesnake/commit/390c69c9e80b8d41a395ded951f5504ffd4e097a))
+
+
+### Documentation
+
+* rtd initiated ([390c69c](https://github.com/maxplanck-ie/ATACofthesnake/commit/390c69c9e80b8d41a395ded951f5504ffd4e097a))
+
 ## [0.4.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.3.0...v0.4.0) (2026-02-11)
 
 
