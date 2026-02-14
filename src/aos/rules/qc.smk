@@ -68,7 +68,7 @@ rule bigwigs:
   threads: 10
   conda: "envs/deeptools.yml"
   shell:'''
-  SCALEFAC=$(grep {params.sample} {input.scalefactors} | cut -f2 -d ' ')
+  SCALEFAC=$(grep "^{params.sample} " {input.scalefactors} | cut -f2 -d ' ')
   bamCoverage --scaleFactor $SCALEFAC \
     -b {input.bam} -o {output.bigwigsf} \
     -p {threads} -bs 1 -bl {params.rar}

@@ -75,7 +75,7 @@ rule peaks:
   conda: "envs/seqtools.yml"
   threads: 1
   shell:'''
-  macs2 callpeak -t {input} \
+  macs3 callpeak -t {input} \
     -f BED \
     --nomodel --shift -75 \
     --extsize 150 \

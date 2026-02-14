@@ -72,18 +72,12 @@ import subprocess
 @click.option(
     '--samplesheet',
     type=click.Path(exists=True),
-    help='specify a samplesheet (as a tsv file). See Readme for formatting.'
+    help='specify a samplesheet (as a tsv file). Refer to the documentation on how to format this file.'
 )
 @click.option(
     '--comparison',
     type=click.Path(exists=True),
-    help='specify yaml file with comparisons. Required if a samplesheet is given.'
-)
-@click.option(
-    '--interaction',
-    default=False,
-    is_flag=True,
-    help='Wether or not to add interactions in the differential calculations. (e.g. ~factor1*factor2 if set, ~factor1+factor2 if not set).'
+    help='specify yaml file with comparisons. Required if a samplesheet is given. Refer to the documentation on how to format this file.'
 )
 @click.option(
     '--mitostring',

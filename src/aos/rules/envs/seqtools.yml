@@ -7,7 +7,7 @@ dependencies:
   - bioconductor-edger == 3.32.0
   - r-tidyverse
   - r-essentials
-  - macs2
+  - macs3
   - samtools == 1.13
   - htslib == 1.13
   - uropa >=4.0.0
