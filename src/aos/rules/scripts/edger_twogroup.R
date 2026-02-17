@@ -54,11 +54,6 @@ build_mask <- function(df, spec) {
 #    - group2:
 #      - factor1: value1, value2, ...
 
-
-# - [ ] multiple values -> inclusive or
-# - [ ] no design given, fallback to simple additive of all (from samplesheet)                                                                                                                                                                              
-# - [ ] inbalanced designs
-
 # read samplesheet
 samplesheet = read.table(
     samplesheet,

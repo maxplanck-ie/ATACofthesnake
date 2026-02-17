@@ -17,6 +17,7 @@ if config['samplesheet']:
 include: "rules/peaks.smk"
 include: "rules/qc.smk"
 include: "rules/twogroup_de.smk"
+include: "rules/lrt_de.smk"
 # include: "rules/motifs.smk"
 # include: "rules/tobias.smk"
 
@@ -29,7 +30,6 @@ def define_comparison_output():
       for comp in config['comparison'].keys():
         match config['comparison'][comp]['type']:
           case 'twogroup':
-            # diffacc output
             outputfiles.extend(
               [
                 f"twogroup/{comp}/{comp}_diffacc_edgeR.tsv",
@@ -39,7 +39,13 @@ def define_comparison_output():
               ]
             )
           case 'lrt':
-            pass
+            outputfiles.extend(
+              [
+                f"lrt/{comp}/{comp}_lrt_edgeR.tsv",
+                f"lrt/{comp}/relevant_samples.txt",
+                f"lrt/{comp}/{comp}_heatmap.done"
+              ]
+            )
           case 'timecourse':
             pass
 
