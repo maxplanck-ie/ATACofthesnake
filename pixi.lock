@@ -551,8 +551,8 @@ packages:
   requires_python: '>=3.8'
 - pypi: ./
   name: atacofthesnake
-  version: 0.4.1.dev3+gfa0624c3a.d20260219
-  sha256: f26a71fe6f0bde993932724bc66c28e90f828c3a0fdbee0562413afb5fd3f679
+  version: 0.4.1.dev4+g4b015b996
+  sha256: 4b0839419a51a811312066de0dbfbeaaf0cc71fa5144d54e3373494cc6bbfdaa
   requires_dist:
   - seaborn>=0.12.0
   - pandas>=2
