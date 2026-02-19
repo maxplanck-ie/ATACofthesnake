@@ -20,6 +20,7 @@ dependencies = [
   "rich >= 12.6.0",
   "snakemake >= 9.0.0",
   "click >= 8.0.0",
+  "scikit-learn >= 1.8.0"
 ]
 
 [project.optional-dependencies]
@@ -55,7 +56,10 @@ where = ["src"]
 [tool.ty.src]
 exclude = [
     "src/aos/tests/*",
+    "src/aos/rules/scripts/*py",
 ]
+[tool.ruff.lint.per-file-ignores]
+"src/aos/rules/scripts/*py" = ["F821"]
 
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]

@@ -1,0 +1,9 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - numpy >= 2.0.0
+  - scikit-learn >= 1.8
+  - pandas >= 2.0
+  - matplotlib >= 3.8
+  - statsmodels >= 0.14.0

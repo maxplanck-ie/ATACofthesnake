@@ -137,8 +137,10 @@ class Preflight():
     def validate_comparison(comp: Path, samplesheet: Path) -> None:
         # Validate type is present
         # Validate design -> ~, +, :, *, factors in samplesheet
+        # If design is present, test for violation of principle of marginality
         # if type == twogroup, only two keys if type and design are dropped.
         # if type == twogroup, validate factors and values in groups are present in samplesheet
+        # if type == lrt, check if reduced is nested
         None
 
     def parse_fasta(self):
