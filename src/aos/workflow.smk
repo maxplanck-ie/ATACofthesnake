@@ -18,6 +18,7 @@ include: "rules/peaks.smk"
 include: "rules/qc.smk"
 include: "rules/twogroup_de.smk"
 include: "rules/lrt_de.smk"
+include: "rules/gp_de.smk"
 # include: "rules/motifs.smk"
 # include: "rules/tobias.smk"
 
@@ -47,7 +48,12 @@ def define_comparison_output():
               ]
             )
           case 'timecourse':
-            pass
+            outputfiles.extend(
+              [
+                f"gp/{comp}/{comp}_gp_results.tsv",
+                f"gp/{comp}/{comp}_gp_sig_clustered.tsv"
+              ]
+            )
 
   return (outputfiles)
 

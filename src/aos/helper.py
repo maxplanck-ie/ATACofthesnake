@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from itertools import repeat
 import shutil
+import numpy as np
 
 def idx_to_mit(_f):
     count = 0
@@ -268,3 +269,17 @@ def PCA_colors(samplesheet, samples):
             PCAstr += f" \"{colDic[s[0]]}\""
         return (PCAstr)
     return ("")
+
+def get_elbow(inertias, K_range):
+    x1, y1 = K_range[0], inertias[0]
+    x2, y2 = K_range[-1], inertias[-1]
+
+    distances = []
+    for x0, y0 in zip(K_range, inertias):
+        num = abs((y2 - y1)*x0 - (x2 - x1)*y0 + x2*y1 - y2*x1)
+        den = np.sqrt((y2 - y1)**2 + (x2 - x1)**2)
+        distances.append(num / den)
+
+    distances = np.array(distances)
+    elbow_idx = np.argmax(distances)
+    return K_range[elbow_idx]

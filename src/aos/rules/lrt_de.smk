@@ -1,5 +1,8 @@
 import os
 import glob
+from sklearn.cluster import KMeans
+import pandas as pd
+from aos.helper import get_elbow
 
 def get_beds(wildcards):
     ckpt = checkpoints.lrt_bedfiles.get(comparison=wildcards.comparison)
@@ -24,19 +27,38 @@ rule lrt_diffacc:
 
 checkpoint lrt_bedfiles:
   input:
-    'lrt/{comparison}/{comparison}_lrt_edgeR.tsv'
+    edger = 'lrt/{comparison}/{comparison}_lrt_edgeR.tsv',
+    matrix = 'peakset/counts.tsv'
   output:
     beddir = directory("lrt/{comparison}/bed")
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
 
-    df = pd.read_csv(input[0], sep='\t', header=0)
+    df = pd.read_csv(input.edger, sep='\t', header=0)
     sig = df[df['FDR'] < 0.05]
     if len(sig) > 100:
+        # Write out the bed file
         with open(f"{output.beddir}/{wildcards.comparison}_LRT_sign.bed", "w") as f:
             for peak in sig["peak_id"]:
                 f.write("\t".join(peak.split("|")) + "\n")
+        # Next, run determine k for heatmap
+        counts = pd.read_csv(input.matrix, sep='\t', header=0)
+        peaks = counts[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
+        counts = counts.drop(columns=["#chr", "start", "end"])
+        counts = counts[peaks.isin(sig["peak_id"])].values
+        counts_scaled = counts - counts.mean()
+        counts_scaled /= counts.std() + 1e-8
+        k_range = range(2, 20)
+        inertias = []
+        for k in k_range:
+            kmeans = KMeans(n_clusters=k, random_state=1337).fit(counts_scaled)
+            inertias.append(kmeans.inertia_)
+        k_opt = get_elbow(inertias, k_range)
+        print(f"Selected K = {k_opt}")
+        with open(f"lrt/{wildcards.comparison}/k_opt.txt", 'w') as f:
+            f.write(str(k_opt))
+
 
 rule lrt_plotheatmap:
   input:

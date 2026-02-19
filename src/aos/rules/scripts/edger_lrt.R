@@ -77,43 +77,6 @@ lrt <- glmLRT(fit, coef=lrt_coefs)
 res <- data.frame(topTags(lrt, n = Inf))
 res$peak_id <- rownames(res)
 
-ncounts <- cpm(countmat, normalized.library.sizes=T, log=T)
-sigcounts <- ncounts[res$FDR < 0.05, , drop = FALSE]
-
-x <- t(scale(t(sigcounts)))
-
-auto_elbow <- function(inertias, K_range) {
-  x1 <- K_range[1]
-  y1 <- inertias[1]
-  x2 <- K_range[length(K_range)]
-  y2 <- inertias[length(inertias)]
-  
-  distances <- sapply(1:length(K_range), function(i) {
-    x0 <- K_range[i]
-    y0 <- inertias[i]
-    num <- abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2*y1 - y2*x1)
-    den <- sqrt((y2 - y1)^2 + (x2 - x1)^2)
-    num / den
-  })
-  
-  elbow_idx <- which.max(distances)
-  return(K_range[elbow_idx])
-}
-
-K_range <- 2:19
-inertias <- numeric(length(K_range))
-
-for (i in seq_along(K_range)) {
-  k <- K_range[i]
-  km <- kmeans(x, centers = k, nstart = 20)
-  inertias[i] <- km$tot.withinss
-}
-
-k_opt <- auto_elbow(inertias, K_range)
-print(paste("Optimal number of cluster:", k_opt))
-
-write_lines(as.character(k_opt), file.path(of, "k_opt.txt"))
-
 write.table(
     res,
     file=edgeR_out,

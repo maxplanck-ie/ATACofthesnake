@@ -107,7 +107,8 @@ dummy_design <- model.matrix(formula, data = dummy_samplesheet)
 c1 <- colMeans(dummy_design[group_masks_dummy[[1]], , drop = FALSE])
 c2 <- colMeans(dummy_design[group_masks_dummy[[2]], , drop = FALSE])
 contrast <- c2 - c1
-print("Contrast set to: ", contrast)
+print(paste("Contrast set to:", paste(contrast, collapse = ", ")))
+
 
 # Run edgeR.
 keep <- filterByExpr(

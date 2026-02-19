@@ -20,6 +20,7 @@ dependencies = [
   "rich >= 12.6.0",
   "snakemake >= 9.0.0",
   "click >= 8.0.0",
+  "scikit-learn >= 1.8.0"
 ]
 
 [project.optional-dependencies]

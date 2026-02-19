@@ -8,9 +8,25 @@ from joblib import Parallel, delayed
 import warnings
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.cluster import KMeans
+from aos.helper import get_elbow
+import os
+# Avoid overthreading.
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
 
 def fit_peak_gp(time, y, time_grid_pred, covariates=None, perms=100):
+    '''
+    Fit a gaussian process for a single peak.
+    Performs a likelihood ratio against a flat kernel to get an idea on the effect size,
+    and a permutation test to obtain a p-value (since distribution of LR statistic is ill-defined).
+
+    time - array-like time points
+    y - array-like counts.
+    time_grid_pred - 
+    '''
     time = np.asarray(time)[:, None]
 
     if covariates is not None:
@@ -102,23 +118,16 @@ def fit_peak_gp(time, y, time_grid_pred, covariates=None, perms=100):
 
 
 
-count_matrix = pd.read_csv('peakset/counts.tsv', sep='\t')
+count_matrix = pd.read_csv(snakemake.input.mat, sep='\t')
 peaks = count_matrix[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
-samplesheet = pd.read_csv('../cele_ss.tsv', sep='\t', index_col=0)
+samplesheet = pd.read_csv(snakemake.params.samplesheet, sep='\t', index_col=0)
 count_matrix = count_matrix[list(samplesheet.index)]
 # Normalize
 count_matrix_norm = np.log1p( count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6 )
 
-
-peaks[peaks == 'IV|8822963|8825988']
-
-
-count_matrix_norm.iloc[25494].values
-
-
-time = samplesheet['time'].values
+time = samplesheet[snakemake.params.comparison['time']].values
 time_grid = np.linspace(time.min(), time.max(), 100)[:, None]
-covars = samplesheet.drop(columns=['time'])
+covars = samplesheet.drop(columns=[snakemake.params.comparison['time']])
 cov_encoded = pd.get_dummies(covars, drop_first=False)
 
 assert len(time) == count_matrix_norm.shape[1]
@@ -141,7 +150,7 @@ def gp_row_test(row):
         "y_std": y_std
     })
 
-results = Parallel(n_jobs=20, verbose=10)(
+results = Parallel(n_jobs=snakemake.threads)(
     delayed(gp_row_test)(row)
     for row in count_matrix_norm.values
 )
@@ -154,29 +163,9 @@ results_df = pd.DataFrame({
 }, index=peaks)
 
 reject, results_df['FDR'], _, _ = multipletests(results_df['pvalue'], method="fdr_bh")
-
-import seaborn as sns
-sns.kdeplot(results_df['LR'])
-
-sns.kdeplot(results_df['FDR'])
-
 patterns = np.vstack(results_df.loc[results_df["FDR"] < 0.05, "y_pred"])
 patterns_scaled = patterns - patterns.mean(axis=1, keepdims=True)
 patterns_scaled /= patterns.std(axis=1, keepdims=True) + 1e-8
-
-def auto_elbow(inertias, K_range):
-    x1, y1 = K_range[0], inertias[0]
-    x2, y2 = K_range[-1], inertias[-1]
-
-    distances = []
-    for x0, y0 in zip(K_range, inertias):
-        num = abs((y2 - y1)*x0 - (x2 - x1)*y0 + x2*y1 - y2*x1)
-        den = np.sqrt((y2 - y1)**2 + (x2 - x1)**2)
-        distances.append(num / den)
-
-    distances = np.array(distances)
-    elbow_idx = np.argmax(distances)
-    return K_range[elbow_idx]
 
 K_range = range(2, 20)
 inertias = []
@@ -185,37 +174,19 @@ for k in K_range:
     km.fit(patterns_scaled)
     inertias.append(km.inertia_)
 
-K_opt = auto_elbow(inertias, K_range)
+K_opt = get_elbow(inertias, K_range)
 print(f"Selected K = {K_opt}")
 K = K_opt
 kmeans = KMeans(n_clusters=K, n_init=50, random_state=42)
 labels = kmeans.fit_predict(patterns_scaled)
-fig, ax = plt.subplots(nrows=K, figsize=(8,12))
-
+fig, ax = plt.subplots(nrows=K, figsize=(8,12), tight_layout=True)
 for k in range(K):
     ax[k].plot(time_grid, patterns_scaled[labels == k].T, alpha=0.3)
     ax[k].plot(time_grid, patterns_scaled[labels == k].mean(axis=0), color='black', linewidth=2)
-     
-plt.show()
+    ax[k].set_ylabel(f"Cluster {k}")
 
+fig.savefig(snakemake.params.outputfolder + "/clustered_patterns.png", dpi=300)
+sig_results = results_df[results_df['FDR'] < 0.05]
 sig_results['labels'] = labels
-sig_results.head()
-
-sig_results.iloc[2500].name
-
-peaks[peaks == sig_results.iloc[2500].name].index.values[0]
-tempcounts = count_matrix_norm.iloc[peaks[peaks == sig_results.iloc[2500].name].index.values[0]]
-tempcounts_scaled = tempcounts - tempcounts.mean()
-tempcounts_scaled /= tempcounts.std() + 1e-8
-
-
-fig, ax = plt.subplots()
-ax.scatter(
-    time,
-    tempcounts_scaled
-)
-ax.plot(
-    time_grid,
-    patterns_scaled[labels == sig_results.iloc[2500]['labels']].mean(axis=0),
-    color='black', linewidth=2
-)
+sig_results.to_csv(snakemake.output.sig_clustered, sep='\t')
+results_df.to_csv(snakemake.output.table, sep='\t')
