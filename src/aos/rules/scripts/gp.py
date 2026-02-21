@@ -19,7 +19,7 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
 class OrdinalKernel(Kernel):
 
-    def __init__(self, base_kernel, unique_times, log_spacings=None, log_spacings_bounds=(-5.0, 5.0)):
+    def __init__(self, base_kernel, unique_times, log_spacings=None, log_spacings_bounds=(-2.0, 2.0)):
         self.base_kernel = base_kernel
         self.unique_times = np.asarray(unique_times, dtype=float)
         self.log_spacings_bounds = log_spacings_bounds
