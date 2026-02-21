@@ -77,9 +77,11 @@ class OrdinalKernel(Kernel):
         eps = 1e-4
         orig = self.log_spacings.copy()
         for i in range(n_spacings):
-            self.log_spacings = orig.copy(); self.log_spacings[i] += eps
+            self.log_spacings = orig.copy()
+            self.log_spacings[i] += eps
             K_plus = self.base_kernel(self.remap_X(X), self.remap_X(Y) if Y is not None else None)
-            self.log_spacings = orig.copy(); self.log_spacings[i] -= eps
+            self.log_spacings = orig.copy()
+            self.log_spacings[i] -= eps
             K_minus = self.base_kernel(self.remap_X(X), self.remap_X(Y) if Y is not None else None)
             dK_warp[:, :, i] = (K_plus - K_minus) / (2 * eps)
         self.log_spacings = orig
