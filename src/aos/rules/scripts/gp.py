@@ -326,7 +326,7 @@ match _comparison['time_type']:
         count_matrix = count_matrix[list(samplesheet.index)]
         count_matrix_norm = np.log1p( count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6 )
         time = samplesheet[_comparison['time']].values
-        time_grid = np.linspace(time.min(), time.max(), 100)[:, None]
+        time_grid = np.linspace(time.min(), time.max(), 10)[:, None]
         if len(samplesheet.columns) > 1:
             covars = samplesheet.drop(columns=[_comparison['time']])
             cov_encoded = pd.get_dummies(covars, drop_first=False)
