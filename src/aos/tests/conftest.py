@@ -65,6 +65,7 @@ def sspath(tmp_path):
 
     return sspath
 
+
 @pytest.fixture
 def fnapath(tmp_path):
     '''
