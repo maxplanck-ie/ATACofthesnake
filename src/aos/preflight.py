@@ -138,9 +138,14 @@ class Preflight():
         # Validate type is present
         # Validate design -> ~, +, :, *, factors in samplesheet
         # If design is present, test for violation of principle of marginality
+        # type is either twogroup, lrt or timecourse.
         # if type == twogroup, only two keys if type and design are dropped.
         # if type == twogroup, validate factors and values in groups are present in samplesheet
         # if type == lrt, check if reduced is nested
+        # if type == timecourse, time_type is either continuous or ordinal
+        # if type == timecourse and time_type = continuous, check if time factor is present in samplesheet, and numeric.
+        # if type == timecourse and time_type = ordinal, check if time factor is present in samplesheet
+        # if type == timecourse and time_type = ordinal, check that order are valid
         None
 
     def parse_fasta(self):
