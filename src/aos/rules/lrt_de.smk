@@ -31,13 +31,16 @@ checkpoint lrt_bedfiles:
     matrix = 'peakset/counts.tsv'
   output:
     beddir = directory("lrt/{comparison}/bed")
+    params:
+        lrt_peaks = lambda wildcards: config['cutoffs']['lrt_peaks'],
+        fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
 
     df = pd.read_csv(input.edger, sep='\t', header=0)
-    sig = df[df['FDR'] < 0.05]
-    if len(sig) > 100:
+    sig = df[df['FDR'] < params.fdr_cutoff]
+    if len(sig) > params.lrt_peaks:
         # Write out the bed file
         with open(f"{output.beddir}/{wildcards.comparison}_LRT_sign.bed", "w") as f:
             for peak in sig["peak_id"]:
