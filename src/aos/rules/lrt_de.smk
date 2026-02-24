@@ -31,9 +31,9 @@ checkpoint lrt_bedfiles:
     matrix = 'peakset/counts.tsv'
   output:
     beddir = directory("lrt/{comparison}/bed")
-    params:
-        lrt_peaks = lambda wildcards: config['cutoffs']['lrt_peaks'],
-        fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
+  params:
+    lrt_peaks = lambda wildcards: config['cutoffs']['lrt_peaks'],
+    fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
