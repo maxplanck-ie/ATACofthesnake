@@ -1,0 +1,26 @@
+repos:
+    - repo: local
+      hooks:
+          - id: pixi-doc
+            name: pixi run doc
+            entry: pixi run doc
+            language: system
+            pass_filenames: false
+
+          - id: pixi-pytest
+            name: pixi run test
+            entry: pixi run test
+            language: system
+            pass_filenames: false
+
+          - id: pixi-ruff
+            name: pixi run ruff
+            entry: pixi run ruff
+            language: system
+            pass_filenames: false
+
+          - id: pixi-ty
+            name: pixi run ty
+            entry: pixi run ty
+            language: system
+            pass_filenames: false
