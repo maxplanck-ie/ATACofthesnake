@@ -69,6 +69,7 @@ class Preflight:
             "fdr_cutoff": clickdict["fdr_cutoff"],
             "lfc_cutoff": clickdict["lfc_cutoff"],
             "lrt_peaks": clickdict["lrt_peaks"],
+            "gp_timesteps": clickdict["gp_timesteps"],
         }
 
         # Run settings

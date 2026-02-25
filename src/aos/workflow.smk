@@ -12,7 +12,7 @@ if config['samplesheet']:
   for sample in SAMPLES:
     if sample not in samplesheet['sample'].values:
       SAMPLES.remove(sample)
-  
+
 
 include: "rules/peaks.smk"
 include: "rules/qc.smk"
@@ -51,7 +51,6 @@ def define_comparison_output():
             outputfiles.extend(
               [
                 f"gp/{comp}/{comp}_gp_results.tsv",
-                f"gp/{comp}/{comp}_gp_sig_clustered.tsv"
               ]
             )
 
@@ -69,7 +68,7 @@ def define_comparison_output():
 #     outputfiles.extend(expand('{comp}/{comp}_maplot.png', comp=config['comparison'].keys()))
 #     outputfiles.extend(expand('{comp}/diffpeaks_{gr}.bed', zip, comp=comps, gr=grs))
 #     outputfiles.extend(expand('{comp}/diffpeaks.png', comp=config['comparison'].keys()))
-    
+
 #     # if config['motif']:
 #     #   outputfiles.append('motifs_clustered/clusteredmotifs_consensus_motifs.meme')
 #     #   outputfiles.extend(

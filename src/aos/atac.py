@@ -118,7 +118,7 @@ from aos.preflight import Preflight
 @click.option(
     "--permutation_cutoff",
     required=False,
-    default=1e-3,
+    default=1e-2,
     show_default=True,
     help="A p-value cutoff to determine significance after permutation testing (relevant for timecourse mode).",
 )
@@ -149,6 +149,13 @@ from aos.preflight import Preflight
     default=1000,
     show_default=True,
     help="Minimum number of significant peaks in LRT mode to continue with downstream analysis.",
+)
+@click.option(
+    "--gp_timesteps",
+    required=False,
+    default=10,
+    show_default=True,
+    help="Number of timesteps to use for gaussian process regression.",
 )
 def main(**kwargs) -> None:
     pf = Preflight(kwargs)
