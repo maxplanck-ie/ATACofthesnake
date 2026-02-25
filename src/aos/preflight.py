@@ -1,3 +1,4 @@
+import re
 from importlib.metadata import version
 from pathlib import Path
 
@@ -47,8 +48,8 @@ class Preflight:
         if self.samplesheet and self.comparison:
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.
-            # self.validate_comparison(self.samplesheet, self.comparison)
             self.validate_samplesheet(self.samplesheet, self.bamdir)
+            self.validate_comparison(self.comparison, self.samplesheet)
         else:
             self.logger.info("No differential testing requested...")
             self.interaction = None
@@ -138,13 +139,97 @@ class Preflight:
         )
 
     @staticmethod
-    def validate_comparison(comp: Path, samplesheet: Path) -> None:
-        # Validate type is present
-        # Validate design -> ~, +, :, *, factors in samplesheet
-        # If design is present, test for violation of principle of marginality
-        # if type == twogroup, only two keys if type and design are dropped.
-        # if type == twogroup, validate factors and values in groups are present in samplesheet
-        # if type == lrt, check if reduced is nested
+    def _extract_design_vars(formula: str) -> list[str]:
+        rhs = formula.replace("~", "")
+        parts = re.split(r"[+*:]", rhs)
+        vars_ = []
+        for part in parts:
+            var = part.strip()
+            if var and var != "1":
+                vars_.append(var)
+        return vars_
+
+    @staticmethod
+    def validate_comparison(comp_path: Path, ss: Path) -> None:
+        samplesheet = pd.read_csv(ss, sep="\t", header=0)
+        covariates = samplesheet.columns.drop("sample").tolist()
+        with open(comp_path, "r") as f:
+            comps = yaml.safe_load(f)
+        for _ in comps:
+            comp = comps[_]
+            # Type is present
+            assert "type" in comp, (
+                f"Comparison {comp} does not have `type` key. Exiting."
+            )
+            assert comp["type"] in ["twogroup", "lrt", "timecourse"], (
+                f"Comparison {comp} has invalid type {comp['type']}. Type should be one of 'twogroup', 'lrt' or 'timecourse'. Exiting."
+            )
+            # Design is valid if present
+            if "design" in comp:
+                assert "~" in comp["design"], (
+                    f"Comparison {comp} has a design that does not contain '~'. Exiting."
+                )
+                _designvars = Preflight._extract_design_vars(comp["design"])
+                for var in _designvars:
+                    assert var in covariates, (
+                        f"Comparison {comp} has design variable {var} that is not present in samplesheet. Exiting."
+                    )
+                # Assert principle of marginality is not violated
+            if comp["type"] == "twogroup":
+                _ = comp.copy()
+                _.pop("design", None)
+                _.pop("type", None)
+                assert len(_.keys()) == 2, (
+                    f"Comparison {comp} of type 'twogroup' should only have two groups specified in the comparison file. Exiting."
+                )
+                for group in _:
+                    for factor in _[group]:
+                        assert factor in covariates, (
+                            f"Comparison {comp} has factor {factor} that is not present in samplesheet. Exiting."
+                        )
+                        if isinstance(_[group][factor], str):
+                            assert _[group][factor] in samplesheet[factor].unique(), (
+                                f"Comparison {comp} has level {_[group][factor]} for factor {factor} that is not present in samplesheet. Exiting."
+                            )
+                        else:
+                            for level in _[group][factor]:
+                                assert level in samplesheet[factor].unique(), (
+                                    f"Comparison {comp} has level {level} for factor {factor} that is not present in samplesheet. Exiting."
+                                )
+            if comp["type"] == "lrt":
+                assert "reduced" in comp, (
+                    f"Comparison {comp} of type 'lrt' should have a 'reduced' key specifying the reduced model. Exiting."
+                )
+                assert "~" in comp["reduced"], (
+                    f"Comparison {comp} has a reduced design that does not contain '~'. Exiting."
+                )
+                _designvars = Preflight._extract_design_vars(comp["reduced"])
+                for var in _designvars:
+                    assert var in covariates, (
+                        f"Comparison {comp} has reduced design variable {var} that is not present in samplesheet. Exiting."
+                    )
+                # Check that reduced is in fact, reduced.
+            if comp["type"] == "timecourse":
+                assert "time" in comp, (
+                    f"Comparison {comp} of type 'timecourse' should have a 'time' key specifying the time variable. Exiting."
+                )
+                assert "time_type" in comp, (
+                    f"Comparison {comp} of type 'timecourse' should have a 'time_type' key specifying the time variable type (continuous or ordinal). Exiting."
+                )
+                assert comp["time_type"] in ["continuous", "ordinal"], (
+                    f"Comparison {comp} has invalid time_type {comp['time_type']}. Should be 'continuous' or 'ordinal'. Exiting."
+                )
+                assert comp["time"] in covariates, (
+                    f"Comparison {comp} has time variable {comp['time']} that is not present in samplesheet. Exiting."
+                )
+                if comp["time_type"] == "ordinal":
+                    assert "order" in comp, (
+                        f"Comparison {comp} of type 'timecourse' with time_type 'ordinal' should have an 'order' key specifying the order of the time points. Exiting."
+                    )
+                    for level in comp["order"]:
+                        assert level in samplesheet[comp["time"]].unique(), (
+                            f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
+                        )
         None
 
     def parse_fasta(self):
