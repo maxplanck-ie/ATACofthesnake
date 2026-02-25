@@ -34,21 +34,26 @@ rule twogroup_maplot:
     png = 'twogroup/{comparison}/{comparison}_maplot.png'
   params:
     comparison = lambda wildcards: config['comparison'][wildcards.comparison].copy(),
+    lfc_cutoff = lambda wildcards: config['cutoffs']['lfc_cutoff'],
+    fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
   run:
-    maplot(input[0], output[0], params.comparison)
+    maplot(input[0], output[0], params.comparison, params.lfc_cutoff, params.fdr_cutoff)
 
 checkpoint twogroup_bedfiles:
   input:
     'twogroup/{comparison}/{comparison}_diffacc_edgeR.tsv'
   output:
     beddir = directory("twogroup/{comparison}/bed")
+  params:
+      lfc_cutoff = lambda wildcards: config['cutoffs']['lfc_cutoff'],
+      fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
 
     df = pd.read_csv(input[0], sep='\t', header=0)
-    gr1 = df[(df['logFC'] < 0) & (df['FDR'] < 0.05)]
-    gr2 = df[(df['logFC'] > 0) & (df['FDR'] < 0.05)]
+    gr1 = df[(df['logFC'] < -params.lfc_cutoff) & (df['FDR'] < params.fdr_cutoff)]
+    gr2 = df[(df['logFC'] > params.lfc_cutoff) & (df['FDR'] < params.fdr_cutoff)]
     for gr in [gr1, gr2]:
       if len(gr) > 0:
         gr_name = gr['group_assignment'].iloc[0]
