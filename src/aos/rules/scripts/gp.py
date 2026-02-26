@@ -1,25 +1,35 @@
-import numpy as np
-from scipy.special import softmax
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, Kernel
-import pandas as pd
-import matplotlib.pyplot as plt
-from statsmodels.stats.multitest import multipletests
-from joblib import Parallel, delayed
-import warnings
-from sklearn.exceptions import ConvergenceWarning
-from sklearn.cluster import KMeans
-from aos.helper import get_elbow
 import os
+import warnings
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
+from scipy.special import softmax
+from sklearn.cluster import KMeans
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, Kernel
+from sklearn.gaussian_process.kernels import ConstantKernel as C
+from statsmodels.stats.multitest import multipletests
+
+from aos.helper import get_elbow
+
 # Avoid overthreading.
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
-class OrdinalKernel(Kernel):
 
-    def __init__(self, base_kernel, unique_times, log_spacings=None, log_spacings_bounds=(-2.0, 2.0)):
+class OrdinalKernel(Kernel):
+    def __init__(
+        self,
+        base_kernel,
+        unique_times,
+        log_spacings=None,
+        log_spacings_bounds=(-2.0, 2.0),
+    ):
         self.base_kernel = base_kernel
         self.unique_times = np.asarray(unique_times, dtype=float)
         self.log_spacings_bounds = log_spacings_bounds
@@ -79,10 +89,14 @@ class OrdinalKernel(Kernel):
         for i in range(n_spacings):
             self.log_spacings = orig.copy()
             self.log_spacings[i] += eps
-            K_plus = self.base_kernel(self.remap_X(X), self.remap_X(Y) if Y is not None else None)
+            K_plus = self.base_kernel(
+                self.remap_X(X), self.remap_X(Y) if Y is not None else None
+            )
             self.log_spacings = orig.copy()
             self.log_spacings[i] -= eps
-            K_minus = self.base_kernel(self.remap_X(X), self.remap_X(Y) if Y is not None else None)
+            K_minus = self.base_kernel(
+                self.remap_X(X), self.remap_X(Y) if Y is not None else None
+            )
             dK_warp[:, :, i] = (K_plus - K_minus) / (2 * eps)
         self.log_spacings = orig
 
@@ -103,29 +117,31 @@ class OrdinalKernel(Kernel):
         )
         if deep:
             params.update(
-                {"base_kernel__" + k: v
-                 for k, v in self.base_kernel.get_params(deep=True).items()}
+                {
+                    "base_kernel__" + k: v
+                    for k, v in self.base_kernel.get_params(deep=True).items()
+                }
             )
         return params
 
 
-
-def fit_peak_gp(time, y, time_grid_pred, covariates=None, perms=100):
-    '''
+def fit_peak_gp(
+    time, y, time_grid_pred, covariates=None, perms=snakemake.params.permutations
+):
+    """
     Fit a gaussian process for a single peak.
     Performs a likelihood ratio against a flat kernel to get an idea on the effect size,
     and a permutation test to obtain a p-value (since distribution of LR statistic is ill-defined).
 
     time - array-like time points
     y - array-like counts.
-    time_grid_pred - 
-    '''
+    time_grid_pred -
+    """
     time_col = np.asarray(time, dtype=float)[:, None]
     X, X_null = build_design_matrices(time_col, covariates)
 
     kernel = C(1.0, (1e-5, 1e5)) * RBF(
-        length_scale=np.ones(X.shape[1]),
-        length_scale_bounds=(1e-2, 1e2)
+        length_scale=np.ones(X.shape[1]), length_scale_bounds=(1e-2, 1e2)
     )
     return fit_peak_gp_core(
         time_col,
@@ -152,10 +168,7 @@ def build_design_matrices(time_col, covariates):
 def predict_on_grid(gp, time_grid_pred, covariates):
     if covariates is not None:
         cov_ref = covariates.mean(axis=0).values
-        X_test = np.hstack([
-            time_grid_pred,
-            np.tile(cov_ref, (len(time_grid_pred), 1))
-        ])
+        X_test = np.hstack([time_grid_pred, np.tile(cov_ref, (len(time_grid_pred), 1))])
     else:
         X_test = time_grid_pred
     return gp.predict(X_test, return_std=True)
@@ -191,7 +204,8 @@ def permutation_lr(time_col, y, covariates, perms, kernel_fixed, cte_kernel):
         gp_cte_perm.fit(X_null_perm, y)
 
         lr_perm.append(
-            2 * (
+            2
+            * (
                 gp_perm.log_marginal_likelihood()
                 - gp_cte_perm.log_marginal_likelihood()
             )
@@ -230,8 +244,9 @@ def fit_peak_gp_core(
     return lr_obs, p_value, y_pred, y_std
 
 
-
-def fit_peak_gp_ordinal(time, y, time_grid_pred, covariates=None, perms=100):
+def fit_peak_gp_ordinal(
+    time, y, time_grid_pred, covariates=None, perms=snakemake.params.permutations
+):
     """
     Fit a Gaussian process for a single peak with learned time warping.
 
@@ -245,8 +260,7 @@ def fit_peak_gp_ordinal(time, y, time_grid_pred, covariates=None, perms=100):
     X, X_null = build_design_matrices(time_col, covariates)
 
     base_kernel = C(1.0, (1e-5, 1e5)) * RBF(
-        length_scale=np.ones(X.shape[1]),
-        length_scale_bounds=(1e-2, 1e2)
+        length_scale=np.ones(X.shape[1]), length_scale_bounds=(1e-2, 1e2)
     )
     kernel = OrdinalKernel(base_kernel, unique_times)
 
@@ -288,8 +302,7 @@ def run_parallel_gp(
         return fit_out
 
     results = Parallel(n_jobs=n_jobs)(
-        delayed(gp_row_test)(row)
-        for row in count_matrix_norm.values
+        delayed(gp_row_test)(row) for row in count_matrix_norm.values
     )
     unpacked = list(zip(*results))
     lrs, pvals, ypreds, ystds = unpacked[:4]
@@ -312,23 +325,28 @@ def build_results_df(peaks, lrs, pvals, ypreds, ystds):
         },
         index=peaks,
     )
-    _, results_df['FDR'], _, _ = multipletests(results_df['pvalue'], method="fdr_bh")
+    _, results_df["FDR"], _, _ = multipletests(results_df["pvalue"], method="fdr_bh")
     return results_df
 
-count_matrix = pd.read_csv(snakemake.input.mat, sep='\t')
+
+count_matrix = pd.read_csv(snakemake.input.mat, sep="\t")
 peaks = count_matrix[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
-samplesheet = pd.read_csv(snakemake.params.samplesheet, sep='\t', index_col=0)
-    
+samplesheet = pd.read_csv(snakemake.params.samplesheet, sep="\t", index_col=0)
+
 # Decide the type of analysis
 _comparison = snakemake.params.comparison
-match _comparison['time_type']:
-    case 'continuous': 
+match _comparison["time_type"]:
+    case "continuous":
         count_matrix = count_matrix[list(samplesheet.index)]
-        count_matrix_norm = np.log1p( count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6 )
-        time = samplesheet[_comparison['time']].values
-        time_grid = np.linspace(time.min(), time.max(), 10)[:, None]
+        count_matrix_norm = np.log1p(
+            count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6
+        )
+        time = samplesheet[_comparison["time"]].values
+        time_grid = np.linspace(time.min(), time.max(), snakemake.params.gp_timesteps)[
+            :, None
+        ]
         if len(samplesheet.columns) > 1:
-            covars = samplesheet.drop(columns=[_comparison['time']])
+            covars = samplesheet.drop(columns=[_comparison["time"]])
             cov_encoded = pd.get_dummies(covars, drop_first=False)
             assert cov_encoded.shape[0] == count_matrix_norm.shape[1]
         else:
@@ -344,14 +362,20 @@ match _comparison['time_type']:
             snakemake.threads,
         )
         results_df = build_results_df(peaks, lrs, pvals, ypreds, ystds)
-    case 'ordinal':
-        levels = _comparison['order']
-        samples_of_interest = [sam for sam in samplesheet.index if samplesheet.loc[sam, _comparison['time']] in levels]
+    case "ordinal":
+        levels = _comparison["order"]
+        samples_of_interest = [
+            sam
+            for sam in samplesheet.index
+            if samplesheet.loc[sam, _comparison["time"]] in levels
+        ]
         samplesheet = samplesheet.loc[samples_of_interest]
-        count_matrix = count_matrix[ samples_of_interest ]
-        count_matrix_norm = np.log1p( count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6 )
+        count_matrix = count_matrix[samples_of_interest]
+        count_matrix_norm = np.log1p(
+            count_matrix.div(count_matrix.sum(axis=0), axis=1) * 1e6
+        )
         timepoints = levels
-        time_str = samplesheet[_comparison['time']].values
+        time_str = samplesheet[_comparison["time"]].values
         time_map = {t: i for i, t in enumerate(levels)}
         time = np.array([time_map[t] for t in time_str], dtype=float)
 
@@ -359,7 +383,7 @@ match _comparison['time_type']:
         time_grid = unique_times[:, None]
 
         if len(samplesheet.columns) > 1:
-            covars = samplesheet.drop(columns=[_comparison['time']])
+            covars = samplesheet.drop(columns=[_comparison["time"]])
             cov_encoded = pd.get_dummies(covars, drop_first=False)
             assert cov_encoded.shape[0] == count_matrix_norm.shape[1]
         else:
@@ -376,45 +400,59 @@ match _comparison['time_type']:
             extra_metric_names=["distances"],
         )
         results_df = build_results_df(peaks, lrs, pvals, ypreds, ystds)
-        transition_labels = [f"{levels[i]}->{levels[i + 1]}" for i in range(len(levels) - 1)]
+        transition_labels = [
+            f"{levels[i]}->{levels[i + 1]}" for i in range(len(levels) - 1)
+        ]
         distances_df = pd.DataFrame(
             np.vstack(extras["distances"]),
             index=peaks,
             columns=transition_labels,
         )
-        distances_df.to_csv(snakemake.params.outputfolder + '/transition_distances.tsv', sep='\t')
-
-
+        distances_df.to_csv(
+            snakemake.params.outputfolder + "/transition_distances.tsv", sep="\t"
+        )
 
 
 # Cluster significant patterns, plot, and save results
-patterns = np.vstack(results_df.loc[results_df["FDR"] < 0.05, "y_pred"])
-patterns_scaled = patterns - patterns.mean(axis=1, keepdims=True)
-patterns_scaled /= patterns.std(axis=1, keepdims=True) + 1e-8
+if not results_df[results_df["FDR"] < snakemake.params.permutation_cutoff].empty:
+    patterns = np.vstack(
+        results_df.loc[
+            results_df["FDR"] < snakemake.params.permutation_cutoff, "y_pred"
+        ]
+    )
+    patterns_scaled = patterns - patterns.mean(axis=1, keepdims=True)
+    patterns_scaled /= patterns.std(axis=1, keepdims=True) + 1e-8
 
-K_range = range(2, 20)
-inertias = []
-for k in K_range:
-    km = KMeans(n_clusters=k, n_init=20, random_state=42)
-    km.fit(patterns_scaled)
-    inertias.append(km.inertia_)
+    K_range = range(2, 20)
+    inertias = []
+    for k in K_range:
+        km = KMeans(n_clusters=k, n_init=20, random_state=42)
+        km.fit(patterns_scaled)
+        inertias.append(km.inertia_)
 
-K_opt = get_elbow(inertias, K_range)
-print(f"Selected K = {K_opt}")
-K = K_opt
-kmeans = KMeans(n_clusters=K, n_init=50, random_state=42)
-labels = kmeans.fit_predict(patterns_scaled)
-fig, ax = plt.subplots(nrows=K, figsize=(8,12), tight_layout=True)
-for k in range(K):
-    ax[k].plot(time_grid, patterns_scaled[labels == k].T, alpha=0.3)
-    ax[k].plot(time_grid, patterns_scaled[labels == k].mean(axis=0), color='black', linewidth=2)
-    ax[k].set_ylabel(f"Cluster {k}")
-    if _comparison['time_type'] == 'ordinal':
-        ax[k].set_xticks(unique_times)
-        ax[k].set_xticklabels(levels, rotation=90)
+    K_opt = get_elbow(inertias, K_range)
+    print(f"Selected K = {K_opt}")
+    K = K_opt
+    kmeans = KMeans(n_clusters=K, n_init=50, random_state=42)
+    labels = kmeans.fit_predict(patterns_scaled)
+    fig, ax = plt.subplots(nrows=K, figsize=(8, 12), tight_layout=True)
+    for k in range(K):
+        ax[k].plot(time_grid, patterns_scaled[labels == k].T, alpha=0.3)
+        ax[k].plot(
+            time_grid,
+            patterns_scaled[labels == k].mean(axis=0),
+            color="black",
+            linewidth=2,
+        )
+        ax[k].set_ylabel(f"Cluster {k}")
+        if _comparison["time_type"] == "ordinal":
+            ax[k].set_xticks(unique_times)
+            ax[k].set_xticklabels(levels, rotation=90)
 
-fig.savefig(snakemake.params.outputfolder + "/clustered_patterns.png", dpi=300)
-sig_results = results_df[results_df['FDR'] < 0.05]
-sig_results['labels'] = labels
-sig_results.to_csv(snakemake.output.sig_clustered, sep='\t')
-results_df.to_csv(snakemake.output.table, sep='\t')
+    fig.savefig(snakemake.params.outputfolder + "/clustered_patterns.png", dpi=300)
+    sig_results = results_df[results_df["FDR"] < snakemake.params.permutation_cutoff]
+    sig_results["labels"] = labels
+    sig_results.to_csv(snakemake.params.sig_clustered, sep="\t")
+else:
+    print(f"No peaks meet cutoff threshold of {snakemake.params.permutation_cutoff}")
+results_df.to_csv(snakemake.output.table, sep="\t")
