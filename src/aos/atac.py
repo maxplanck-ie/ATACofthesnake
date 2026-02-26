@@ -85,6 +85,7 @@ from aos.preflight import Preflight
     "--upstreamuro",
     required=False,
     default=50000,
+    type=int,
     show_default=True,
     help="Maximum permitted distance upstream of a feature (peak annotation).",
 )
@@ -92,6 +93,7 @@ from aos.preflight import Preflight
     "--downstreamuro",
     required=False,
     default=50000,
+    type=int,
     show_default=True,
     help="Maximum permitted distance downstream of a feature (peak annotation).",
 )
@@ -106,6 +108,7 @@ from aos.preflight import Preflight
     "--pseudocount",
     required=False,
     default=8,
+    type=int,
     show_default=True,
     help="Pseudocount to add to the count matrix prior to differential calling.",
 )
@@ -119,6 +122,7 @@ from aos.preflight import Preflight
     "--permutation_cutoff",
     required=False,
     default=1e-2,
+    type=float,
     show_default=True,
     help="A p-value cutoff to determine significance after permutation testing (relevant for timecourse mode).",
 )
@@ -126,6 +130,7 @@ from aos.preflight import Preflight
     "--permutation_iterations",
     required=False,
     default=1000,
+    type=int,
     show_default=True,
     help="Number of permutations to perform for significance testing (relevant for timecourse mode).",
 )
@@ -133,6 +138,7 @@ from aos.preflight import Preflight
     "--fdr_cutoff",
     required=False,
     default=1e-3,
+    type=float,
     show_default=True,
     help="The FDR cutoff to determine significance after wald/LRT test (relevant for two-group and LRT modes).",
 )
@@ -140,6 +146,7 @@ from aos.preflight import Preflight
     "--lfc_cutoff",
     required=False,
     default=0,
+    type=float,
     show_default=True,
     help="The log2FoldChange cutoff used to determine significance (combined with fdr_cutoff, only relevant for two-group mode).",
 )
@@ -147,6 +154,7 @@ from aos.preflight import Preflight
     "--lrt_peaks",
     required=False,
     default=1000,
+    type=int,
     show_default=True,
     help="Minimum number of significant peaks in LRT mode to continue with downstream analysis.",
 )
@@ -154,6 +162,7 @@ from aos.preflight import Preflight
     "--gp_timesteps",
     required=False,
     default=10,
+    type=int,
     show_default=True,
     help="Number of timesteps to use for gaussian process regression.",
 )
