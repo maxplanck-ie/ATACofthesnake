@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.5.0...v0.6.0) (2026-02-26)
+
+
+### Features
+
+* parametrize cutoffs, lfs, FDR, permutation FDR and number of permutations ([a09be5a](https://github.com/maxplanck-ie/ATACofthesnake/commit/a09be5ab2324c89e5699e509c38b8db324e5271e))
+* properly deal with no survivors in gp mode ([a09be5a](https://github.com/maxplanck-ie/ATACofthesnake/commit/a09be5ab2324c89e5699e509c38b8db324e5271e))
+* type check on numeric arguments ([a09be5a](https://github.com/maxplanck-ie/ATACofthesnake/commit/a09be5ab2324c89e5699e509c38b8db324e5271e))
+
+
+### Documentation
+
+* example illustration ([#53](https://github.com/maxplanck-ie/ATACofthesnake/issues/53)) ([a09be5a](https://github.com/maxplanck-ie/ATACofthesnake/commit/a09be5ab2324c89e5699e509c38b8db324e5271e))
+
 ## [0.5.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.4.0...v0.5.0) (2026-02-21)
 
 
