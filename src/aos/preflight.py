@@ -16,6 +16,7 @@ class Preflight:
     def __init__(self, clickdict: dict) -> None:
         # Store paths - required
         self.bamdir = Path(clickdict["bamdir"])
+        self.validate_samples(self.bamdir)
         self.outputdir = Path(clickdict["outputdir"])
 
         # Create outputdir if not existing
@@ -122,6 +123,13 @@ class Preflight:
         assert any([mitostring in header for header in rarheaders]), (
             f"Provided mitostring {mitostring} not found in read attracting regions file. Please check your rar file and the --mitostring parameter. Exiting."
         )
+
+    @staticmethod
+    def validate_samples(bamdir: Path) -> None:
+        for sample in [*bamdir.glob("*.bam"), *bamdir.glob("*.cram")]:
+            assert "-" not in sample.name, (
+                f"Samples cannot have dashes '-' in them. Please rename {sample.name}."
+            )
 
     @staticmethod
     def validate_samplesheet(ss: Path, bamdir: Path) -> None:
