@@ -21,7 +21,7 @@ dependencies = [
   "snakemake >= 9.0.0",
   "click >= 8.0.0",
   "scikit-learn >= 1.8.0",
-  "statsmodels >= 0.14.0",
+  "formulaic >= 1.2.1",
 ]
 
 [project.optional-dependencies]

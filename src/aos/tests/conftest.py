@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pandas as pd
 import pytest
 import yaml
@@ -149,3 +151,148 @@ def bampath(tmp_path):
     (badcram / "file-1.cram").touch()
 
     return bampath
+
+
+@pytest.fixture
+def comppath(tmp_path):
+    """
+    Create a samplesheet and comparison file for comparison validation testing
+    """
+
+    def wy(d, f):
+        with open(f, "w") as of:
+            yaml.dump(d, of)
+
+    with open(tmp_path / "ss.tsv", "w") as f:
+        f.write("sample\ttime\ttreatment\n")
+        f.write("sample1\t0\tcontrol\n")
+        f.write("sample2\t0\tcontrol\n")
+        f.write("sample3\t0\ttreatment\n")
+        f.write("sample4\t0\ttreatment\n")
+        f.write("sample5\t1\tcontrol\n")
+        f.write("sample6\t1\tcontrol\n")
+        f.write("sample7\t1\ttreatment\n")
+        f.write("sample8\t1\ttreatment\n")
+        f.write("sample9\t2\tcontrol\n")
+        f.write("sample10\t2\tcontrol\n")
+        f.write("sample11\t2\ttreatment\n")
+        f.write("sample12\t2\ttreatment\n")
+
+    # correct comparison
+    comp = {
+        "test_comp": {
+            "type": "twogroup",
+            "design": "~time",
+            "t0_1": {"time": [0, 1]},
+            "t2": {"time": 2},
+        }
+    }
+    wy(comp, tmp_path / "comp.yaml")
+    # notype
+    d = deepcopy(comp)
+    d["test_comp"].pop("type")
+    wy(d, tmp_path / "comp_notype.yaml")
+    # wrongtype
+    d = deepcopy(comp)
+    d["test_comp"]["type"] = "wrongtype"
+    wy(d, tmp_path / "comp_wrongtype.yaml")
+    # notilde
+    d = deepcopy(comp)
+    d["test_comp"]["design"] = "time"
+    wy(d, tmp_path / "comp_notilde.yaml")
+    # var not in ss
+    d = deepcopy(comp)
+    d["test_comp"]["design"] = "~time + factortype"
+    wy(d, tmp_path / "comp_varnotins.yaml")
+    # principle of marginality
+    d = deepcopy(comp)
+    d["test_comp"]["design"] = "~time + time:treatment"
+    wy(d, tmp_path / "comp_margprin.yaml")
+
+    # tg - not2
+    d = deepcopy(comp)
+    d["test_comp"].pop("t2")
+    wy(d, tmp_path / "comp_tg_not2.yaml")
+    # tg - wrongfactor
+    d = deepcopy(comp)
+    d["test_comp"]["t2"] = {"blime": [2]}
+    wy(d, tmp_path / "comp_tg_wrongfactor.yaml")
+    # tg - wronglevel
+    d = deepcopy(comp)
+    d["test_comp"]["t2"] = {"time": 3}
+    wy(d, tmp_path / "comp_tg_wronglevel.yaml")
+    # tg - wronglevel
+    d = deepcopy(comp)
+    d["test_comp"]["t0_1"] = [0, 3]
+    wy(d, tmp_path / "comp_tg_wronglevel2.yaml")
+
+    # lrt
+    comp = {
+        "test_comp": {"type": "lrt", "design": "~time*treatment", "reduced": "~time"}
+    }
+    wy(comp, tmp_path / "comp_lrt.yaml")
+    # lrt - noreduced
+    d = deepcopy(comp)
+    d["test_comp"].pop("reduced")
+    wy(d, tmp_path / "comp_lrt_noreduced.yaml")
+    # lrt - notilde
+    d = deepcopy(comp)
+    d["test_comp"]["reduced"] = "time"
+    wy(d, tmp_path / "comp_lrt_notilde.yaml")
+    # lrt - wrong reduced factor
+    d = deepcopy(comp)
+    d["test_comp"]["reduced"] = "~blime"
+    wy(d, tmp_path / "comp_lrt_wrongreduced.yaml")
+    # lrt - reduced not reduced
+    d = deepcopy(comp)
+    d["test_comp"]["reduced"] = "~time*treatment"
+    wy(d, tmp_path / "comp_lrt_reducednotreduced.yaml")
+    # lrt - notnested
+    d = deepcopy(comp)
+    d["test_comp"]["design"] = "~time+time:treatment"
+    d["test_comp"]["reduced"] = "~treatment+time:treatment"
+    wy(d, tmp_path / "comp_lrt_notnested.yaml")
+
+    # gp
+    comp = {
+        "test_comp": {"type": "timecourse", "time": "time", "time_type": "continuous"}
+    }
+    wy(comp, tmp_path / "comp_gp.yaml")
+
+    # gp - notime
+    d = deepcopy(comp)
+    d["test_comp"].pop("time")
+    wy(d, tmp_path / "comp_gp_notime.yaml")
+    # gp - notime_type
+    d = deepcopy(comp)
+    d["test_comp"].pop("time_type")
+    wy(d, tmp_path / "comp_gp_notime_type.yaml")
+    # gp - wrong time_type
+    d = deepcopy(comp)
+    d["test_comp"]["time_type"] = "wrong"
+    wy(d, tmp_path / "comp_gp_wrongtime_type.yaml")
+    # gp - wrong time
+    d = deepcopy(comp)
+    d["test_comp"]["time"] = "wrong"
+    wy(d, tmp_path / "comp_gp_wrongtime.yaml")
+
+    # gp - ordinal
+    comp = {
+        "test_comp": {
+            "type": "timecourse",
+            "time": "time",
+            "time_type": "ordinal",
+            "order": [0, 1, 2],
+        }
+    }
+    wy(comp, tmp_path / "comp_gp_ordinal.yaml")
+    # gp - noorder
+    d = deepcopy(comp)
+    d["test_comp"].pop("order")
+    wy(d, tmp_path / "comp_gp_noorder.yaml")
+    # gp - order wrong level
+    d = deepcopy(comp)
+    d["test_comp"]["order"] = [0, 1, 5]
+    wy(d, tmp_path / "comp_gp_ord_wronglevel.yaml")
+
+    return tmp_path
