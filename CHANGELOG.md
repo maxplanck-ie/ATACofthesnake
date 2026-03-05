@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.6.0...v0.7.0) (2026-03-05)
+
+
+### Features
+
+* axline in MAplot ([#58](https://github.com/maxplanck-ie/ATACofthesnake/issues/58)) ([8cb8f4d](https://github.com/maxplanck-ie/ATACofthesnake/commit/8cb8f4d161986c85745dd68ded487cfc9929ecd0))
+* label simplification on heatmap ([8cb8f4d](https://github.com/maxplanck-ie/ATACofthesnake/commit/8cb8f4d161986c85745dd68ded487cfc9929ecd0))
+* no dashes allowed in filenames ([#56](https://github.com/maxplanck-ie/ATACofthesnake/issues/56)) ([d400253](https://github.com/maxplanck-ie/ATACofthesnake/commit/d400253c52f2ba4c259676991172ddb6f41a1611))
+* validate design ([#59](https://github.com/maxplanck-ie/ATACofthesnake/issues/59)) ([68481a1](https://github.com/maxplanck-ie/ATACofthesnake/commit/68481a1d548339b91ea1578560cf022f4440554b))
+
 ## [0.6.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.5.0...v0.6.0) (2026-02-26)
 
 
