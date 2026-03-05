@@ -20,7 +20,8 @@ dependencies = [
   "rich >= 12.6.0",
   "snakemake >= 9.0.0",
   "click >= 8.0.0",
-  "scikit-learn >= 1.8.0"
+  "scikit-learn >= 1.8.0",
+  "formulaic >= 1.2.1",
 ]
 
 [project.optional-dependencies]
@@ -65,7 +66,7 @@ exclude = [
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 [tool.pixi.pypi-dependencies]
-ATACofthesnake = { path = ".", editable = true, extras = ["dev", "docs"] } 
+ATACofthesnake = { path = ".", editable = true, extras = ["dev", "docs"] }
 
 [tool.pixi.tasks]
 ty = "ty check"

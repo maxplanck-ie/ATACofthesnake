@@ -1,9 +1,10 @@
-import re
+import copy
 from importlib.metadata import version
 from pathlib import Path
 
 import pandas as pd
 import yaml
+from formulaic import Formula
 
 from aos.logger import setup_logger
 
@@ -50,7 +51,9 @@ class Preflight:
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.
             self.validate_samplesheet(self.samplesheet, self.bamdir)
-            self.validate_comparison(self.comparison, self.samplesheet)
+            warnings = self.validate_comparison(self.comparison, self.samplesheet)
+            for _warning in warnings:
+                self.logger.warning(_warning)
         else:
             self.logger.info("No differential testing requested...")
             self.interaction = None
@@ -147,18 +150,8 @@ class Preflight:
         )
 
     @staticmethod
-    def _extract_design_vars(formula: str) -> list[str]:
-        rhs = formula.replace("~", "")
-        parts = re.split(r"[+*:]", rhs)
-        vars_ = []
-        for part in parts:
-            var = part.strip()
-            if var and var != "1":
-                vars_.append(var)
-        return vars_
-
-    @staticmethod
-    def validate_comparison(comp_path: Path, ss: Path) -> None:
+    def validate_comparison(comp_path: Path, ss: Path) -> list[str]:
+        warnings = []
         samplesheet = pd.read_csv(ss, sep="\t", header=0)
         covariates = samplesheet.columns.drop("sample").tolist()
         with open(comp_path, "r") as f:
@@ -177,14 +170,22 @@ class Preflight:
                 assert "~" in comp["design"], (
                     f"Comparison {comp} has a design that does not contain '~'. Exiting."
                 )
-                _designvars = Preflight._extract_design_vars(comp["design"])
-                for var in _designvars:
-                    assert var in covariates, (
-                        f"Comparison {comp} has design variable {var} that is not present in samplesheet. Exiting."
+                design_formula = Formula(comp["design"])
+                for _var in design_formula.required_variables:
+                    assert _var in covariates, (
+                        f"Comparison {comp} has design variable {_var} that is not present in samplesheet. Exiting."
                     )
                 # Assert principle of marginality is not violated
+                for var in design_formula:  # ty: ignore[not-iterable]
+                    if ":" in str(var):
+                        factors = str(var).split(":")
+                        for factor in factors:
+                            if factor not in [str(i) for i in design_formula]:  # ty: ignore[not-iterable]
+                                warnings.append(
+                                    f"Specified design violates principle of marginality for {var}, consider including {factor} in design."
+                                )
             if comp["type"] == "twogroup":
-                _ = comp.copy()
+                _ = copy.deepcopy(comp)
                 _.pop("design", None)
                 _.pop("type", None)
                 assert len(_.keys()) == 2, (
@@ -195,7 +196,7 @@ class Preflight:
                         assert factor in covariates, (
                             f"Comparison {comp} has factor {factor} that is not present in samplesheet. Exiting."
                         )
-                        if isinstance(_[group][factor], str):
+                        if isinstance(_[group][factor], (str, int)):
                             assert _[group][factor] in samplesheet[factor].unique(), (
                                 f"Comparison {comp} has level {_[group][factor]} for factor {factor} that is not present in samplesheet. Exiting."
                             )
@@ -211,12 +212,25 @@ class Preflight:
                 assert "~" in comp["reduced"], (
                     f"Comparison {comp} has a reduced design that does not contain '~'. Exiting."
                 )
-                _designvars = Preflight._extract_design_vars(comp["reduced"])
-                for var in _designvars:
-                    assert var in covariates, (
-                        f"Comparison {comp} has reduced design variable {var} that is not present in samplesheet. Exiting."
-                    )
+                red_formula = Formula(comp["reduced"])
+                for var in red_formula:  # ty: ignore[not-iterable]
+                    if str(var) != "1":
+                        assert var in covariates, (
+                            f"Comparison {comp} has reduced design variable {var} that is not present in samplesheet. Exiting."
+                        )
                 # Check that reduced is in fact, reduced.
+                if "design" in comp:
+                    formula = Formula(comp["design"])
+                else:
+                    formula = Formula(f"~{'+'.join(covariates)}")
+                assert len(red_formula) < len(formula), (  # ty: ignore[invalid-argument-type]
+                    f"Reduced model should be strictly smaller than full model for {comp}"
+                )
+                for redvar in red_formula:  # ty: ignore[not-iterable]
+                    assert redvar in formula, (  # ty: ignore[unsupported-operator]
+                        f"coefficient {redvar} is not reflected in the full model for {comp}."
+                    )
+
             if comp["type"] == "timecourse":
                 assert "time" in comp, (
                     f"Comparison {comp} of type 'timecourse' should have a 'time' key specifying the time variable. Exiting."
@@ -238,7 +252,7 @@ class Preflight:
                         assert level in samplesheet[comp["time"]].unique(), (
                             f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
                         )
-        None
+        return warnings
 
     def parse_fasta(self):
         ESS = 0
