@@ -149,6 +149,7 @@ def maplot(tsv: str, of: str, compentry: dict, lfc_cutoff: float, fdr_cutoff: fl
         va="bottom",
         transform=g.transAxes,
     )
+    plt.axhline(y=0, linestyle="--", linewidth=1, color="grey", alpha=0.7)
     g.figure.savefig(of, dpi=300, bbox_inches="tight")
 
 

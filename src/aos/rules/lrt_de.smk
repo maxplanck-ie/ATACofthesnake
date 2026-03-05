@@ -82,6 +82,7 @@ rule lrt_plotheatmap:
       with open(input.relevant_samples, 'r') as f:
         relevant_samples = [f"bw/{line.strip()}.scalefac.bw" for line in f]
       relevant_samples_str = ' '.join(relevant_samples)
+      sample_labels = ' '.join([i.replace("bw/", "").replace(".scalefac.bw", "") for i in relevant_samples])
       with open(f'lrt/{wildcards.comparison}/k_opt.txt', 'r') as f:
         k_opt = int(f.read().strip())
       shell(f'''
@@ -92,11 +93,10 @@ rule lrt_plotheatmap:
           --referencePoint center \
           -b 3000 -a 3000 \
           --missingDataAsZero \
-          --smartLabels \
           -p {threads}
       ''')
       shell(f"""
-        plotHeatmap --matrixFile {params.matrix} --colorMap 'Blues' --kmeans {k_opt} -o {params.heatmap}
+        plotHeatmap --matrixFile {params.matrix} --colorMap 'Blues' --kmeans {k_opt} -o {params.heatmap} --samplesLabel {sample_labels}
       """)
     else:
       Path(output[0]).touch()
