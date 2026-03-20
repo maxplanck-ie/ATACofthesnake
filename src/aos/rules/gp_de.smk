@@ -9,7 +9,7 @@ rule gp_diffacc:
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
     permutations = config['cutoffs']['permutation_iterations'],
     gp_timesteps = config['cutoffs']['gp_timesteps']
-  threads: 20
+  threads: 50
   conda: "envs/gp.yml"
   script:
     "scripts/gp.py"
