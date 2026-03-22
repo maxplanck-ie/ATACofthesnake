@@ -54,23 +54,13 @@ def define_comparison_output():
                 f"gp/{comp}/{comp}_counts_norm.tsv"
               ]
             )
-            # if 'interaction' in config['comparison'][comp]:
-            #   if isinstance(config['comparison'][comp]['interaction'], str):
-            #     interaction = config['comparison'][comp]['interaction']
-            #     outputfiles.extend(
-            #     [
-            #         f"gp/{comp}/{comp}_{interaction}_gp_results.tsv"
-            #     ]
-            #   )
-            #   elif isinstance(config['comparison'][comp]['interaction'], list):
-            #     for interaction in config['comparison'][comp]['interaction']:
-            #       outputfiles.extend(
-            #         [
-            #           f"gp/{comp}/{comp}_{interaction}_gp_results.tsv"
-            #         ]
-            #       )
-            #   else:
-            #     raise ValueError(f"Invalid interaction type for {comp}")
+            if 'interaction' in config['comparison'][comp]:
+                interaction = config['comparison'][comp]['interaction']
+                outputfiles.extend(
+                [
+                    f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv"
+                ]
+              )
   return (outputfiles)
 
 

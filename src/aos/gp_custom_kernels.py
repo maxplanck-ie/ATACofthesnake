@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.special import softmax
 from sklearn.gaussian_process.kernels import Kernel
-
+from sklearn.gaussian_process.kernels import RBF
 
 class OrdinalKernel(Kernel):
     def __init__(
@@ -104,3 +104,31 @@ class OrdinalKernel(Kernel):
                 }
             )
         return params
+
+
+class SlicedRBF(RBF):
+    """RBF that only operates on a slice of X."""
+    def __init__(self, indices, length_scale=1.0, length_scale_bounds=(1e-3, 1e3)):
+        self.indices = indices
+        super().__init__(length_scale=length_scale, length_scale_bounds=length_scale_bounds)
+
+    def __call__(self, X, Y=None, eval_gradient=False):
+        Xs = X[:, self.indices]
+        Ys = Y[:, self.indices] if Y is not None else None
+        return super().__call__(Xs, Ys, eval_gradient=eval_gradient)
+
+    def diag(self, X):
+        return super().diag(X[:, self.indices])
+
+    def get_params(self, deep=True):
+        params = super().get_params(deep=deep)
+        params['indices'] = self.indices
+        return params
+
+
+class SlicedOrdinalKernel(OrdinalKernel):
+    """OrdinalKernel that extracts only column 0 (time) from the full X.
+    All other columns are discarded"""
+    def remap_X(self, X):
+        t = self.remap_time(X[:, 0])
+        return t[:, None]

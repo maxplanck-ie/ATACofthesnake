@@ -248,8 +248,11 @@ class Preflight:
                     assert "order" in comp, (
                         f"Comparison {comp} of type 'timecourse' with time_type 'ordinal' should have an 'order' key specifying the order of the time points. Exiting."
                     )
+                    # We allow string in comp vs ints in samplesheet as time, as ordinal time encoding with digits is allowed.
+                    # Not clean, but allows more flexibility.
+                    _time_values = samplesheet[comp["time"]].astype(str).unique()
                     for level in comp["order"]:
-                        assert level in samplesheet[comp["time"]].unique(), (
+                        assert str(level) in _time_values, (
                             f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
                         )
         return warnings
