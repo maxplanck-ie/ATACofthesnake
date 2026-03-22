@@ -11,10 +11,6 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
-permutations = 1000
-permutations_cutoff = 1e-2
-gp_timesteps = 10
-
 # Snakemake variables
 _comparison = snakemake.params.comparison
 mat = snakemake.input.mat
