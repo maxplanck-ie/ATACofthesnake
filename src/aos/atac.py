@@ -151,12 +151,12 @@ from aos.preflight import Preflight
     help="The log2FoldChange cutoff used to determine significance (combined with fdr_cutoff, only relevant for two-group mode).",
 )
 @click.option(
-    "--lrt_peaks",
+    "--min_sigpeaks",
     required=False,
-    default=1000,
+    default=100,
     type=int,
     show_default=True,
-    help="Minimum number of significant peaks in LRT mode to continue with downstream analysis.",
+    help="Minimum number of significant peaks in LRT/GP mode to continue with downstream analysis.",
 )
 @click.option(
     "--gp_timesteps",

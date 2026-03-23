@@ -5,7 +5,7 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 import os
 from aos.gp_fitter import fit_gp_interaction
-
+from statsmodels.stats.multitest import multipletests
 
 
 # Avoid overthreading.
@@ -134,6 +134,7 @@ results_df = pd.DataFrame({
     "lr_obs":   lr_obs_list,
     "p_value":  pvals,
 }, index=_index)
+_, results_df["FDR"], _, _ = multipletests(results_df["pvalue"], method="fdr_bh")
 
 # Save results
 results_df.to_csv(table_output, sep='\t', index=True, header=True)

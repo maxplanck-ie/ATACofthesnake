@@ -32,7 +32,7 @@ checkpoint lrt_bedfiles:
   output:
     beddir = directory("lrt/{comparison}/bed")
   params:
-    lrt_peaks = lambda wildcards: config['cutoffs']['lrt_peaks'],
+    min_sigpeaks = lambda wildcards: config['cutoffs']['min_sigpeaks'],
     fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
@@ -40,7 +40,7 @@ checkpoint lrt_bedfiles:
 
     df = pd.read_csv(input.edger, sep='\t', header=0)
     sig = df[df['FDR'] < params.fdr_cutoff]
-    if len(sig) > params.lrt_peaks:
+    if len(sig) > params.min_sigpeaks:
         # Write out the bed file
         with open(f"{output.beddir}/{wildcards.comparison}_LRT_sign.bed", "w") as f:
             for peak in sig["peak_id"]:

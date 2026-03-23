@@ -73,7 +73,7 @@ class Preflight:
             "permutation_iterations": clickdict["permutation_iterations"],
             "fdr_cutoff": clickdict["fdr_cutoff"],
             "lfc_cutoff": clickdict["lfc_cutoff"],
-            "lrt_peaks": clickdict["lrt_peaks"],
+            "min_sigpeaks": clickdict["min_sigpeaks"],
             "gp_timesteps": clickdict["gp_timesteps"],
         }
 

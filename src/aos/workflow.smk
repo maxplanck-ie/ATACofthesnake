@@ -25,6 +25,7 @@ include: "rules/gp_de.smk"
 
 def define_comparison_output():
   outputfiles = []
+  sigresults = []
   if config['comparison']:
     with open(config['comparison'], 'r') as f:
       config['comparison'] = yaml.safe_load(f)
@@ -39,6 +40,7 @@ def define_comparison_output():
                 f"twogroup/{comp}/{comp}_heatmap.done"
               ]
             )
+            sigresults.append(f"twogroup/{comp}/{comp}_heatmap.done")
           case 'lrt':
             outputfiles.extend(
               [
@@ -47,22 +49,28 @@ def define_comparison_output():
                 f"lrt/{comp}/{comp}_heatmap.done"
               ]
             )
+            sigresults.append(f"lrt/{comp}/{comp}_heatmap.done")
           case 'timecourse':
             outputfiles.extend(
               [
                 f"gp/{comp}/{comp}_gp_results.tsv",
-                f"gp/{comp}/{comp}_counts_norm.tsv"
+                f"gp/{comp}/{comp}_counts_norm.tsv",
+                f"gp/{comp}/{comp}_postprocess.done"
               ]
             )
+            sigresults.append(f"gp/{comp}/{comp}_postprocess.done")
             if 'interaction' in config['comparison'][comp]:
                 interaction = config['comparison'][comp]['interaction']
                 outputfiles.extend(
-                [
-                    f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv"
-                ]
-              )
-  return (outputfiles)
+                  [
+                      f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv",
+                      f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done"
+                  ]
+                )
+                sigresults.append(f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done")
+  return (outputfiles, sigresults)
 
+OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
 
 # def define_comparison_output():
@@ -100,4 +108,5 @@ rule all:
     'figures/fragmentsizes.png',
     'figures/fripscores.png',
     # DE output
-    define_comparison_output()
+    OUTPUTFILES
+    # 
