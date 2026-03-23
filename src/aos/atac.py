@@ -169,17 +169,17 @@ from aos.preflight import Preflight
 def main(**kwargs) -> None:
     pf = Preflight(kwargs)
     console = Console()
-    with console.status("[bold green] Running snakemake..."):
-        subprocess.run(
-            [
-                "snakemake",
-                "-s",
-                pf.workflowfile,
-                "--configfile",
-                pf.configfile,
-                "-d",
-                pf.outputdir,
-                "-p",
-            ]
-            + pf.snakemake_arguments()
-        )
+    console.print("[bold green]Running snakemake...")
+    subprocess.run(
+        [
+            "snakemake",
+            "-s",
+            pf.workflowfile,
+            "--configfile",
+            pf.configfile,
+            "-d",
+            pf.outputdir,
+            "-p",
+        ]
+        + pf.snakemake_arguments()
+    )

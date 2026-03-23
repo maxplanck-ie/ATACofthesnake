@@ -10,7 +10,7 @@ import sys
 # parameters
 #config['cutoffs']['permutation_cutoff']
 perm_cutoff = snakemake.params.permutation_cutoff
-comp_name = snakemake.params.comparison_name
+comp_name = snakemake.params.comp_name
 min_sigpeaks = snakemake.params.min_sigpeaks
 
 # I

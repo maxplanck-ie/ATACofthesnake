@@ -2,10 +2,10 @@
 import pandas as pd
 import numpy as np
 from joblib import Parallel, delayed
-from tqdm import tqdm
 import os
 from aos.gp_fitter import fit_gp_interaction
 from statsmodels.stats.multitest import multipletests
+from rich.progress import track
 
 
 # Avoid overthreading.
@@ -25,8 +25,6 @@ GP_TIMESTEPS = snakemake.params.gp_timesteps
 table_output = snakemake.output.table
 
 INT_STRING = 'treatment'
-
-print(f"Interaction GP for comparison: {_comparison}")
 
 if _comparison['time_type'] == 'ordinal':
 
@@ -104,7 +102,11 @@ fit_parameters = {
 
 results = Parallel(n_jobs=THREADS)(
     delayed(fit_gp_interaction)(row.values, fit_parameters)
-    for _, row in tqdm(count_matrix_norm.iterrows(), total=count_matrix_norm.shape[0])
+    for _, row in track(
+        count_matrix_norm.iterrows(),
+        total=count_matrix_norm.shape[0],
+        description="Fitting GP interaction"
+    )
 )
 
 y_preds, y_stds, distances_list, lr_obs_list, pvals = zip(*results)
