@@ -134,7 +134,7 @@ results_df = pd.DataFrame({
     "lr_obs":   lr_obs_list,
     "p_value":  pvals,
 }, index=_index)
-_, results_df["FDR"], _, _ = multipletests(results_df["pvalue"], method="fdr_bh")
+_, results_df["FDR"], _, _ = multipletests(results_df["p_value"], method="fdr_bh")
 
 # Save results
 results_df.to_csv(table_output, sep='\t', index=True, header=True)

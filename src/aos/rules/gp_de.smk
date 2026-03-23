@@ -38,7 +38,7 @@ rule gp_postprocessing:
     permutation_cutoff = config['cutoffs']['permutation_cutoff'],
     comp_name = lambda wildcards: wildcards.comparison,
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
-    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/{wildcards.comparison}_acc_pred.tsv"
+    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/{wildcards.comparison}_acc_pred.tsv",
     odir = lambda wildcards: f"gp/{wildcards.comparison}"
   threads: 20
   conda: 'envs/gp.yml'
@@ -54,7 +54,7 @@ rule gp_postprocessing_interaction:
     permutation_cutoff = config['cutoffs']['permutation_cutoff'],
     comp_name = lambda wildcards: wildcards.comparison,
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
-    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/{wildcards.comparison}_acc_pred.tsv"
+    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/{wildcards.comparison}_acc_pred.tsv",
     odir = lambda wildcards: f"gp/{wildcards.comparison}",
     int = lambda wildcards: wildcards.interaction
   threads: 20

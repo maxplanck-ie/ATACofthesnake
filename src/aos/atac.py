@@ -110,7 +110,7 @@ from aos.preflight import Preflight
     default=8,
     type=int,
     show_default=True,
-    help="Pseudocount to add to the count matrix prior to differential calling.",
+    help="Pseudocount to add to the count matrix prior to differential calling. Only relevant in two-group mode.",
 )
 @click.option(
     "--peakset",
