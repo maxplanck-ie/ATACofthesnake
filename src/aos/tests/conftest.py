@@ -164,19 +164,31 @@ def comppath(tmp_path):
             yaml.dump(d, of)
 
     with open(tmp_path / "ss.tsv", "w") as f:
-        f.write("sample\ttime\ttreatment\n")
-        f.write("sample1\t0\tcontrol\n")
-        f.write("sample2\t0\tcontrol\n")
-        f.write("sample3\t0\ttreatment\n")
-        f.write("sample4\t0\ttreatment\n")
-        f.write("sample5\t1\tcontrol\n")
-        f.write("sample6\t1\tcontrol\n")
-        f.write("sample7\t1\ttreatment\n")
-        f.write("sample8\t1\ttreatment\n")
-        f.write("sample9\t2\tcontrol\n")
-        f.write("sample10\t2\tcontrol\n")
-        f.write("sample11\t2\ttreatment\n")
-        f.write("sample12\t2\ttreatment\n")
+        f.write("sample\ttime\ttreatment\tgenotype\n")
+        f.write("sample1\t0\tcontrol\tAA\n")
+        f.write("sample2\t0\tcontrol\tAA\n")
+        f.write("sample3\t0\tcontrol\tBB\n")
+        f.write("sample4\t0\tcontrol\tBB\n")
+        f.write("sample5\t0\ttreatment\tAA\n")
+        f.write("sample6\t0\ttreatment\tAA\n")
+        f.write("sample7\t0\ttreatment\tBB\n")
+        f.write("sample8\t0\ttreatment\tBB\n")
+        f.write("sample9\t1\tcontrol\tAA\n")
+        f.write("sample10\t1\tcontrol\tAA\n")
+        f.write("sample11\t1\tcontrol\tBB\n")
+        f.write("sample12\t1\tcontrol\tBB\n")
+        f.write("sample13\t1\ttreatment\tAA\n")
+        f.write("sample14\t1\ttreatment\tAA\n")
+        f.write("sample15\t1\ttreatment\tBB\n")
+        f.write("sample16\t1\ttreatment\tBB\n")
+        f.write("sample17\t2\tcontrol\tAA\n")
+        f.write("sample18\t2\tcontrol\tAA\n")
+        f.write("sample19\t2\tcontrol\tBB\n")
+        f.write("sample20\t2\tcontrol\tBB\n")
+        f.write("sample21\t2\ttreatment\tAA\n")
+        f.write("sample22\t2\ttreatment\tAA\n")
+        f.write("sample23\t2\ttreatment\tBB\n")
+        f.write("sample24\t2\ttreatment\tBB\n")
 
     # correct comparison
     comp = {
@@ -294,5 +306,25 @@ def comppath(tmp_path):
     d = deepcopy(comp)
     d["test_comp"]["order"] = [0, 1, 5]
     wy(d, tmp_path / "comp_gp_ord_wronglevel.yaml")
+    # gp - interactionstr
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = "treatment"
+    wy(d, tmp_path / "comp_gp_interactionstr.yaml")
+    # gp -interactionwrongstr
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = "blime"
+    wy(d, tmp_path / "comp_gp_interactionwrongstr.yaml")
+    # gp - interactionlist
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = ["treatment", "genotype"]
+    wy(d, tmp_path / "comp_gp_interactionlist.yaml")
+    # gp -interactionwronglist
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = ["treatment", "blime"]
+    wy(d, tmp_path / "comp_gp_interactionwronglist.yaml")
+    # gp - interationwrongtype
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = 5
+    wy(d, tmp_path / "comp_gp_interactionwrongtype.yaml")
 
     return tmp_path

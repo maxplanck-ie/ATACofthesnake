@@ -137,3 +137,13 @@ class TestPreflight:
         # gp - order wrong level
         with pytest.raises(AssertionError):
             Preflight.validate_comparison(comppath / "comp_gp_ord_wronglevel.yaml", ss)
+        # gp - interactionstr and list
+        Preflight.validate_comparison(comppath / "comp_gp_interactionstr.yaml", ss)
+        Preflight.validate_comparison(comppath / "comp_gp_interactionlist.yaml", ss)
+        # gp - interaction wrong type, str, list
+        with pytest.raises(AssertionError):
+            Preflight.validate_comparison(comppath / "comp_gp_interactionwrongstr.yaml", ss)
+        with pytest.raises(AssertionError):
+            Preflight.validate_comparison(comppath / "comp_gp_interactionwronglist.yaml", ss)
+        with pytest.raises(AssertionError):
+            Preflight.validate_comparison(comppath / "comp_gp_interactionwrongtype.yaml", ss)
