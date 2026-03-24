@@ -83,6 +83,10 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
+if config['motifs']:
+  # do motif analysis.
+  print("motif")
+
 rule all:
   input:
     # Default output

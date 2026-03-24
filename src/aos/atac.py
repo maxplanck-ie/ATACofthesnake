@@ -54,7 +54,7 @@ from aos.preflight import Preflight
     "-m",
     "--motifs",
     type=click.Path(exists=True),
-    help="Specify a file containing motifs. Needs to be in meme format. If not provided, no motif analyses will be ran.",
+    help="Specify a file containing motifs. Needs to be in meme format. If not provided, no motif enrichment/footprinting will be ran.",
 )
 @click.option(
     "-f",

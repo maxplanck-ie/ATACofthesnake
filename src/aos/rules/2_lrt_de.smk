@@ -63,7 +63,7 @@ checkpoint lrt_bedfiles:
             f.write(str(k_opt))
         # Create table with K-labels.
         kmeans = KMeans(n_clusters=k_opt, n_init=50, random_state=1337).fit(counts_scaled)
-        sig[f"k_{k_opt}"] = kmeans.labels_
+        sig[f"k"] = kmeans.labels_
         sig.to_csv(f"lrt/{wildcards.comparison}/{wildcards.comparison}_sig_peaks_kmeans.tsv", sep='\t', index=False, header=True)
 
 
