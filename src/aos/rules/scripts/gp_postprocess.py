@@ -26,7 +26,7 @@ else:
     k_table = Path(odir) / f"{comp_name}_k_table.tsv"
     k_plot = Path(odir) / f"{comp_name}_k_plot.png"
 
-sig = results[results['p_value'] < perm_cutoff]
+sig = results[results['FDR'] < perm_cutoff]
 if len(sig) < min_sigpeaks:
     print(f"Only {len(sig)} significant peaks found for {comp_name} with permutation cutoff {perm_cutoff}. Need at least {min_sigpeaks} to continue.")
     sys.exit(0)
