@@ -22,9 +22,8 @@ ss = snakemake.params.ss
 THREADS = snakemake.threads
 PERMS = snakemake.params.permutations
 GP_TIMESTEPS = snakemake.params.gp_timesteps
+INT_STRING = snakemake.params.int
 table_output = snakemake.output.table
-
-INT_STRING = 'treatment'
 
 if _comparison['time_type'] == 'ordinal':
 

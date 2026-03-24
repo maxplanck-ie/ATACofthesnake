@@ -60,6 +60,16 @@ def define_comparison_output():
             )
             sigresults.append(f"gp/{comp}/{comp}_postprocess.done")
             if 'interaction' in config['comparison'][comp]:
+              if isinstance(config['comparison'][comp]['interaction'], list):
+                for interaction in config['comparison'][comp]['interaction']:
+                  outputfiles.extend(
+                    [
+                        f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv",
+                        f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done"
+                    ]
+                  )
+                  sigresults.append(f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done")
+              elif isinstance(config['comparison'][comp]['interaction'], str):
                 interaction = config['comparison'][comp]['interaction']
                 outputfiles.extend(
                   [
@@ -71,7 +81,6 @@ def define_comparison_output():
   return (outputfiles, sigresults)
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
-
 
 # def define_comparison_output():
 #   outputfiles = []

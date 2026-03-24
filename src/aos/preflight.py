@@ -255,6 +255,19 @@ class Preflight:
                         assert str(level) in _time_values, (
                             f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
                         )
+                if "interaction" in comp:
+                    assert isinstance(comp["interaction"], str) or isinstance(comp["interaction"], list), (
+                        f"Comparison {comp} has an 'interaction' set that is not a string or list but {type(comp['interaction'])}. Exiting."
+                    )
+                    if isinstance(comp["interaction"], str):
+                        assert comp["interaction"] in covariates, (
+                            f"Comparison {comp} has interaction variable {comp['interaction']} that is not present in samplesheet. Exiting."
+                        )
+                    else:
+                        for interaction in comp["interaction"]:
+                            assert interaction in covariates, (
+                                f"Comparison {comp} has interaction variable {interaction} that is not present in samplesheet. Exiting."
+                            )
         return warnings
 
     def parse_fasta(self):
