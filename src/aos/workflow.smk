@@ -1,5 +1,6 @@
 import yaml
 import pandas as pd
+from pathlib import Path
 
 BAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
 CRAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.cram")
@@ -12,17 +13,6 @@ if config['samplesheet']:
   for sample in SAMPLES:
     if sample not in samplesheet['sample'].values:
       SAMPLES.remove(sample)
-
-
-include: "rules/1_peaks.smk"
-include: "rules/1_qc.smk"
-include: "rules/2_twogroup_de.smk"
-include: "rules/2_lrt_de.smk"
-include: "rules/2_gp_de.smk"
-include: "rules/3_collate_sigresults.smk"
-# include: "rules/motifs.smk"
-# include: "rules/tobias.smk"
-
 
 def define_comparison_output():
   outputfiles = []
@@ -83,10 +73,30 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
-if config['motifs']:
-  # do motif analysis.
-  print("motif")
+# def group_files(wildcards):
+#   sigdir = checkpoints.collate_sigresults.get(**wildcards).output[0]
+#   Path()
 
+#     for group in os.listdir(checkpoint_output):
+#         group_path = os.path.join(checkpoint_output, group)
+#         if os.path.isdir(group_path):
+#             for f in os.listdir(group_path):
+#                 result[group].append(os.path.join(group_path, f))
+
+#     return dict(result)
+
+# if config['motifs']:
+#   # do motif analysis.
+#   print("motif")
+
+include: "rules/1_peaks.smk"
+include: "rules/1_qc.smk"
+include: "rules/2_twogroup_de.smk"
+include: "rules/2_lrt_de.smk"
+include: "rules/2_gp_de.smk"
+include: "rules/3_collate_sigresults.smk"
+# include: "rules/motifs.smk"
+# include: "rules/tobias.smk"
 rule all:
   input:
     # Default output
