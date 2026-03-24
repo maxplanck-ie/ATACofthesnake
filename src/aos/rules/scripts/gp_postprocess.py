@@ -79,8 +79,10 @@ K_opt = get_elbow(inertias, K_range)
 print(f"Selected K = {K_opt}")
 
 K = K_opt
-kmeans = KMeans(n_clusters=K, n_init=50, random_state=42)
+kmeans = KMeans(n_clusters=K, n_init=50, random_state=1337)
 labels = kmeans.fit_predict(patterns_scaled)
+sig[f'k_{K}'] = labels
+sig.to_csv(k_table, sep='\t', index=True, header=True)
 
 if 'interaction' in y_pred.columns:
     _valcols
