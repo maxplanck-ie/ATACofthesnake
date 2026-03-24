@@ -83,12 +83,12 @@ kmeans = KMeans(n_clusters=K, n_init=50, random_state=42)
 labels = kmeans.fit_predict(patterns_scaled)
 
 if 'interaction' in y_pred.columns:
-    colors = plt.cm.tab10(range(n_interactions))
-    def unstack_pattern(row):
-        return row.reshape(n_interactions, n_timepoints)
     _valcols
     n_timepoints = len(_valcols)
     n_interactions = y_pred.groupby(y_pred.index).size().iloc[0]
+    colors = plt.cm.tab10(range(n_interactions))
+    def unstack_pattern(row):
+        return row.reshape(n_interactions, n_timepoints)
     interaction_labels = (
         y_pred.groupby(y_pred.index)["interaction"]
               .apply(list)
