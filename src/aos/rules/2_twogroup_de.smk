@@ -97,5 +97,3 @@ rule twogroup_plotheatmap:
       shell(f"""
         plotHeatmap --matrixFile {params.matrix} --colorMap 'Blues' -o {params.heatmap} --samplesLabel {sample_labels}
       """)
-    else:
-      Path(output[0]).touch()
