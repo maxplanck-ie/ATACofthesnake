@@ -45,8 +45,9 @@ checkpoint twogroup_bedfiles:
   output:
     beddir = directory("twogroup/{comparison}/bed")
   params:
-      lfc_cutoff = lambda wildcards: config['cutoffs']['lfc_cutoff'],
-      fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
+      lfc_cutoff = config['cutoffs']['lfc_cutoff'],
+      fdr_cutoff = config['cutoffs']['fdr_cutoff'],
+      min_sigpeaks = config['min_sigpeaks']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
@@ -54,12 +55,13 @@ checkpoint twogroup_bedfiles:
     df = pd.read_csv(input[0], sep='\t', header=0)
     gr1 = df[(df['logFC'] < -params.lfc_cutoff) & (df['FDR'] < params.fdr_cutoff)]
     gr2 = df[(df['logFC'] > params.lfc_cutoff) & (df['FDR'] < params.fdr_cutoff)]
-    for gr in [gr1, gr2]:
-      if len(gr) > 0:
-        gr_name = gr['group_assignment'].iloc[0]
-        with open(f"{output.beddir}/{gr_name}.bed", "w") as f:
-          for peak in gr["peak_id"]:
-            f.write("\t".join(peak.split("|")) + "\n")
+    if (len(gr1) + len(gr2)) > params.min_sigpeaks:
+      for gr in [gr1, gr2]:
+        if len(gr) > 0:
+          gr_name = gr['group_assignment'].iloc[0]
+          with open(f"{output.beddir}/{gr_name}.bed", "w") as f:
+            for peak in gr["peak_id"]:
+              f.write("\t".join(peak.split("|")) + "\n")
 
 
 rule twogroup_plotheatmap:

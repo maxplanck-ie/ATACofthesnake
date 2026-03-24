@@ -32,8 +32,8 @@ checkpoint lrt_bedfiles:
   output:
     beddir = directory("lrt/{comparison}/bed")
   params:
-    min_sigpeaks = lambda wildcards: config['cutoffs']['min_sigpeaks'],
-    fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
+    min_sigpeaks = config['cutoffs']['min_sigpeaks'],
+    fdr_cutoff = config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
