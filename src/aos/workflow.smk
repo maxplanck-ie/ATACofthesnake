@@ -14,17 +14,19 @@ if config['samplesheet']:
       SAMPLES.remove(sample)
 
 
-include: "rules/peaks.smk"
-include: "rules/qc.smk"
-include: "rules/twogroup_de.smk"
-include: "rules/lrt_de.smk"
-include: "rules/gp_de.smk"
+include: "rules/1_peaks.smk"
+include: "rules/1_qc.smk"
+include: "rules/2_twogroup_de.smk"
+include: "rules/2_lrt_de.smk"
+include: "rules/2_gp_de.smk"
+include: "rules/3_collate_sigresults.smk"
 # include: "rules/motifs.smk"
 # include: "rules/tobias.smk"
 
 
 def define_comparison_output():
   outputfiles = []
+  sigresults = []
   if config['comparison']:
     with open(config['comparison'], 'r') as f:
       config['comparison'] = yaml.safe_load(f)
@@ -39,6 +41,7 @@ def define_comparison_output():
                 f"twogroup/{comp}/{comp}_heatmap.done"
               ]
             )
+            sigresults.append(f"twogroup/{comp}/{comp}_heatmap.done")
           case 'lrt':
             outputfiles.extend(
               [
@@ -47,39 +50,42 @@ def define_comparison_output():
                 f"lrt/{comp}/{comp}_heatmap.done"
               ]
             )
+            sigresults.append(f"lrt/{comp}/{comp}_heatmap.done")
           case 'timecourse':
             outputfiles.extend(
               [
                 f"gp/{comp}/{comp}_gp_results.tsv",
+                f"gp/{comp}/{comp}_counts_norm.tsv",
+                f"gp/{comp}/{comp}_postprocess.done"
               ]
             )
+            sigresults.append(f"gp/{comp}/{comp}_postprocess.done")
+            if 'interaction' in config['comparison'][comp]:
+              if isinstance(config['comparison'][comp]['interaction'], list):
+                for interaction in config['comparison'][comp]['interaction']:
+                  outputfiles.extend(
+                    [
+                        f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv",
+                        f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done"
+                    ]
+                  )
+                  sigresults.append(f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done")
+              elif isinstance(config['comparison'][comp]['interaction'], str):
+                interaction = config['comparison'][comp]['interaction']
+                outputfiles.extend(
+                  [
+                      f"gp/{comp}/inttest_{comp}_{interaction}_gp_results.tsv",
+                      f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done"
+                  ]
+                )
+                sigresults.append(f"gp/{comp}/inttest_{comp}_{interaction}_postprocess.done")
+  return (outputfiles, sigresults)
 
-  return (outputfiles)
+OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
-
-
-# def define_comparison_output():
-#   outputfiles = []
-#   if config['comparison']:
-#     with open(config['comparison'], 'r') as f:
-#       config['comparison'] = yaml.safe_load(f)
-#     # define list of comparisons & list per groups to easily zip later on.
-#     comps, grs = compzip(config['comparison'])
-#     outputfiles.extend(expand('{comp}/{comp}_maplot.png', comp=config['comparison'].keys()))
-#     outputfiles.extend(expand('{comp}/diffpeaks_{gr}.bed', zip, comp=comps, gr=grs))
-#     outputfiles.extend(expand('{comp}/diffpeaks.png', comp=config['comparison'].keys()))
-
-#     # if config['motif']:
-#     #   outputfiles.append('motifs_clustered/clusteredmotifs_consensus_motifs.meme')
-#     #   outputfiles.extend(
-#     #     expand(
-#     #       '{comp}/motif_{gr}/ame.html',
-#     #       zip,comp=comps,
-#     #       gr=grs
-#     #     )
-#     #   )
-#     #   outputfiles.extend(expand('{comp}/shuffled_motif_{gr}/ame.html',zip,comp=comps,gr=grs))
-#   return (outputfiles)
+if config['motifs']:
+  # do motif analysis.
+  print("motif")
 
 rule all:
   input:
@@ -93,4 +99,5 @@ rule all:
     'figures/fragmentsizes.png',
     'figures/fripscores.png',
     # DE output
-    define_comparison_output()
+    OUTPUTFILES
+    # Prep different differential calls for motif / footprinting

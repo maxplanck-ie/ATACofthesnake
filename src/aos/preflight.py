@@ -73,7 +73,7 @@ class Preflight:
             "permutation_iterations": clickdict["permutation_iterations"],
             "fdr_cutoff": clickdict["fdr_cutoff"],
             "lfc_cutoff": clickdict["lfc_cutoff"],
-            "lrt_peaks": clickdict["lrt_peaks"],
+            "min_sigpeaks": clickdict["min_sigpeaks"],
             "gp_timesteps": clickdict["gp_timesteps"],
         }
 
@@ -248,10 +248,26 @@ class Preflight:
                     assert "order" in comp, (
                         f"Comparison {comp} of type 'timecourse' with time_type 'ordinal' should have an 'order' key specifying the order of the time points. Exiting."
                     )
+                    # We allow string in comp vs ints in samplesheet as time, as ordinal time encoding with digits is allowed.
+                    # Not clean, but allows more flexibility.
+                    _time_values = samplesheet[comp["time"]].astype(str).unique()
                     for level in comp["order"]:
-                        assert level in samplesheet[comp["time"]].unique(), (
+                        assert str(level) in _time_values, (
                             f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
                         )
+                if "interaction" in comp:
+                    assert isinstance(comp["interaction"], str) or isinstance(comp["interaction"], list), (
+                        f"Comparison {comp} has an 'interaction' set that is not a string or list but {type(comp['interaction'])}. Exiting."
+                    )
+                    if isinstance(comp["interaction"], str):
+                        assert comp["interaction"] in covariates, (
+                            f"Comparison {comp} has interaction variable {comp['interaction']} that is not present in samplesheet. Exiting."
+                        )
+                    else:
+                        for interaction in comp["interaction"]:
+                            assert interaction in covariates, (
+                                f"Comparison {comp} has interaction variable {interaction} that is not present in samplesheet. Exiting."
+                            )
         return warnings
 
     def parse_fasta(self):

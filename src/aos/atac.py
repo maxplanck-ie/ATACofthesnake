@@ -54,7 +54,7 @@ from aos.preflight import Preflight
     "-m",
     "--motifs",
     type=click.Path(exists=True),
-    help="Specify a file containing motifs. Needs to be in meme format. If not provided, no motif analyses will be ran.",
+    help="Specify a file containing motifs. Needs to be in meme format. If not provided, no motif enrichment/footprinting will be ran.",
 )
 @click.option(
     "-f",
@@ -110,7 +110,7 @@ from aos.preflight import Preflight
     default=8,
     type=int,
     show_default=True,
-    help="Pseudocount to add to the count matrix prior to differential calling.",
+    help="Pseudocount to add to the count matrix prior to differential calling. Only relevant in two-group mode.",
 )
 @click.option(
     "--peakset",
@@ -151,12 +151,12 @@ from aos.preflight import Preflight
     help="The log2FoldChange cutoff used to determine significance (combined with fdr_cutoff, only relevant for two-group mode).",
 )
 @click.option(
-    "--lrt_peaks",
+    "--min_sigpeaks",
     required=False,
-    default=1000,
+    default=100,
     type=int,
     show_default=True,
-    help="Minimum number of significant peaks in LRT mode to continue with downstream analysis.",
+    help="Minimum number of significant peaks in LRT/GP mode to continue with downstream analysis.",
 )
 @click.option(
     "--gp_timesteps",
@@ -169,17 +169,17 @@ from aos.preflight import Preflight
 def main(**kwargs) -> None:
     pf = Preflight(kwargs)
     console = Console()
-    with console.status("[bold green] Running snakemake..."):
-        subprocess.run(
-            [
-                "snakemake",
-                "-s",
-                pf.workflowfile,
-                "--configfile",
-                pf.configfile,
-                "-d",
-                pf.outputdir,
-                "-p",
-            ]
-            + pf.snakemake_arguments()
-        )
+    console.print("[bold green]Running snakemake...")
+    subprocess.run(
+        [
+            "snakemake",
+            "-s",
+            pf.workflowfile,
+            "--configfile",
+            pf.configfile,
+            "-d",
+            pf.outputdir,
+            "-p",
+        ]
+        + pf.snakemake_arguments()
+    )

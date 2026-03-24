@@ -58,11 +58,15 @@ If no samplesheet is provided, all BAM/CRAM files in the specified directory are
 Comparison
 ^^^^^^^^^^
 
+The actual comparison/analysis to be made need to be specified in a separate YAML file. 
+It is possible to specify multiple analyses in one file. Multiple comparison files in a single run are not possible.
+Three different types of analyses can be requested, simple two-group comparisons, an LRT test, and a timecourse analysis.
+Note that all the requested analyses need to have a unique comparison_name. If not, only the last entry will be performed.
+
 Twogroup comparisons
 """"""""""""""""""""
 
-The actual comparison to be made need to be specified in a separate YAML file. It is possible to specify multiple comparisons in the same file.
-Three different types of analyses can be requested, the most basic one is a simple two-group comparison:
+The twogroup comparison is he most basic comparison to be made. It can be specified as such:
 
 .. code:: yaml
 
@@ -141,9 +145,9 @@ If celltype itself has only two levels, this is equivalent to a two-group compar
 Keep in mind that the reduced design should be nested within the full design, meaning that all factors and interaction terms in the reduced design should also be present in the full design.
 
 The output here is similar to the two-group comparison output (though under the `lrt` subfolder), with the difference that there is no group label in the edgeR output.
-Instead, a rudimentary k-means clustering is ran on the significant peaks (calculating k based on the inertia metrics). This is applied to the heatmap (which again is only generated if there are sufficient significant peaks to begin with).
+Instead, a rudimentary k-means clustering is ran on the significant peaks (calculating k based on the inertia metrics).
 Note that here `--fdr_cutoff` is relevant, but `--lfc_cutoff` is not, even though fold changes are estimated per dropped factor level and available in the output table too.
-By default, if at least 1000 peaks are scored differential under the LRT test, postprocessing is ran. This number can be controlled with the `--lrt-peaks` flag.
+By default, if at least 1000 peaks (`--min_sigpeaks`) are scored differential under the LRT test, postprocessing is ran. This number can be controlled with the `--lrt-peaks` flag.
 
 
 Timecourse
@@ -164,14 +168,15 @@ This can be specified as such:
       time_type: 'continuous'
 
 Note that here you cannot specify a design, and all covariates in the samplesheet will be included in the analysis by default.
-Additionally, note that testing differential time trajectories across other covariates (i.e. time - covariate interaction term) is not yet implemented.
 Running the above comparison will run a Gaussian process regression per peak, and test whether the result is substantially different from a flat kernel by taking the marginal likelihood ratio between them.
 Since this cannot be directly tested with a 'regular' chi-squared test, a permutation-based approach is used to calculate a p-value, that is afterwards corrected with a Benjamini-Hochberg correction for multiple testing.
-The output is written to the `gp` folder, with the main results being written to a table with the likelihood ratio, p-value and FDR for each peak. Additionally, an array with predicted standardized accessibility scores (y_pred) and one with the actual standardized values (y_std) are included in the table.
-A similar table, but now only with significant peaks (by default FDR < 0.05) also exists, with the addition that here the peaks are clustered (k-means setup, similar to the one performed in the LRT comparison type). A visualization of these clusters, and their individual peak trajectories (standardized) is included in the folder too.
+The output is written to the `gp` folder, with the main results being written to a table with the likelihood ratio, p-value and FDR for each peak. Additionally, an array with predicted standardized accessibility scores (y_pred) and one with the actual standardized values (y_std) are also written out.
+A similar table, but now only with significant peaks (by default FDR < 0.01, set with `--permutation_cutoff`) also exists, with the addition that here the peaks are clustered (k-means setup, similar to the one performed in the LRT comparison type). 
+A visualization of these clusters, and their individual peak trajectories (standardized) is included in the folder too.
 
 A second timecourse mode can be used when time is not encoded as a continuous variable, but as an ordinal variable. Typical use cases for this mode are differentiation trajectories.
-Here it's important that order needs to be specified, with the 'earliest' time point being the first. Note that not all possible values of the time factor listed in the samplesheet need to be included here (samples with missing levels are simply ignored).
+Here it's important that order needs to be specified, with the 'earliest' time point being the first. 
+Note that not all possible values of the time factor listed in the samplesheet need to be included here (samples with missing levels are simply ignored).
 
 .. code:: yaml
 
@@ -187,9 +192,36 @@ Here it's important that order needs to be specified, with the 'earliest' time p
         - 'T4'
 
 A similar Gaussian process regression is ran here as in the continuous case, with the exception that the timepoints are re-encoded between 0 and 1, and the distance between subsequent levels is included in the kernel.
-Similar to the output in the continuous case, with the addition of the estimated relative distance between time points per peak in a separate table.
+The output is similar to the output in the continuous case, with the addition of the estimated relative distance between time points per peak in a separate table.
 Cut offs here are controlled by `--permutation_cutoff` (default 1e-2), which is performed on the bh-corrected permutation p-values. The number of iterations can be set with `--permutation_iterations` and defaults to 1000, per peak.
-Note that increasing this number could lead to exorbitant runtimes. In case you are running a continuous timecourse, the number of timepoints for predicted curve fits can be set with `--gp_timesteps`, and defaults to 10.
+Note that increasing this number could lead to exorbitant runtimes (and in fact runtimes with 1000 iterations are already quite long). In case you are running a continuous timecourse, the number of timepoints for predicted curve fits can be set with `--gp_timesteps`, and defaults to 10.
+
+For both `ordinal` and `continuous` timecourse analyses, time*covariate interactions can be tested by including an `interaction` cell in the comparison yaml. For example:
+
+.. code:: yaml
+
+    comparison_name:
+      type: timecourse
+      time: 'time'
+      time_type: 'continuous'
+      interaction: 'treatment'
+
+Will run the original analysis (which peaks are time-sensitive, while controlling for other covariates), but will also run a second analysis, which test for the interaction between time and treatment (which peaks respond differently over time for different covariate levels).
+The outputs are the same as the original analysis, with the addition that predictions are done per covariate level.
+In case you have more then one covariate to test, interaction can also be specified as a list. Here one `default` analysis will be ran for time, and two interaction analyses:
+
+.. code:: yaml
+
+    comparison_name:
+      type: timecourse
+      time: 'time'
+      time_type: 'continuous'
+      interaction:
+        - 'treatment'
+        - 'celltype'
+
+All the output is written into the `comparison_name` folder inside the `gp` folder.
+
 
 .. _all-command-line-options:
 

@@ -32,15 +32,15 @@ checkpoint lrt_bedfiles:
   output:
     beddir = directory("lrt/{comparison}/bed")
   params:
-    lrt_peaks = lambda wildcards: config['cutoffs']['lrt_peaks'],
-    fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
+    min_sigpeaks = config['cutoffs']['min_sigpeaks'],
+    fdr_cutoff = config['cutoffs']['fdr_cutoff']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
 
     df = pd.read_csv(input.edger, sep='\t', header=0)
     sig = df[df['FDR'] < params.fdr_cutoff]
-    if len(sig) > params.lrt_peaks:
+    if len(sig) > params.min_sigpeaks:
         # Write out the bed file
         with open(f"{output.beddir}/{wildcards.comparison}_LRT_sign.bed", "w") as f:
             for peak in sig["peak_id"]:
@@ -55,12 +55,16 @@ checkpoint lrt_bedfiles:
         k_range = range(2, 20)
         inertias = []
         for k in k_range:
-            kmeans = KMeans(n_clusters=k, random_state=1337).fit(counts_scaled)
+            kmeans = KMeans(n_clusters=k, n_init=50, random_state=1337).fit(counts_scaled)
             inertias.append(kmeans.inertia_)
         k_opt = get_elbow(inertias, k_range)
         print(f"Selected K = {k_opt}")
         with open(f"lrt/{wildcards.comparison}/k_opt.txt", 'w') as f:
             f.write(str(k_opt))
+        # Create table with K-labels.
+        kmeans = KMeans(n_clusters=k_opt, n_init=50, random_state=1337).fit(counts_scaled)
+        sig[f"k"] = kmeans.labels_
+        sig.to_csv(f"lrt/{wildcards.comparison}/{wildcards.comparison}_sig_peaks_kmeans.tsv", sep='\t', index=False, header=True)
 
 
 rule lrt_plotheatmap:
@@ -83,8 +87,6 @@ rule lrt_plotheatmap:
         relevant_samples = [f"bw/{line.strip()}.scalefac.bw" for line in f]
       relevant_samples_str = ' '.join(relevant_samples)
       sample_labels = ' '.join([i.replace("bw/", "").replace(".scalefac.bw", "") for i in relevant_samples])
-      with open(f'lrt/{wildcards.comparison}/k_opt.txt', 'r') as f:
-        k_opt = int(f.read().strip())
       shell(f'''
         computeMatrix reference-point \
           -R {bedfiles_str} \
@@ -96,7 +98,7 @@ rule lrt_plotheatmap:
           -p {threads}
       ''')
       shell(f"""
-        plotHeatmap --matrixFile {params.matrix} --colorMap 'Blues' --kmeans {k_opt} -o {params.heatmap} --samplesLabel {sample_labels}
+        plotHeatmap --matrixFile {params.matrix} --colorMap 'Blues' -o {params.heatmap} --samplesLabel {sample_labels}
       """)
     else:
       Path(output[0]).touch()
