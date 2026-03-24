@@ -14,11 +14,12 @@ if config['samplesheet']:
       SAMPLES.remove(sample)
 
 
-include: "rules/peaks.smk"
-include: "rules/qc.smk"
-include: "rules/twogroup_de.smk"
-include: "rules/lrt_de.smk"
-include: "rules/gp_de.smk"
+include: "rules/1_peaks.smk"
+include: "rules/1_qc.smk"
+include: "rules/2_twogroup_de.smk"
+include: "rules/2_lrt_de.smk"
+include: "rules/2_gp_de.smk"
+include: "rules/3_collate_sigresults.smk"
 # include: "rules/motifs.smk"
 # include: "rules/tobias.smk"
 
@@ -82,29 +83,6 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
-# def define_comparison_output():
-#   outputfiles = []
-#   if config['comparison']:
-#     with open(config['comparison'], 'r') as f:
-#       config['comparison'] = yaml.safe_load(f)
-#     # define list of comparisons & list per groups to easily zip later on.
-#     comps, grs = compzip(config['comparison'])
-#     outputfiles.extend(expand('{comp}/{comp}_maplot.png', comp=config['comparison'].keys()))
-#     outputfiles.extend(expand('{comp}/diffpeaks_{gr}.bed', zip, comp=comps, gr=grs))
-#     outputfiles.extend(expand('{comp}/diffpeaks.png', comp=config['comparison'].keys()))
-
-#     # if config['motif']:
-#     #   outputfiles.append('motifs_clustered/clusteredmotifs_consensus_motifs.meme')
-#     #   outputfiles.extend(
-#     #     expand(
-#     #       '{comp}/motif_{gr}/ame.html',
-#     #       zip,comp=comps,
-#     #       gr=grs
-#     #     )
-#     #   )
-#     #   outputfiles.extend(expand('{comp}/shuffled_motif_{gr}/ame.html',zip,comp=comps,gr=grs))
-#   return (outputfiles)
-
 rule all:
   input:
     # Default output
@@ -118,4 +96,4 @@ rule all:
     'figures/fripscores.png',
     # DE output
     OUTPUTFILES
-    # 
+    # Prep different differential calls for motif / footprinting
