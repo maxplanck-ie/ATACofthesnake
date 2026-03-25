@@ -71,15 +71,19 @@ def define_comparison_output():
   return (outputfiles, sigresults)
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
-def get_motif_fna(wildcards):
-  checkpoints.collate_sigresults.get(**wildcards)
-  motif_comps, motif_samples = glob_wildcards("motifs/{motif_comp}/{sample}.bed")    
-  return expand(
-    "motifs/{motif_comp}/{sample}.fna",
-    zip,
-    motif_comp=motif_comps,
-    sample=motif_samples
-  )
+
+def get_postprocessing(wildcards):
+  outputs = []
+  if config['motif']:
+    checkpoints.collate_sigresults.get(**wildcards)
+    motif_comps, motif_samples = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+    outputs.extend(expand(
+        "motifs/{motif_comp}/{motif_sample}_ame/ame.tsv",
+        zip,
+        motif_comp=motif_comps,
+        motif_sample=motif_samples
+    ))
+  return outputs
 
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
@@ -104,4 +108,4 @@ rule all:
     # DE output
     OUTPUTFILES,
     # Prep different differential calls for motif / footprinting
-    get_motif_fna
+    get_postprocessing,

@@ -1,13 +1,13 @@
-# rule clustermotifs:
-#   input:
-#     motiffile = config['motif']
-#   output:
-#     'motifs/clusteredmotifs_consensus_motifs.meme'
-#   conda: "envs/tobias.yml"
-#   threads: 2
-#   shell:'''
-#   TOBIAS ClusterMotifs -m {input.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs' --dist_method seqcor
-#   '''
+rule clustermotifs:
+  output:
+    'motifs/clusteredmotifs_consensus_motifs.meme'
+  params:
+    motiffile = config['motif']
+  conda: "envs/tobias.yml"
+  threads: 2
+  shell:'''
+  TOBIAS ClusterMotifs -m {params.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs' --dist_method seqcor
+  '''
 
 rule bed2fna:
   input:
@@ -22,33 +22,26 @@ rule bed2fna:
   bedtools getfasta -fi {params.fna} -bed {input} > {output}
   '''
 
-# rule ame:
-#   input:
-#     motifs = 'motifs_clustered/clusteredmotifs_consensus_motifs.meme',
-#     fna = '{comparison}/diffpeaks_{gr}.fna',
-#     fnabg = lambda wildcards: bg_from_gr(
-#       config['comparison'],
-#       wildcards.comparison,
-#       wildcards.gr
-#     )
-#   output:
-#     html = '{comparison}/motif_{gr}/ame.html'
-#   params:
-#     of = lambda wildcards: wildcards.comparison + '/motif_' + wildcards.gr
-#   conda: "envs/meme.yml"
-#   shell:'''
-#   ame --oc {params.of} --control {input.fnabg} {input.fna} {input.motifs}
-#   '''
-
-# rule ame_shuffled:
-#   input:
-#     motifs = 'motifs_clustered/clusteredmotifs_consensus_motifs.meme',
-#     fna = '{comparison}/diffpeaks_{gr}.fna'
-#   output:
-#     html = '{comparison}/shuffled_motif_{gr}/ame.html'
-#   params:
-#     of = lambda wildcards: wildcards.comparison + '/shuffled_motif_' + wildcards.gr
-#   conda: "envs/meme.yml"
-#   shell:'''
-#   ame --oc {params.of} --control --shuffle-- {input.fna} {input.motifs}
-#   '''
+rule ame:
+  input:
+    motifs = 'motifs/clusteredmotifs_consensus_motifs.meme',
+    fna = 'motifs/{motif_comp}/{motif_sample}.fna',
+  output:
+    tsv = 'motifs/{motif_comp}/{motif_sample}_ame/ame.tsv',
+  conda: "envs/meme.yml"
+  run:
+    from pathlib import Path
+    fnapath = Path(input.fna)
+    bgfiles = [str(i) for i in fnapath.parent.glob("*.fna") if i.name != fnapath.name]
+    if len(bgfiles) != 0:
+      bgpath = fnapath.with_name(f"{fnapath.stem}_bg{fnapath.suffix}")
+      for bg in bgfiles:
+        with open(bg, 'r') as infile, open(bgpath, 'a') as outfile:
+          for line in infile:
+            outfile.write(line)
+      bg_arg = f"--control {bgpath}"
+    else:
+      bg_arg = "--control --shuffle--"
+    shell(f'''
+      ame --oc motifs/{wildcards.motif_comp}/{wildcards.motif_sample}_ame {bg_arg} {input.fna} {input.motifs}
+    ''')
