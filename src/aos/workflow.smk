@@ -1,6 +1,5 @@
 import yaml
 import pandas as pd
-from pathlib import Path
 
 BAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
 CRAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.cram")
@@ -72,22 +71,15 @@ def define_comparison_output():
   return (outputfiles, sigresults)
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
-
-# def group_files(wildcards):
-#   sigdir = checkpoints.collate_sigresults.get(**wildcards).output[0]
-#   Path()
-
-#     for group in os.listdir(checkpoint_output):
-#         group_path = os.path.join(checkpoint_output, group)
-#         if os.path.isdir(group_path):
-#             for f in os.listdir(group_path):
-#                 result[group].append(os.path.join(group_path, f))
-
-#     return dict(result)
-
-# if config['motifs']:
-#   # do motif analysis.
-#   print("motif")
+def get_motif_fna(wildcards):
+  checkpoints.collate_sigresults.get(**wildcards)
+  motif_comps, motif_samples = glob_wildcards("motifs/{motif_comp}/{sample}.bed")    
+  return expand(
+    "motifs/{motif_comp}/{sample}.fna",
+    zip,
+    motif_comp=motif_comps,
+    sample=motif_samples
+  )
 
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
@@ -95,8 +87,9 @@ include: "rules/2_twogroup_de.smk"
 include: "rules/2_lrt_de.smk"
 include: "rules/2_gp_de.smk"
 include: "rules/3_collate_sigresults.smk"
-# include: "rules/motifs.smk"
-# include: "rules/tobias.smk"
+include: "rules/3_motifs.smk"
+# include: "rules/3_tobias.smk"
+
 rule all:
   input:
     # Default output
@@ -109,5 +102,6 @@ rule all:
     'figures/fragmentsizes.png',
     'figures/fripscores.png',
     # DE output
-    OUTPUTFILES
+    OUTPUTFILES,
     # Prep different differential calls for motif / footprinting
+    get_motif_fna

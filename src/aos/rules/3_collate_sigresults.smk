@@ -12,11 +12,11 @@ checkpoint collate_sigresults:
     import pandas as pd
     from pathlib import Path
     for sigresult in input.sigresults:
-      match Path(sigresult).parents[0]:
+      match Path(sigresult).parts[0]:
         case "twogroup":
           # f"twogroup/{comp}/{comp}_heatmap.done" -> f"twogroup/{comp}/{comp}_diffacc_edgeR.tsv",
           _tsv = sigresult.replace("_heatmap.done", "_diffacc_edgeR.tsv")
-          _comp = Path(sigresult).parents[1].name
+          _comp = Path(sigresult).parts[1]
           df = pd.read_table(_tsv, sep='\t')
           sig = df[df['FDR'] < params.fdr_cutoff]
           if len(sig) > params.min_sigpeaks:
@@ -27,7 +27,7 @@ checkpoint collate_sigresults:
             down = sig[sig['logFC'] < -params.lfc_cutoff]
             for _df in [up, down]:
               if len(_df) > 0:
-                assert _df['group_assignment'].unique() == 1
+                assert len(_df['group_assignment'].unique()) == 1, f"Multiple group assignments for up or down peaks in {_tsv}"
                 groupname = _df['group_assignment'].unique()[0]
                 with open(output_folder / f"{groupname}.bed", "w") as f:
                   for peak in _df['peak_id']:
@@ -37,7 +37,7 @@ checkpoint collate_sigresults:
           _tsv = sigresult.replace("_heatmap.done", "_sig_peaks_kmeans.tsv")
           if Path(_tsv).exists():
             df = pd.read_table(_tsv, sep='\t')
-            _comp = Path(sigresult).parents[1].name
+            _comp = Path(sigresult).parts[1]
             output_folder = Path(f"motifs/{_comp}")
             output_folder.mkdir(parents=True, exist_ok=True)
             for k in df['k'].unique():
@@ -50,8 +50,8 @@ checkpoint collate_sigresults:
           _tsv = sigresult.replace("_postprocess.done", "_k_table.tsv")
           if Path(_tsv).exists():
             df = pd.read_table(_tsv, sep='\t', index_col=0)
-            assert (df["FDR"] < params.perm_cutoff).all()
-            _comp = Path(sigresult).parents[1].name
+            assert (df["FDR"] < params.perm_cutoff).all(), f"Permutation cutoff not met for all peaks in {_tsv}"
+            _comp = Path(sigresult).parts[1]
             if "inttest" in sigresult:
               _comp += "_" + Path(sigresult).name.split("_")[2]
             output_folder = Path(f"motifs/{_comp}")
