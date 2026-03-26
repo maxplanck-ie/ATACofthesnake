@@ -41,6 +41,8 @@ def parse_ame(amefiles, fdr_cutoff):
         a['score'] = np.log2( (a['%TP'] + 1e-6) / (a['%FP'] + 1e-6) )
         a = a[a['adj_p-value'] < fdr_cutoff][['motif_ID', 'motif_alt_ID', 'adj_p-value', '%TP', '%FP', 'group', 'score']]
         dfs.append(a)
+    if not dfs:
+        sys.exit(0)
     df = pd.concat(dfs)
     # Fill 'missing ones' with 0
     df = df.pivot(index=["motif_ID", "motif_alt_ID"], columns="group", values="score").reset_index().fillna(0)

@@ -73,26 +73,27 @@ def define_comparison_output():
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
 def get_ames(wildcards):
-  outputs = []
   if config['motif']:
     checkpoints.collate_sigresults.get(**wildcards)
     motif_comps, motif_samples = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
-    outputs.extend(expand(
+    return expand(
         "motifs/{motif_comp}/{motif_sample}_ame/ame.tsv",
         zip,
         motif_comp=motif_comps,
         motif_sample=motif_samples
-    ))
-  return outputs
+    )
+  return []
 
 def get_ame_plots(wildcards):
   # For rule all — one output per unique motif_comp
-  checkpoints.collate_sigresults.get(**wildcards)
-  motif_comps, _ = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
-  return expand(
-    "motifs/{motif_comp}/motif_enrichment.parsed",
-    motif_comp=set(motif_comps)
-  )
+  if config['motif']:
+    checkpoints.collate_sigresults.get(**wildcards)
+    motif_comps, _ = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+    return expand(
+      "motifs/{motif_comp}/motif_enrichment.parsed",
+      motif_comp=set(motif_comps)
+    )
+  return []
 
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
