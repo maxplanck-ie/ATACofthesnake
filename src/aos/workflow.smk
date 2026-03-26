@@ -13,17 +13,6 @@ if config['samplesheet']:
     if sample not in samplesheet['sample'].values:
       SAMPLES.remove(sample)
 
-
-include: "rules/1_peaks.smk"
-include: "rules/1_qc.smk"
-include: "rules/2_twogroup_de.smk"
-include: "rules/2_lrt_de.smk"
-include: "rules/2_gp_de.smk"
-include: "rules/3_collate_sigresults.smk"
-# include: "rules/motifs.smk"
-# include: "rules/tobias.smk"
-
-
 def define_comparison_output():
   outputfiles = []
   sigresults = []
@@ -83,9 +72,37 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
-if config['motifs']:
-  # do motif analysis.
-  print("motif")
+def get_ames(wildcards):
+  if config['motif']:
+    checkpoints.collate_sigresults.get(**wildcards)
+    motif_comps, motif_samples = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+    return expand(
+        "motifs/{motif_comp}/{motif_sample}_ame/ame.tsv",
+        zip,
+        motif_comp=motif_comps,
+        motif_sample=motif_samples
+    )
+  return []
+
+def get_ame_plots(wildcards):
+  # For rule all — one output per unique motif_comp
+  if config['motif']:
+    checkpoints.collate_sigresults.get(**wildcards)
+    motif_comps, _ = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+    return expand(
+      "motifs/{motif_comp}/motif_enrichment.parsed",
+      motif_comp=set(motif_comps)
+    )
+  return []
+
+include: "rules/1_peaks.smk"
+include: "rules/1_qc.smk"
+include: "rules/2_twogroup_de.smk"
+include: "rules/2_lrt_de.smk"
+include: "rules/2_gp_de.smk"
+include: "rules/3_collate_sigresults.smk"
+include: "rules/3_motifs.smk"
+# include: "rules/3_tobias.smk"
 
 rule all:
   input:
@@ -99,5 +116,8 @@ rule all:
     'figures/fragmentsizes.png',
     'figures/fripscores.png',
     # DE output
-    OUTPUTFILES
-    # Prep different differential calls for motif / footprinting
+    OUTPUTFILES,
+    # motif enrichment - AME
+    get_ames,
+    get_ame_plots,
+    # footprinting - TOBIAS

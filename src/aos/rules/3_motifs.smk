@@ -1,26 +1,19 @@
-def bg_from_gr(compdic, comp, gr):
-  for bg in compdic[comp]:
-    if bg != gr:
-      return (
-        '{}/diffpeaks_{}.fna'.format(comp, bg)
-      )
- 
 rule clustermotifs:
   output:
-    'motifs_clustered/clusteredmotifs_consensus_motifs.meme'
+    'motifs/clusteredmotifs_consensus_motifs.meme'
   params:
     motiffile = config['motif']
   conda: "envs/tobias.yml"
-  threads: 10
+  threads: 2
   shell:'''
-  TOBIAS ClusterMotifs -m {params.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs_clustered' --dist_method seqcor
+  TOBIAS ClusterMotifs -m {params.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs' --dist_method seqcor
   '''
 
 rule bed2fna:
   input:
-    '{comparison}/diffpeaks_{gr}.bed'
+    "motifs/{motif_comp}/{motif_sample}.bed"
   output:
-    '{comparison}/diffpeaks_{gr}.fna'
+    "motifs/{motif_comp}/{motif_sample}.fna"
   threads: 1
   conda: "envs/seqtools.yml"
   params:
@@ -31,31 +24,40 @@ rule bed2fna:
 
 rule ame:
   input:
-    motifs = 'motifs_clustered/clusteredmotifs_consensus_motifs.meme',
-    fna = '{comparison}/diffpeaks_{gr}.fna',
-    fnabg = lambda wildcards: bg_from_gr(
-      config['comparison'],
-      wildcards.comparison,
-      wildcards.gr
-    )
+    motifs = 'motifs/clusteredmotifs_consensus_motifs.meme',
+    fna = 'motifs/{motif_comp}/{motif_sample}.fna',
   output:
-    html = '{comparison}/motif_{gr}/ame.html'
-  params:
-    of = lambda wildcards: wildcards.comparison + '/motif_' + wildcards.gr
+    tsv = 'motifs/{motif_comp}/{motif_sample}_ame/ame.tsv',
   conda: "envs/meme.yml"
-  shell:'''
-  ame --oc {params.of} --control {input.fnabg} {input.fna} {input.motifs}
-  '''
+  run:
+    from pathlib import Path
+    fnapath = Path(input.fna)
+    bgfiles = [str(i) for i in fnapath.parent.glob("*.fna") if i.name != fnapath.name and not i.name.endswith("_bg.fna")]
+    if len(bgfiles) != 0:
+      bgpath = fnapath.with_name(f"{fnapath.stem}_bg{fnapath.suffix}")
+      with open(bgpath, 'w') as outfile:
+        for bg in bgfiles:
+          with open(bg, 'r') as infile:
+            for line in infile:
+              outfile.write(line)
+      bg_arg = f"--control {bgpath}"
+    else:
+      bg_arg = "--control --shuffle--"
+    shell(f'''
+      ame --oc motifs/{wildcards.motif_comp}/{wildcards.motif_sample}_ame {bg_arg} {input.fna} {input.motifs}
+    ''')
 
-rule ame_shuffled:
+rule plotame:
   input:
-    motifs = 'motifs_clustered/clusteredmotifs_consensus_motifs.meme',
-    fna = '{comparison}/diffpeaks_{gr}.fna'
+    ames = get_ames,
+    motiffile = 'motifs/clusteredmotifs_consensus_motifs.meme'
   output:
-    html = '{comparison}/shuffled_motif_{gr}/ame.html'
+    out = touch('motifs/{motif_comp}/motif_enrichment.parsed')
   params:
-    of = lambda wildcards: wildcards.comparison + '/shuffled_motif_' + wildcards.gr
-  conda: "envs/meme.yml"
-  shell:'''
-  ame --oc {params.of} --control --shuffle-- {input.fna} {input.motifs}
-  '''
+    motifcomp = lambda wildcards: wildcards.motif_comp,
+    fdr_cutoff = config['cutoffs']['fdr_cutoff']
+  conda:
+    'envs/gimmemotifs.yml'
+  threads: 2
+  script:
+    'scripts/plot_ame.py'

@@ -47,7 +47,7 @@ checkpoint twogroup_bedfiles:
   params:
       lfc_cutoff = config['cutoffs']['lfc_cutoff'],
       fdr_cutoff = config['cutoffs']['fdr_cutoff'],
-      min_sigpeaks = config['min_sigpeaks']
+      min_sigpeaks = config['cutoffs']['min_sigpeaks']
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
