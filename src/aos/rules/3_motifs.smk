@@ -45,3 +45,18 @@ rule ame:
     shell(f'''
       ame --oc motifs/{wildcards.motif_comp}/{wildcards.motif_sample}_ame {bg_arg} {input.fna} {input.motifs}
     ''')
+
+rule plotame:
+  input:
+    ames = get_ames,
+    motiffile = 'motifs/clusteredmotifs_consensus_motifs.meme'
+  output:
+    out = touch('motifs/{motif_comp}/motif_enrichment.parsed')
+  params:
+    motifcomp = lambda wildcards: wildcards.motif_comp,
+    fdr_cutoff = config['cutoffs']['fdr_cutoff']
+  conda:
+    'envs/gimmemotifs.yml'
+  threads: 2
+  script:
+    'scripts/plot_ame.py'

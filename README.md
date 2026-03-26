@@ -1,6 +1,7 @@
 # ATACofthesnake
 
-Downstream processing of ATAC data, including QC's and differential accessibility. Starting point are deduplicated bam or cram files.
+Downstream processing of ATAC data, including QC, differential accessibility -, LRT - and timecourse analyses. Optional downstream motif analyses included.
+Starting point are deduplicated BAM and/or CRAM files.
 
 ## Important
 
@@ -24,10 +25,10 @@ From github:
 
  > ATAC -h
 
-Needed input files/directories:  
- - directory with deduplicated bam and/or cram files.
- - genome fasta file
- - genome annotation file (GTF format)
- - read attracting regions (BED format), this is necessary and needs to contain at least the full mitochondrial chromosome.
+Bare minimum needed input:
+ - directory with deduplicated bam and/or cram files.  
+ - genome fasta file  
+ - genome annotation file (GTF format)  
+ - read attracting regions (BED format), this is necessary and needs to contain at least the full mitochondrial chromosome.  
 
 For more details and how-to on requesting specific differential analysis and comparisons, please refer to the [documentation](https://atacofthesnake.readthedocs.io/en/latest/).

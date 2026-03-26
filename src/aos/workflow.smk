@@ -72,7 +72,7 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
-def get_postprocessing(wildcards):
+def get_ames(wildcards):
   outputs = []
   if config['motif']:
     checkpoints.collate_sigresults.get(**wildcards)
@@ -84,6 +84,15 @@ def get_postprocessing(wildcards):
         motif_sample=motif_samples
     ))
   return outputs
+
+def get_ame_plots(wildcards):
+  # For rule all — one output per unique motif_comp
+  checkpoints.collate_sigresults.get(**wildcards)
+  motif_comps, _ = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+  return expand(
+    "motifs/{motif_comp}/motif_enrichment.parsed",
+    motif_comp=set(motif_comps)
+  )
 
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
@@ -107,5 +116,7 @@ rule all:
     'figures/fripscores.png',
     # DE output
     OUTPUTFILES,
-    # Prep different differential calls for motif / footprinting
-    get_postprocessing,
+    # motif enrichment - AME
+    get_ames,
+    get_ame_plots,
+    # footprinting - TOBIAS
