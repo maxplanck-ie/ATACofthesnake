@@ -225,10 +225,9 @@ All the output is written into the `comparison_name` folder inside the `gp` fold
 Post processing
 ---------------
 
-Regardles of what differential analysis is performed, post processing (motif enrichment and footprinting) can be performed on significant peak groups (either the up- and down peaks in a two-group comparison, or the clusters in an LRT or timecourse analysis), given that there are enough peaks to work with (`--min_sigpeaks`).
-Enabling this mode is done by specifying a `--motif` file (in MEME format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
+Regardless of what differential analysis is performed, post processing (motif enrichment and footprinting) can be performed on significant peak groups (either the up- and down peaks in a two-group comparison, or the clusters in an LRT or timecourse analysis), given that there are enough peaks to work with (`--min_sigpeaks`).
+Enabling this mode is done by specifying a `--motifs` file (in MEME format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
 Motif enrichment is performed with `ame (MEME suite) <https://meme-suite.org/meme/doc/ame.html>`_. In all cases, enrichment of a group is performed with all the other group(s) as background. In the odd case that there is only one group (for example, only peaks opening are identified in two-group way), the background will be the same group shuffled.
-
 
 
 

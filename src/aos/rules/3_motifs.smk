@@ -32,13 +32,14 @@ rule ame:
   run:
     from pathlib import Path
     fnapath = Path(input.fna)
-    bgfiles = [str(i) for i in fnapath.parent.glob("*.fna") if i.name != fnapath.name]
+    bgfiles = [str(i) for i in fnapath.parent.glob("*.fna") if i.name != fnapath.name and not i.name.endswith("_bg.fna")]
     if len(bgfiles) != 0:
       bgpath = fnapath.with_name(f"{fnapath.stem}_bg{fnapath.suffix}")
-      for bg in bgfiles:
-        with open(bg, 'r') as infile, open(bgpath, 'a') as outfile:
-          for line in infile:
-            outfile.write(line)
+      with open(bgpath, 'w') as outfile:
+        for bg in bgfiles:
+          with open(bg, 'r') as infile:
+            for line in infile:
+              outfile.write(line)
       bg_arg = f"--control {bgpath}"
     else:
       bg_arg = "--control --shuffle--"
