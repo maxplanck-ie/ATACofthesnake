@@ -7,12 +7,14 @@ CRAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.cram")
 SAMPLES = BAMSAMPLES + CRAMSAMPLES
 
 # if a samplesheet is provided, only include samples that are in the samplesheet.
+samplesheet = None
 if config['samplesheet']:
   samplesheet = pd.read_csv(config['samplesheet'], sep='\t')
   for sample in SAMPLES:
     if sample not in samplesheet['sample'].values:
       SAMPLES.remove(sample)
 
+# Define output for comparisons.
 def define_comparison_output():
   outputfiles = []
   sigresults = []
@@ -72,6 +74,7 @@ def define_comparison_output():
 
 OUTPUTFILES, SIGRESULTS = define_comparison_output()
 
+# Define outputs for motif enrichment.
 def get_ames(wildcards):
   if config['motif']:
     checkpoints.collate_sigresults.get(**wildcards)
@@ -95,6 +98,20 @@ def get_ame_plots(wildcards):
     )
   return []
 
+# Define outputs for footprinting
+FPDIC = {}
+if samplesheet is not None:
+  group_cols = samplesheet.columns.drop("sample").tolist()
+  by = group_cols[0] if len(group_cols) == 1 else group_cols
+  groups = samplesheet.groupby(by).groups
+  for group in groups.keys():
+    # get a groupname by joining the group values with underscores
+    if isinstance(group, str):
+      groupname = group
+    else:
+      groupname = "_".join([str(g) for g in group])
+    FPDIC[groupname] = samplesheet.loc[groups[group], "sample"].tolist()
+ 
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
 include: "rules/2_twogroup_de.smk"
@@ -102,7 +119,7 @@ include: "rules/2_lrt_de.smk"
 include: "rules/2_gp_de.smk"
 include: "rules/3_collate_sigresults.smk"
 include: "rules/3_motifs.smk"
-# include: "rules/3_tobias.smk"
+include: "rules/3_tobias.smk"
 
 rule all:
   input:
@@ -121,3 +138,5 @@ rule all:
     get_ames,
     get_ame_plots,
     # footprinting - TOBIAS
+    expand('footprints/scores/{fp_group}_scores.bw', fp_group=FPDIC.keys())
+
