@@ -90,3 +90,49 @@ rule tobias_scorebigwig:
     --output {output.bw} \
     --cores {threads}
   '''
+
+rule fimo_footprints:
+  input:
+    ame_done = '.snakemake_flags/all_plotame_done',
+    motifs = 'motifs/{fpmotif}/{fpmotif}_consensus_motifs.meme',
+    fna = 'motifs/{fpmotif}/{group_fna}.fna'
+  output:
+    'footprints/fimo/{fpmotif}/{group_fna}/fimo.tsv'
+  params:
+    of = lambda wildcards: f"footprints/fimo/{wildcards.fpmotif}/{wildcards.group_fna}"
+  conda:
+    'envs/meme.yml'
+  shell:'''
+  fimo --oc {params.of} {input.motifs} {input.fna}
+  '''
+
+checkpoint parse_fimo:
+  input:
+    tsvs = get_motifs_for_fp
+  output:
+    touch('.snakemake_flags/parse_fimo_done')
+  script:
+    'scripts/parse_fimo.py'
+
+rule plot_aggregate:
+    input:
+        bws = expand('footprints/ataccorrect/{fp_group}_corrected.bw', fp_group=FPDIC.keys()),
+    output:
+        pdf = "footprints/plotaggregate/{comp}/{motif}.pdf"
+    params:
+        bedfiles = lambda wc: ' '.join(
+            str(p) for p in 
+            Path(f"footprints/plotaggregate/{wc.comp}/bedfiles").glob(f"{wc.motif}-*.bed")
+        ),
+        motname = lambda wc: pd.read_table(
+            f'footprints/plotaggregate/{wc.comp}/{wc.comp}_motif_names.tsv', index_col=0
+        ).loc[wc.motif, 'motif_alt_id']
+    conda:
+        'envs/tobias.yml'
+    shell: """
+        TOBIAS PlotAggregate --TFBS {params.bedfiles} \
+          --signals {input.bws} \
+          --output {output.pdf} \
+          --share_y both --plot_boundaries --signal-on-x \
+          --title "{params.motname}"
+    """

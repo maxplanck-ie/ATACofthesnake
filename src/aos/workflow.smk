@@ -111,7 +111,48 @@ if samplesheet is not None:
     else:
       groupname = "_".join([str(g) for g in group])
     FPDIC[groupname] = samplesheet.loc[groups[group], "sample"].tolist()
- 
+
+def get_all_plotame(wildcards):
+  checkpoints.collate_sigresults.get()
+  motif_comps, _ = glob_wildcards("motifs/{motif_comp}/{sample}.bed")
+  return expand(
+    'motifs/{motif_comp}/motif_enrichment.parsed', motif_comp=set(motif_comps)
+  )
+
+def get_motifs_for_fp(wildcards):
+  if config['motif']:
+    checkpoints.all_plotame_done.get()
+    enr_found, = glob_wildcards('motifs/{fpmotif}/motif_enrichment.png')
+    fpmotifs, group_fnas = glob_wildcards("motifs/{fpmotif}/{group_fna}.fna")
+    valid_pairs = [
+        (motif, fna)
+        for motif, fna in zip(fpmotifs, group_fnas)
+        if motif in enr_found and not fna.endswith('_bg')
+    ]
+    if not valid_pairs:
+        return []
+    valid_motifs, valid_fnas = zip(*valid_pairs)
+    
+    return expand(
+      'footprints/fimo/{fpmotif}/{group_fna}/fimo.tsv',
+      zip,
+      fpmotif=valid_motifs,
+      group_fna=valid_fnas
+    )
+  return []
+
+def get_motif_for_aggplot(wildcards):
+  if config['motif']:
+    checkpoints.parse_fimo.get(**wildcards)
+    comps, motifs, _ = glob_wildcards("footprints/plotaggregate/{comp}/bedfiles/{motif}-{group}.bed")
+    return expand(
+        "footprints/plotaggregate/{comp}/{motif}.pdf",
+        zip,
+        comp=comps,
+        motif=motifs
+    )
+  return []
+
 include: "rules/1_peaks.smk"
 include: "rules/1_qc.smk"
 include: "rules/2_twogroup_de.smk"
@@ -137,6 +178,10 @@ rule all:
     # motif enrichment - AME
     get_ames,
     get_ame_plots,
+    '.snakemake_flags/all_plotame_done',
     # footprinting - TOBIAS
-    expand('footprints/scores/{fp_group}_scores.bw', fp_group=FPDIC.keys())
+    expand('footprints/scores/{fp_group}_scores.bw', fp_group=FPDIC.keys()),
+    get_motifs_for_fp,
+    '.snakemake_flags/parse_fimo_done',
+    get_motif_for_aggplot,
 

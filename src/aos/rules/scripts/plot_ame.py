@@ -10,14 +10,15 @@ comp = snakemake.params.motifcomp
 motdir = Path(f'motifs/{comp}/')
 # I/O
 motiffile = snakemake.input.motiffile
-gimmemotiffile = motdir / 'clusteredmotifs_consensus_motifs.pwm'
+gimmemotiffile_pfm = motdir / f'{comp}_consensus_motifs.pfm'
+gimmemotiffile_meme = motdir / f'{comp}_consensus_motifs.meme'
 opng = motdir / 'motif_enrichment.png'
 
 amefiles = [p / 'ame.tsv' for p in motdir.iterdir() if p.is_dir() and "_ame" in p.name]
 fdr_cutoff = snakemake.params.fdr_cutoff
 
 with open(motiffile,'r') as f:
-    with open(gimmemotiffile, 'w') as o:
+    with open(gimmemotiffile_pfm, 'w') as o:
         ret = False
         for line in f:
             if line.startswith('MOTIF'):
@@ -56,9 +57,10 @@ def parse_ame(amefiles, fdr_cutoff):
 
 ame_results, plotmotifs = parse_ame(amefiles, fdr_cutoff)
 if ame_results.empty:
+    gimmemotiffile_pfm.unlink()
     sys.exit(0)
 
-pfms = dict([(m.id, m) for m in read_motifs(str(gimmemotiffile)) if m.id in plotmotifs])
+pfms = dict([(m.id, m) for m in read_motifs(str(gimmemotiffile_pfm)) if m.id in plotmotifs])
 motifs = [m for m in pfms.keys()]
 assert len(pfms) == len(plotmotifs), "not all motifs in enrichment results found back in original meme file."
 
@@ -88,3 +90,27 @@ ax_hm.set_yticklabels([name_map[i] for i in plotmotifs])
 cbar = fig.colorbar(cax, ax=ax_hm)
 cbar.set_label('log2(%TP/%FP)')
 fig.savefig(opng, dpi=300)
+
+# Write out motifs in meme format for downstream use.
+MEME_HEADER = """MEME version 4
+
+ALPHABET= ACGT
+
+strands: + -
+
+Background letter frequencies
+A 0.25 C 0.25 G 0.25 T 0.25
+
+"""
+with open(gimmemotiffile_meme, "w") as f:
+    f.write(MEME_HEADER)
+    for motif in pfms.values():
+        meme_str = motif.to_meme()
+        # This BL was added by gimmemotifs, no idea why..
+        lines = [line for line in meme_str.splitlines() if not line.startswith("BL ")]
+        # Include alternative ID
+        lines = [
+            f"MOTIF {motif.id} {name_map[motif.id]}" if line.startswith("MOTIF ") else line
+            for line in lines
+        ]
+        f.write("\n".join(lines) + "\n\n")
