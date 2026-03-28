@@ -227,9 +227,14 @@ Post processing
 
 Regardless of what differential analysis is performed, post processing (motif enrichment and footprinting) can be performed on significant peak groups (either the up- and down peaks in a two-group comparison, or the clusters in an LRT or timecourse analysis), given that there are enough peaks to work with (`--min_sigpeaks`).
 Enabling this mode is done by specifying a `--motifs` file (in MEME format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
+Note that you cannot specify a motifs file without also providing a samplesheet.
 Motif enrichment is performed with `ame (MEME suite) <https://meme-suite.org/meme/doc/ame.html>`_. In all cases, enrichment of a group is performed with all the other group(s) as background. In the odd case that there is only one group (for example, only peaks opening are identified in two-group way), the background will be the same group shuffled.
 
+Per default, footprinting is also performed with `TOBIAS <https://github.com/loosolab/tobias>`_. If a samplesheet is provided, then BAM files are subsampled to the minimum depth within a group (here defined as the unique combination of covariate levels) to avoid biases in footprinting due to differences in sequencing depth, and merged together.
+These merged bam files are then corrected (ATACorrect module) and scored (ScoreBigwig module).
+If additionally, motifs are provided and at least one comparison yielded significant peaks and subsequent enriched motifs, footprinting is performed for the enriched motifs (by searching for motif occurences with `fimo (MEME suite) <https://meme-suite.org/meme/doc/fimo.html>`_), and plotting the aggregated corrected signal over them (plotAggregate module).
 
+Motif enrichment results are available under the `motifs` folder in the output directory, the footprinting results are under the `footprints` folder.
 
 .. _all-command-line-options:
 
