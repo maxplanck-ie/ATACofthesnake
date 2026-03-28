@@ -30,10 +30,14 @@ rule subsample_bams:
       sample = Path(bam).stem
       obam = f"footprints/bams/{sample}.bam"
       fraction = target / countdic[sample]
-      fracstr = f"{fraction:.6f}".split(".")[1]
-      fracstr = f"1337.{fracstr}"
-      shell(f"samtools view -@ {threads} -b -s {fracstr} {bam} -o {obam}")
-      shell(f"samtools index -@ {threads} {obam}")
+      if fraction == 1:
+        shell(f"cp {bam} {obam}")
+        shell(f"cp {bam}.bai {obam}.bai")
+      else:
+        fracstr = f"{fraction:.6f}".split(".")[1]
+        fracstr = f"1337.{fracstr}"
+        shell(f"samtools view -@ {threads} -b -s {fracstr} {bam} -o {obam}")
+        shell(f"samtools index -@ {threads} {obam}")
       temp_bams.append(obam)
         
     # Merge all subsamples bams together.

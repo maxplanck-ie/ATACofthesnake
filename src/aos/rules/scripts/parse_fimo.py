@@ -28,7 +28,7 @@ def parse_fimo(tsv):
                 start = int(seqnam.split(':')[1].split('-')[0])
                 motstart = int(row['start'])
                 motend = int(row['stop'])
-                o.write(f"{chrom}\t{start+motstart}\t{start+motend}\n")
+                o.write(f"{chrom}\t{start+motstart-1}\t{start+motend}\n")
                 motnames[motid] = motidname
     return motnames
 
@@ -38,7 +38,9 @@ for comp in comp_group_dic:
     of = Path(f'footprints/plotaggregate/{comp}/bedfiles')
     of.mkdir(exist_ok=True, parents=True)
     # delete all files present already (checkpoint)
-    (f.unlink() for f in of.iterdir() if f.is_file())
+    for f in of.iterdir():
+        if f.is_file():
+            f.unlink()
     for tsv in comp_group_dic[comp]:
         motif_names.update(parse_fimo(tsv))
     # Save motif names for later use in plotting

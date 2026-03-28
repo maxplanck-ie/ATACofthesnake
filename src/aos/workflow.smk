@@ -10,9 +10,8 @@ SAMPLES = BAMSAMPLES + CRAMSAMPLES
 samplesheet = None
 if config['samplesheet']:
   samplesheet = pd.read_csv(config['samplesheet'], sep='\t')
-  for sample in SAMPLES:
-    if sample not in samplesheet['sample'].values:
-      SAMPLES.remove(sample)
+  allowed_samples = set(samplesheet['sample'].values)
+  SAMPLES = [s for s in SAMPLES if s in allowed_samples]
 
 # Define output for comparisons.
 def define_comparison_output():
@@ -178,10 +177,7 @@ rule all:
     # motif enrichment - AME
     get_ames,
     get_ame_plots,
-    '.snakemake_flags/all_plotame_done',
     # footprinting - TOBIAS
     expand('footprints/scores/{fp_group}_scores.bw', fp_group=FPDIC.keys()),
     get_motifs_for_fp,
-    '.snakemake_flags/parse_fimo_done',
     get_motif_for_aggplot,
-
