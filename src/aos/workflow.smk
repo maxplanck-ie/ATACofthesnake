@@ -1,5 +1,6 @@
 import yaml
 import pandas as pd
+from pathlib import Path
 
 BAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.bam")
 CRAMSAMPLES, = glob_wildcards(config['bamdir'] + "/{sample}.cram")
