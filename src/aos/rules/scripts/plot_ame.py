@@ -66,7 +66,9 @@ assert len(pfms) == len(plotmotifs), "not all motifs in enrichment results found
 
 group_order = ame_results['group'].cat.categories.tolist()
 
-fig, axs = plt.subplots(figsize=(8,10), constrained_layout=True)
+# Per 24 motifs, 10 in y
+figy = ((len(plotmotifs) + 23) // 24) * 10
+fig, axs = plt.subplots(figsize=(8,figy), constrained_layout=True)
 axs.set_axis_off()
 gs = fig.add_gridspec(len(motifs),4)
 
