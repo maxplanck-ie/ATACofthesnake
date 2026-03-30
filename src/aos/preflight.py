@@ -47,6 +47,9 @@ class Preflight:
         self.comparison = self.optional_paths(clickdict["comparison"])
         self.peakset = self.optional_paths(clickdict["peakset"])
 
+        if self.motif:
+            assert self.samplesheet is not None, "Providing motifs requires a samplesheet to be provided too."
+
         if self.samplesheet and self.comparison:
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.

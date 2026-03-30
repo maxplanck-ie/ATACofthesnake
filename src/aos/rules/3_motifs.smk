@@ -61,3 +61,7 @@ rule plotame:
   threads: 2
   script:
     'scripts/plot_ame.py'
+
+checkpoint all_plotame_done:
+    input: get_all_plotame
+    output: touch('.snakemake_flags/all_plotame_done')
