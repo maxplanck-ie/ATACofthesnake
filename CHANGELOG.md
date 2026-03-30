@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.7.0...v0.8.0) (2026-03-30)
+
+
+### Features
+
+* ame figsize depending on number of motifs ([bea9a21](https://github.com/maxplanck-ie/ATACofthesnake/commit/bea9a2118921f29e3c7cf039da9694239fae243a))
+* footprinting ([#64](https://github.com/maxplanck-ie/ATACofthesnake/issues/64)) ([bea9a21](https://github.com/maxplanck-ie/ATACofthesnake/commit/bea9a2118921f29e3c7cf039da9694239fae243a))
+
+
+### Documentation
+
+* postprocessing usage part ([bea9a21](https://github.com/maxplanck-ie/ATACofthesnake/commit/bea9a2118921f29e3c7cf039da9694239fae243a))
+
 ## [0.7.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.6.0...v0.7.0) (2026-03-26)
 
 
