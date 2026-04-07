@@ -15,7 +15,7 @@ min_sigpeaks = snakemake.params.min_sigpeaks
 
 # I
 results = pd.read_table(snakemake.input.results, sep='\t', index_col=0)
-y_pred = pd.read_table(snakemake.params.y_pred, sep='\t', index_col=0)
+y_pred = pd.read_table(snakemake.input.acc_pred, sep='\t', index_col=0)
 
 odir = snakemake.params.odir
 # O
@@ -34,6 +34,7 @@ for path in [k_table, k_plot]:
 sig = results[results['FDR'] < perm_cutoff]
 if len(sig) < min_sigpeaks:
     print(f"Only {len(sig)} significant peaks found for {comp_name} with permutation cutoff {perm_cutoff}. Need at least {min_sigpeaks} to continue.")
+    Path(snakemake.output.donefile).touch()
     sys.exit(0)
 
 y_pred = y_pred.loc[sig.index]
@@ -143,3 +144,5 @@ else:
         ax[k].set_ylabel(f"Cluster {k}")
     ax[0].set_title(comp_name)
     fig.savefig(k_plot, dpi=300)
+
+Path(snakemake.output.donefile).touch()

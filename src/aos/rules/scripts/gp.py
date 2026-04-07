@@ -20,6 +20,8 @@ THREADS = snakemake.threads
 PERMS = snakemake.params.permutations
 GP_TIMESTEPS = snakemake.params.gp_timesteps
 table_output = snakemake.output.table
+acc_pred_output = snakemake.output.acc_pred
+acc_pred_std_output = snakemake.output.acc_pred_std
 norm_matrix_output = snakemake.output.norm_matrix
 
 if _comparison['time_type'] == 'ordinal':
@@ -116,7 +118,7 @@ _, results_df["FDR"], _, _ = multipletests(results_df["p_value"], method="fdr_bh
 
 # Save results
 results_df.to_csv(table_output, sep='\t', index=True, header=True)
-y_pred_df.to_csv(table_output.replace('_gp_results.tsv', '_acc_pred.tsv'), sep='\t', index=True, header=True)
-y_std_df.to_csv(table_output.replace('_gp_results.tsv', '_acc_pred_std.tsv'), sep='\t', index=True, header=True)
+y_pred_df.to_csv(acc_pred_output, sep='\t', index=True, header=True)
+y_std_df.to_csv(acc_pred_std_output, sep='\t', index=True, header=True)
 if not distances_df.empty:
     distances_df.to_csv(table_output.replace('_gp_results.tsv', '_distances.tsv'), sep='\t', index=True, header=True)

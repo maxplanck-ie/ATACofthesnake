@@ -3,7 +3,9 @@ rule gp_diffacc:
     mat = 'peakset/counts.tsv'
   output:
     table = 'gp/{comparison}/{comparison}_gp_results.tsv',
-    norm_matrix = 'gp/{comparison}/{comparison}_counts_norm.tsv'
+    norm_matrix = 'gp/{comparison}/{comparison}_counts_norm.tsv',
+    acc_pred = 'gp/{comparison}/{comparison}_acc_pred.tsv',
+    acc_pred_std = 'gp/{comparison}/{comparison}_acc_pred_std.tsv'
   params:
     ss = config['samplesheet'],
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
@@ -18,7 +20,9 @@ rule gp_diffacc_interaction:
   input:
     mat = 'peakset/counts.tsv'
   output:
-    table = 'gp/{comparison}/inttest_{comparison}_{interaction}_gp_results.tsv'
+    table = 'gp/{comparison}/inttest_{comparison}_{interaction}_gp_results.tsv',
+    acc_pred = 'gp/{comparison}/inttest_{comparison}_{interaction}_acc_pred.tsv',
+    acc_pred_std = 'gp/{comparison}/inttest_{comparison}_{interaction}_acc_pred_std.tsv'
   params:
     ss = config['samplesheet'],
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
@@ -33,13 +37,14 @@ rule gp_diffacc_interaction:
 rule gp_postprocessing:
   input:
     results = 'gp/{comparison}/{comparison}_gp_results.tsv',
+    acc_pred = 'gp/{comparison}/{comparison}_acc_pred.tsv',
+    acc_pred_std = 'gp/{comparison}/{comparison}_acc_pred_std.tsv'
   output:
-    touch('gp/{comparison}/{comparison}_postprocess.done')
+    donefile = 'gp/{comparison}/{comparison}_postprocess.done'
   params:
     permutation_cutoff = config['cutoffs']['permutation_cutoff'],
     comp_name = lambda wildcards: wildcards.comparison,
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
-    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/{wildcards.comparison}_acc_pred.tsv",
     odir = lambda wildcards: f"gp/{wildcards.comparison}"
   threads: 20
   conda: 'envs/gp.yml'
@@ -49,8 +54,10 @@ rule gp_postprocessing:
 rule gp_postprocessing_interaction:
   input:
     results = 'gp/{comparison}/inttest_{comparison}_{interaction}_gp_results.tsv',
+    acc_pred = 'gp/{comparison}/inttest_{comparison}_{interaction}_acc_pred.tsv',
+    acc_pred_std = 'gp/{comparison}/inttest_{comparison}_{interaction}_acc_pred_std.tsv'
   output:
-    touch('gp/{comparison}/inttest_{comparison}_{interaction}_postprocess.done')
+    donefile = 'gp/{comparison}/inttest_{comparison}_{interaction}_postprocess.done'
   params:
     permutation_cutoff = config['cutoffs']['permutation_cutoff'],
     comp_name = lambda wildcards: wildcards.comparison,
