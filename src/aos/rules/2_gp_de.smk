@@ -28,7 +28,7 @@ rule gp_diffacc_interaction:
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
     permutations = config['cutoffs']['permutation_iterations'],
     gp_timesteps = config['cutoffs']['gp_timesteps'],
-    int = lambda wildcards: wildcards.interaction
+    interaction = lambda wildcards: wildcards.interaction
   threads: 50
   conda: 'envs/gp.yml'
   script:

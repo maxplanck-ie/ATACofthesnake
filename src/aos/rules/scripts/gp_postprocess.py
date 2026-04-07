@@ -19,7 +19,7 @@ y_pred = pd.read_table(snakemake.input.acc_pred, sep='\t', index_col=0)
 
 odir = snakemake.params.odir
 # O
-if getattr(snakemake.params, "int", None):
+if getattr(snakemake.params, "interaction", None):
     k_table = Path(odir) / f"inttest_{comp_name}_{snakemake.params.int}_k_table.tsv"
     k_plot = Path(odir) / f"inttest_{comp_name}_{snakemake.params.int}_k_plot.png"
 else:
