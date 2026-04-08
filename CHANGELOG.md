@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.8.0...v0.9.0) (2026-04-08)
+
+
+### Features
+
+* example data includes samplesheets / comparisons, zenodo v2 ([8e8458b](https://github.com/maxplanck-ie/ATACofthesnake/commit/8e8458b12b98ca3bd340fe32f7297b57b4524343))
+
+
+### Bug Fixes
+
+* drop unlink in k_table / k_plot ([8e8458b](https://github.com/maxplanck-ie/ATACofthesnake/commit/8e8458b12b98ca3bd340fe32f7297b57b4524343))
+* int check over gp on interaction param, not int ([8e8458b](https://github.com/maxplanck-ie/ATACofthesnake/commit/8e8458b12b98ca3bd340fe32f7297b57b4524343))
+* make y_pred(_sd) explicitly in-/output ([#67](https://github.com/maxplanck-ie/ATACofthesnake/issues/67)) ([8e8458b](https://github.com/maxplanck-ie/ATACofthesnake/commit/8e8458b12b98ca3bd340fe32f7297b57b4524343))
+
 ## [0.8.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.7.0...v0.8.0) (2026-03-30)
 
 
