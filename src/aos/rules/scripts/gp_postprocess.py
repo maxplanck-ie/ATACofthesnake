@@ -15,25 +15,21 @@ min_sigpeaks = snakemake.params.min_sigpeaks
 
 # I
 results = pd.read_table(snakemake.input.results, sep='\t', index_col=0)
-y_pred = pd.read_table(snakemake.params.y_pred, sep='\t', index_col=0)
+y_pred = pd.read_table(snakemake.input.acc_pred, sep='\t', index_col=0)
 
 odir = snakemake.params.odir
 # O
-if getattr(snakemake.params, "int", None):
+if getattr(snakemake.params, "interaction", None):
     k_table = Path(odir) / f"inttest_{comp_name}_{snakemake.params.int}_k_table.tsv"
     k_plot = Path(odir) / f"inttest_{comp_name}_{snakemake.params.int}_k_plot.png"
 else:
     k_table = Path(odir) / f"{comp_name}_k_table.tsv"
     k_plot = Path(odir) / f"{comp_name}_k_plot.png"
 
-# In case output exists already (params, not I/O in snakemake), delete them.
-for path in [k_table, k_plot]:
-    if path.exists():
-        path.unlink()
-
 sig = results[results['FDR'] < perm_cutoff]
 if len(sig) < min_sigpeaks:
     print(f"Only {len(sig)} significant peaks found for {comp_name} with permutation cutoff {perm_cutoff}. Need at least {min_sigpeaks} to continue.")
+    Path(snakemake.output.donefile).touch()
     sys.exit(0)
 
 y_pred = y_pred.loc[sig.index]
@@ -143,3 +139,5 @@ else:
         ax[k].set_ylabel(f"Cluster {k}")
     ax[0].set_title(comp_name)
     fig.savefig(k_plot, dpi=300)
+
+Path(snakemake.output.donefile).touch()
