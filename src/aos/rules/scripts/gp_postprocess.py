@@ -26,11 +26,6 @@ else:
     k_table = Path(odir) / f"{comp_name}_k_table.tsv"
     k_plot = Path(odir) / f"{comp_name}_k_plot.png"
 
-# In case output exists already (params, not I/O in snakemake), delete them.
-for path in [k_table, k_plot]:
-    if path.exists():
-        path.unlink()
-
 sig = results[results['FDR'] < perm_cutoff]
 if len(sig) < min_sigpeaks:
     print(f"Only {len(sig)} significant peaks found for {comp_name} with permutation cutoff {perm_cutoff}. Need at least {min_sigpeaks} to continue.")
