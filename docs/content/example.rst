@@ -23,7 +23,8 @@ or
     ATAC_example immgen
 
 An output directory can be specified by using `-o` or `--outputdir`. By default, the data will be downloaded a subdirectory 'aos_example' in the current working directory.
-Per project, the cram files will be downloaded, the gene models, fasta file and rar file.
+Per project, the cram files will be downloaded, the gene models, fasta file and rar file. For both datasets, a motif file, samplesheet and comparison file are available as well. These can be used as examples for the different differential modes available.
+Finally, the original accessions for all samples included are available in a text file too, which can be used to retrieve the raw unaligned fastq files from the original repositories, if desired.
 
 References
 ----------
