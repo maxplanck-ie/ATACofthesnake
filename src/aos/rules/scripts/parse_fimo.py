@@ -12,7 +12,10 @@ for tsv in tsvs:
 
 def parse_fimo(tsv):
     motnames = {}
-    df = pd.read_table(tsv, comment='#')
+    try:
+        df = pd.read_table(tsv, comment='#')
+    except pd.errors.EmptyDataError:
+        return motnames
     motifs = list(df['motif_id'].unique())
     comp = tsv.parts[2]
     group = tsv.parts[3]
