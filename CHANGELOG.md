@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.9.0...v0.9.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* accomodate empty fimo files ([#69](https://github.com/maxplanck-ie/ATACofthesnake/issues/69)) ([f7d054c](https://github.com/maxplanck-ie/ATACofthesnake/commit/f7d054c03f9b91dc71fab6526cb565120703735e))
+
+
+### Documentation
+
+* example explained with additional files ([f7d054c](https://github.com/maxplanck-ie/ATACofthesnake/commit/f7d054c03f9b91dc71fab6526cb565120703735e))
+
 ## [0.9.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.8.0...v0.9.0) (2026-04-08)
 
 
