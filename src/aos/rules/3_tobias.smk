@@ -122,7 +122,8 @@ rule plot_aggregate:
     input:
         bws = expand('footprints/ataccorrect/{fp_group}_corrected.bw', fp_group=FPDIC.keys()),
     output:
-        pdf = "footprints/plotaggregate/{comp}/{motif}.pdf"
+        pdf = "footprints/plotaggregate/{comp}/{motif}.pdf",
+        txt = "footprints/plotaggregate/{comp}/{motif}.txt"
     params:
         bedfiles = lambda wc: ' '.join(
             str(p) for p in 
@@ -138,5 +139,6 @@ rule plot_aggregate:
           --signals {input.bws} \
           --output {output.pdf} \
           --share_y both --plot_boundaries --signal-on-x \
-          --title "{params.motname}"
+          --title "{params.motname}" \
+          --output-txt {output.txt}
     """
