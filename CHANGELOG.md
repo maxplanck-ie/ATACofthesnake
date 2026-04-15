@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.9.1...v0.10.0) (2026-04-15)
+
+
+### Features
+
+* additional txt output for aggregates ([#71](https://github.com/maxplanck-ie/ATACofthesnake/issues/71)) ([53e430c](https://github.com/maxplanck-ie/ATACofthesnake/commit/53e430c8d6d1a1ec90c4a4c28fd5e68c0392a00b))
+
 ## [0.9.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.9.0...v0.9.1) (2026-04-11)
 
 
