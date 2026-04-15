@@ -150,6 +150,11 @@ def get_motif_for_aggplot(wildcards):
         zip,
         comp=comps,
         motif=motifs
+    ) + expand(
+        "footprints/plotaggregate/{comp}/{motif}.txt",
+        zip,
+        comp=comps,
+        motif=motifs
     )
   return []
 
