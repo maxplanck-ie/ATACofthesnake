@@ -8,6 +8,7 @@ checkpoint collate_sigresults:
     perm_cutoff = config['cutoffs']['permutation_cutoff'],
     fdr_cutoff = config['cutoffs']['fdr_cutoff'],
     lfc_cutoff = config['cutoffs']['lfc_cutoff'],
+  benchmark: "benchmarks/3_collate_sigresults.txt"
   run:
     import pandas as pd
     from pathlib import Path

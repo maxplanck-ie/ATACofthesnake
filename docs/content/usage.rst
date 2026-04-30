@@ -58,8 +58,8 @@ If no samplesheet is provided, all BAM/CRAM files in the specified directory are
 Comparison
 ^^^^^^^^^^
 
-The actual comparison/analysis to be made need to be specified in a separate YAML file. 
-It is possible to specify multiple analyses in one file. Multiple comparison files in a single run are not possible.
+The actual comparison/analysis to be made needs to be specified in a separate YAML file. 
+It is possible to request multiple analyses in one file. Multiple comparison files in a single run are not possible.
 Three different types of analyses can be requested, simple two-group comparisons, an LRT test, and a timecourse analysis.
 Note that all the requested analyses need to have a unique comparison_name. If not, only the last entry will be performed.
 
