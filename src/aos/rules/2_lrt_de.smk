@@ -35,7 +35,7 @@ checkpoint lrt_bedfiles:
   params:
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
     fdr_cutoff = config['cutoffs']['fdr_cutoff']
-  benchmark: "benchmarks/2_lrt_bedfiles_{comparison}.txt"
+  benchmark: "benchmarks/2_lrt-bedfiles_{comparison}.txt"
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
@@ -80,7 +80,7 @@ rule lrt_plotheatmap:
     matrix = lambda wildcards: f"lrt/{wildcards.comparison}/{wildcards.comparison}_mat.npz",
     heatmap = lambda wildcards: f"lrt/{wildcards.comparison}/{wildcards.comparison}_lrtpeaks.png",
   conda: "envs/deeptools.yml"
-  benchmark: "benchmarks/2_lrt_heatmap_{comparison}.txt"
+  benchmark: "benchmarks/2_lrt-heatmap_{comparison}.txt"
   threads: 20
   run:
     if input.bedfiles:

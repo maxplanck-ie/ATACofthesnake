@@ -37,7 +37,7 @@ rule twogroup_maplot:
     comparison = lambda wildcards: config['comparison'][wildcards.comparison].copy(),
     lfc_cutoff = lambda wildcards: config['cutoffs']['lfc_cutoff'],
     fdr_cutoff = lambda wildcards: config['cutoffs']['fdr_cutoff']
-  benchmark: "benchmarks/2_twogroup_maplot_{comparison}.txt"
+  benchmark: "benchmarks/2_twogroup-maplot_{comparison}.txt"
   run:
     maplot(input[0], output[0], params.comparison, params.lfc_cutoff, params.fdr_cutoff)
 
@@ -50,7 +50,7 @@ checkpoint twogroup_bedfiles:
     lfc_cutoff = config['cutoffs']['lfc_cutoff'],
     fdr_cutoff = config['cutoffs']['fdr_cutoff'],
     min_sigpeaks = config['cutoffs']['min_sigpeaks']
-  benchmark: "benchmarks/2_twogroup_bedfiles_{comparison}.txt"
+  benchmark: "benchmarks/2_twogroup-bedfiles_{comparison}.txt"
   run:
     import pandas as pd
     os.makedirs(output.beddir, exist_ok=True)
@@ -78,7 +78,7 @@ rule twogroup_plotheatmap:
     matrix = lambda wildcards: f"twogroup/{wildcards.comparison}/{wildcards.comparison}_mat.npz",
     heatmap = lambda wildcards: f"twogroup/{wildcards.comparison}/{wildcards.comparison}_diffpeaks.png",
   conda: "envs/deeptools.yml"
-  benchmark: "benchmarks/2_twogroup_heatmap_{comparison}.txt"
+  benchmark: "benchmarks/2_twogroup-heatmap_{comparison}.txt"
   threads: 20
   run:
     if input.bedfiles:
