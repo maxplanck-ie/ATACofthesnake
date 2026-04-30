@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.10.0...v0.11.0) (2026-04-30)
+
+
+### Features
+
+* include benchmarks directive to all rules ([#74](https://github.com/maxplanck-ie/ATACofthesnake/issues/74)) ([401d0c9](https://github.com/maxplanck-ie/ATACofthesnake/commit/401d0c95bbb13d5e75e7311504789525aa526fe7))
+
+
+### Documentation
+
+* fix references ([401d0c9](https://github.com/maxplanck-ie/ATACofthesnake/commit/401d0c95bbb13d5e75e7311504789525aa526fe7))
+* switch theme ([401d0c9](https://github.com/maxplanck-ie/ATACofthesnake/commit/401d0c95bbb13d5e75e7311504789525aa526fe7))
+
 ## [0.10.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.9.1...v0.10.0) (2026-04-15)
 
 
