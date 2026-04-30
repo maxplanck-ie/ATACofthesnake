@@ -13,4 +13,4 @@ master_doc = 'index'
 pygments_style = 'sphinx'
 source_suffix = '.rst'
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_book_theme"

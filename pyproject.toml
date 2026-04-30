@@ -36,7 +36,7 @@ dev = [
 ]
 docs = [
     "sphinx",
-    "sphinx_rtd_theme",
+    "sphinx-book-theme",
     "sphinx-click",
 ]
 
