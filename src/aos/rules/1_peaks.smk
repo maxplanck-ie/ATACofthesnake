@@ -5,6 +5,7 @@ rule lnBams:
   output: 
     'input/{sample}.bam'
   threads: 1
+  benchmark: "benchmarks/1_lnBams_{sample}.txt"
   run:
     if wildcards.sample in BAMSAMPLES:
       shell('ln -s {config[bamdir]}/{wildcards.sample}.bam {output}')
@@ -18,6 +19,7 @@ rule bamIx:
     'input/{sample}.bam.bai'
   conda: "envs/seqtools.yml"
   threads: 5
+  benchmark: "benchmarks/1_bamIx_{sample}.txt"
   shell:'''
   samtools index -@ {threads} {input}
   '''
@@ -31,6 +33,7 @@ rule alSieve:
     qc = temp('qc/{sample}_sieve.txt')
   conda: "envs/deeptools.yml"
   threads: 10
+  benchmark: "benchmarks/1_alSieve_{sample}.txt"
   params:
     rar = f"--blackListFileName {config['rar']}",
     size = f"--maxFragmentLength {config['fragsize']} --minFragmentLength 0"
@@ -45,6 +48,7 @@ rule ixSieve:
     'sieve/{sample}.bam.bai'
   conda: "envs/seqtools.yml"
   threads: 5
+  benchmark: "benchmarks/1_ixSieve_{sample}.txt"
   shell:'''
   samtools index -@ {threads} {input}
   '''
@@ -58,6 +62,7 @@ rule bamtobed:
     temp('sieve/{sample}.bed')
   conda: "envs/seqtools.yml"
   threads: 1
+  benchmark: "benchmarks/1_bamtobed_{sample}.txt"
   shell:'''
   bedtools bamtobed -i {input.b} > {output}
   '''
@@ -74,6 +79,7 @@ rule peaks:
     outdir = 'peaks'
   conda: "envs/seqtools.yml"
   threads: 1
+  benchmark: "benchmarks/1_peaks_{sample}.txt"
   shell:'''
   macs3 callpeak -t {input} \
     -f BED \
@@ -92,6 +98,7 @@ rule peakmerg:
   output:
     temp('peakset/peaks.cat.bed')
   threads:1
+  benchmark: "benchmarks/1_peakmerg.txt"
   conda: "envs/seqtools.yml"
   shell:'''
   cat {input} | sort -k1,1 -k2,2n | bedtools merge > {output}
@@ -106,6 +113,7 @@ rule peakbounds:
     fna = config['fna'],
     peakset = config['peakset']
   threads: 1
+  benchmark: "benchmarks/1_peakbounds.txt"
   run:
     peak_boundaries(input[0], params.fna, params.peakset, output[0])
 
@@ -122,6 +130,7 @@ rule uropa:
     downstream = config['uro'][2],
     feature = config['uro'][0]
   conda: "envs/seqtools.yml"
+  benchmark: "benchmarks/1_uropa.txt"
   threads: 5
   shell:'''
   uropa -b {input} \
@@ -144,6 +153,7 @@ rule countmatrix:
         config['rar']
     )
   threads: 40
+  benchmark: "benchmarks/1_countmatrix.txt"
   conda: "envs/deeptools.yml"
   shell:'''
   multiBamSummary BED-file --BED {input.peaks} {params.rar} \
@@ -161,6 +171,7 @@ rule multibigwigsum:
     'peakset/counts.bw.npz'
   threads: 1
   conda: "envs/deeptools.yml"
+  benchmark: "benchmarks/1_multibigwigsum.txt"
   shell:'''
   multiBigwigSummary BED-file --BED {input.peaks} -o {output} -b {input.samples}
   '''
@@ -173,6 +184,7 @@ rule plotPCA:
   threads: 1
   params:
     colstr = PCA_colors(config['samplesheet'], SAMPLES)
+  benchmark: "benchmarks/1_plotPCA.txt"
   conda: "envs/deeptools.yml"
   shell:'''
   plotPCA --corData {input.peakset} -o {output} --transpose --ntop 5000 {params.colstr}

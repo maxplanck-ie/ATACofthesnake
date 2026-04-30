@@ -5,6 +5,7 @@ rule clustermotifs:
     motiffile = config['motif']
   conda: "envs/tobias.yml"
   threads: 2
+  benchmark: "benchmarks/3_clustermotifs.txt"
   shell:'''
   TOBIAS ClusterMotifs -m {params.motiffile} -t 0.4 -a meme -p clusteredmotifs -o 'motifs' --dist_method seqcor
   '''
@@ -18,6 +19,7 @@ rule bed2fna:
   conda: "envs/seqtools.yml"
   params:
     fna = config['fna']
+  benchmark: "benchmarks/3_bed2fna_{motif_comp}_{motif_sample}.txt"
   shell:'''
   bedtools getfasta -fi {params.fna} -bed {input} > {output}
   '''
@@ -29,6 +31,7 @@ rule ame:
   output:
     tsv = 'motifs/{motif_comp}/{motif_sample}_ame/ame.tsv',
   conda: "envs/meme.yml"
+  benchmark: "benchmarks/3_ame_{motif_comp}_{motif_sample}.txt"
   run:
     from pathlib import Path
     fnapath = Path(input.fna)
@@ -59,6 +62,7 @@ rule plotame:
   conda:
     'envs/gimmemotifs.yml'
   threads: 2
+  benchmark: "benchmarks/3_plotame_{motif_comp}.txt"
   script:
     'scripts/plot_ame.py'
 

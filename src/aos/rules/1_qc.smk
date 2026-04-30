@@ -9,6 +9,7 @@ rule ixStat:
     temp('qc/{sample}_ix.tsv')
   conda: "envs/seqtools.yml"
   threads: 1
+  benchmark: "benchmarks/1_ixStat_{sample}.txt"
   shell:'''
   set +o pipefail;
   samtools idxstats {input.bam} | cut -f1,3 > {output}
@@ -19,6 +20,7 @@ rule mergeixStat:
     expand('qc/{sample}_ix.tsv', sample=SAMPLES)
   output:
     'qc/ixstat.tsv'
+  benchmark: "benchmarks/1_mergeixStat.txt"
   run:
     merge_idx(input, output) 
 
@@ -27,6 +29,7 @@ rule mergesieve:
     expand('qc/{sample}_sieve.txt', sample=SAMPLES)
   output:
     'qc/sieve.tsv'
+  benchmark: "benchmarks/1_mergesieve.txt"
   run:
     merge_sieve(input, output)
 
@@ -37,6 +40,7 @@ rule fragsize:
   output:
     'qc/fragsize.tsv'
   threads: 10
+  benchmark: "benchmarks/1_fragsize.txt"
   conda: "envs/deeptools.yml"
   shell:'''
   bamPEFragmentSize -b {input.bams} \
@@ -51,6 +55,7 @@ rule scalefactors:
     'peakset/scalefactors.txt'
   threads: 1
   conda: "envs/seqtools.yml"
+  benchmark: "benchmarks/1_scalefactors.txt"
   script:
     "scripts/scalefactors.R"
 
@@ -67,6 +72,7 @@ rule bigwigs:
     sample = "{sample}"
   threads: 10
   conda: "envs/deeptools.yml"
+  benchmark: "benchmarks/1_bigwigs_{sample}.txt"
   shell:'''
   SCALEFAC=$(grep "^{params.sample} " {input.scalefactors} | cut -f2 -d ' ')
   bamCoverage --scaleFactor $SCALEFAC \
@@ -87,6 +93,7 @@ rule frips:
   params:
     sample = '{sample}'
   conda: "envs/seqtools.yml"
+  benchmark: "benchmarks/1_frips_{sample}.txt"
   shell:'''
   mapped=$(samtools view -c -F 4 {input.bam})
   peakreads=$(samtools view -c -F 4 -L {input.peaks} {input.bam})
@@ -99,6 +106,7 @@ rule fripcombine:
     expand('qc/{sample}.frip.txt', sample=SAMPLES)
   output:
     'qc/fripscores.txt'
+  benchmark: "benchmarks/1_fripcombine.txt"
   shell:'''
   cat {input} > {output}
   '''
@@ -107,7 +115,8 @@ rule plotfragsize:
   input:
     fs = 'qc/fragsize.tsv'
   output:
-    of = 'figures/fragmentsizes.png'  
+    of = 'figures/fragmentsizes.png' 
+  benchmark: "benchmarks/1_plotfragsize.txt" 
   run:
     plotfragsize(input.fs, output.of)
 
@@ -116,6 +125,7 @@ rule plotfrip:
     fs = 'qc/fripscores.txt'
   output:
     of = 'figures/fripscores.png'
+  benchmark: "benchmarks/1_plotfrip.txt"
   run:
     plotfrip(input.fs, output.of)
 
@@ -126,6 +136,7 @@ rule plotixs:
     'figures/mitofraction.png'
   params:
     mito = config['mitostring']
+  benchmark: "benchmarks/1_plotixs.txt"
   run:
     plotixs(input[0], params[0])
 
@@ -134,5 +145,6 @@ rule plotsieve:
    'qc/sieve.tsv'
   output:
     'figures/alignmentsieve.png'
+  benchmark: "benchmarks/1_plotsieve.txt"
   run:
     plotsieve(input[0])
