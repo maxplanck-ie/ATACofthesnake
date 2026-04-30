@@ -6,7 +6,7 @@ rule subsample_bams:
     finbai = 'footprints/bams/{fp_group}.bam.bai',
   conda:
     'envs/seqtools.yml'
-  benchmark: "benchmarks/3_subsample_bams_{fp_group}.txt"
+  benchmark: "benchmarks/3_subsample-bams_{fp_group}.txt"
   threads: 10
   run:
     import pandas as pd
@@ -59,7 +59,7 @@ rule tobias_ataccorrect:
     peaks = 'peakset/peaks.bed'
   output:
     'footprints/ataccorrect/{fp_group}_corrected.bw'
-  benchmark: "benchmarks/3_tobias_ataccorrect_{fp_group}.txt"
+  benchmark: "benchmarks/3_tobias-ataccorrect_{fp_group}.txt"
   params:
     rar = config['rar'],
     fna = config['fna'],
@@ -90,7 +90,7 @@ rule tobias_scorebigwig:
   threads: 10
   conda:
     'envs/tobias.yml'
-  benchmark: "benchmarks/3_tobias_scorebigwig_{fp_group}.txt"
+  benchmark: "benchmarks/3_tobias-scorebigwig_{fp_group}.txt"
   shell:'''
   TOBIAS FootprintScores --signal {input.signal} \
     --regions {input.peaks} \
@@ -109,7 +109,7 @@ rule fimo_footprints:
     of = lambda wildcards: f"footprints/fimo/{wildcards.fpmotif}/{wildcards.group_fna}"
   conda:
     'envs/meme.yml'
-  benchmark: "benchmarks/3_fimo_footprints_{fpmotif}_{group_fna}.txt"
+  benchmark: "benchmarks/3_fimo-footprints_{fpmotif}_{group_fna}.txt"
   shell:'''
   fimo --oc {params.of} {input.motifs} {input.fna}
   '''
@@ -138,7 +138,7 @@ rule plot_aggregate:
         ).loc[wc.motif, 'motif_alt_id']
     conda:
         'envs/tobias.yml'
-    benchmark: "benchmarks/3_plot_aggregate_{comp}_{motif}.txt"
+    benchmark: "benchmarks/3_plot-aggregate_{comp}_{motif}.txt"
     shell: """
         TOBIAS PlotAggregate --TFBS {params.bedfiles} \
           --signals {input.bws} \

@@ -30,7 +30,7 @@ rule gp_diffacc_interaction:
     permutations = config['cutoffs']['permutation_iterations'],
     gp_timesteps = config['cutoffs']['gp_timesteps'],
     interaction = lambda wildcards: wildcards.interaction
-  benchmark: "benchmarks/2_gp_interaction_{comparison}_{interaction}.txt"
+  benchmark: "benchmarks/2_gp-interaction_{comparison}_{interaction}.txt"
   threads: 50
   conda: 'envs/gp.yml'
   script:
@@ -48,7 +48,7 @@ rule gp_postprocessing:
     comp_name = lambda wildcards: wildcards.comparison,
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
     odir = lambda wildcards: f"gp/{wildcards.comparison}"
-  benchmark: "benchmarks/2_gp_postprocess_{comparison}.txt"
+  benchmark: "benchmarks/2_gp-postprocess_{comparison}.txt"
   threads: 20
   conda: 'envs/gp.yml'
   script:
@@ -67,7 +67,7 @@ rule gp_postprocessing_interaction:
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
     y_pred = lambda wildcards: f"gp/{wildcards.comparison}/inttest_{wildcards.comparison}_{wildcards.interaction}_acc_pred.tsv",
     odir = lambda wildcards: f"gp/{wildcards.comparison}"
-  benchmark: "benchmarks/2_gp_interaction_postprocess_{comparison}_{interaction}.txt"
+  benchmark: "benchmarks/2_gp-interaction-postprocess_{comparison}_{interaction}.txt"
   threads: 20
   conda: 'envs/gp.yml'
   script:
