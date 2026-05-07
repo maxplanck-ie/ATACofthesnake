@@ -1,5 +1,5 @@
 
-![Figure generated with ChatGPT](docs/aos.png)
+<img src="assets/screenshot.png" width="100"/>
 
 # ATACofthesnake
 
