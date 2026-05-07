@@ -1,5 +1,5 @@
 
-<img src="assets/screenshot.png" width="100"/>
+<img src="docs/aos.png" width="100"/>
 
 # ATACofthesnake
 

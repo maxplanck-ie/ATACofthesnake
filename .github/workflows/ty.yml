@@ -1,7 +1,7 @@
 name: ty
 on: [push, pull_request]
 jobs:
-  pixi:
+  ty:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
