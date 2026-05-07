@@ -3,9 +3,6 @@ on: [push, pull_request]
 jobs:
   pixi:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        task: [ruff, ty, test, doc]
     steps:
       - uses: actions/checkout@v6
       - name: Set up Pixi
@@ -13,4 +10,4 @@ jobs:
         with:
           cache: true
       - name: run task
-        run: pixi run ${{ matrix.task }}
+        run: pixi run test

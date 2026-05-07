@@ -1,3 +1,6 @@
+
+![Figure generated with ChatGPT](docs/aos.png)
+
 # ATACofthesnake
 
 Downstream processing of ATAC data, including QC, differential accessibility -, LRT - and timecourse analyses. Optional downstream motif analyses included.

@@ -2,7 +2,7 @@ checkpoint collate_sigresults:
   input:
     sigresults = SIGRESULTS
   output:
-    directory("motifs")
+    touch("motifs/.collate_sigresults.done")
   params:
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
     perm_cutoff = config['cutoffs']['permutation_cutoff'],
