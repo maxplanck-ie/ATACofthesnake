@@ -1,3 +1,11 @@
+
+[![docs](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml)
+[![typing](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml)
+[![ruff](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml)
+[![pytest](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml)
+
+<img src="docs/aos.png" width="100"/>
+
 # ATACofthesnake
 
 Downstream processing of ATAC data, including QC, differential accessibility -, LRT - and timecourse analyses. Optional downstream motif analyses included.
