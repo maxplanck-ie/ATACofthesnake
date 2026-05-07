@@ -1,4 +1,4 @@
-name: pixi
+name: ruff
 on: [push, pull_request]
 jobs:
   pixi:

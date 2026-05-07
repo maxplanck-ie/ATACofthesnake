@@ -1,4 +1,4 @@
-name: pixi
+name: docs
 on: [push, pull_request]
 jobs:
   pixi:
