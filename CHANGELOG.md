@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.11.0...v0.11.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* Collate res checkpoint output is a file, not a folder ([e23ace2](https://github.com/maxplanck-ie/ATACofthesnake/commit/e23ace2cd5fa7a658c1c969245223e0c12520131))
+
+
+### Documentation
+
+* include logo ([e23ace2](https://github.com/maxplanck-ie/ATACofthesnake/commit/e23ace2cd5fa7a658c1c969245223e0c12520131))
+* pixi line in installation ([9a221f3](https://github.com/maxplanck-ie/ATACofthesnake/commit/9a221f3cabca4c27856fcb5bddd42b0bf42983e3))
+* pypi badge ([9a221f3](https://github.com/maxplanck-ie/ATACofthesnake/commit/9a221f3cabca4c27856fcb5bddd42b0bf42983e3))
+* stable link in readme ([#79](https://github.com/maxplanck-ie/ATACofthesnake/issues/79)) ([9a221f3](https://github.com/maxplanck-ie/ATACofthesnake/commit/9a221f3cabca4c27856fcb5bddd42b0bf42983e3))
+
 ## [0.11.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.10.0...v0.11.0) (2026-04-30)
 
 
