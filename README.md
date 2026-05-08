@@ -3,7 +3,7 @@
 [![typing](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml)
 [![ruff](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml)
 [![pytest](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml)
-
+[![pypi](https://img.shields.io/pypi/v/atacofthesnake)](https://pypi.org/project/atacofthesnake/)
 <img src="docs/aos.png" width="100"/>
 
 # ATACofthesnake
@@ -39,4 +39,4 @@ Bare minimum needed input:
  - genome annotation file (GTF format)  
  - read attracting regions (BED format), this is necessary and needs to contain at least the full mitochondrial chromosome.  
 
-For more details and how-to on requesting specific differential analysis and comparisons, please refer to the [documentation](https://atacofthesnake.readthedocs.io/en/latest/).
+For more details and how-to on requesting specific differential analysis and comparisons, please refer to the [documentation](https://atacofthesnake.readthedocs.io/en/stable/).
