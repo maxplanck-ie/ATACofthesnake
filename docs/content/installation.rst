@@ -39,3 +39,9 @@ or again via uv:
 .. code:: bash
 
     uv pip install git+https://github.com/maxplanck-ie/ATACofthesnake.git
+
+and if you have pixi installed, you can let it handle the environment setup for you and directly call the executable:
+
+.. code:: bash
+
+    pixi run ATAC -h
