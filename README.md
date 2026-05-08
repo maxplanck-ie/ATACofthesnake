@@ -4,6 +4,7 @@
 [![ruff](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml)
 [![pytest](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml)
 [![pypi](https://img.shields.io/pypi/v/atacofthesnake)](https://pypi.org/project/atacofthesnake/)
+
 <img src="docs/aos.png" width="100"/>
 
 # ATACofthesnake
