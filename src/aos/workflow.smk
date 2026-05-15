@@ -127,12 +127,12 @@ def get_motifs_for_fp(wildcards):
     valid_pairs = [
         (motif, fna)
         for motif, fna in zip(fpmotifs, group_fnas)
-        if motif in enr_found and not fna.endswith('_bg')
+        if motif in enr_found
     ]
     if not valid_pairs:
         return []
     valid_motifs, valid_fnas = zip(*valid_pairs)
-    
+
     return expand(
       'footprints/fimo/{fpmotif}/{group_fna}/fimo.tsv',
       zip,
