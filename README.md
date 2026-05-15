@@ -1,5 +1,6 @@
 
-[![docs](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml)
+[![docs](https://app.readthedocs.org/projects/atacofthesnake/badge/?version=stable&style=flat)](https://atacofthesnake.readthedocs.io/en/stable/)
+[![docs_local](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml)
 [![typing](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml)
 [![ruff](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml)
 [![pytest](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml)
