@@ -1,6 +1,5 @@
 
 [![docs](https://app.readthedocs.org/projects/atacofthesnake/badge/?version=stable&style=flat)](https://atacofthesnake.readthedocs.io/en/stable/)
-[![docs_local](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/docs.yml)
 [![typing](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ty.yml)
 [![ruff](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/ruff.yml)
 [![pytest](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml/badge.svg)](https://github.com/maxplanck-ie/ATACofthesnake/actions/workflows/test.yml)
@@ -15,8 +14,8 @@ Starting point are deduplicated BAM and/or CRAM files.
 
 ## Important
 
-All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made. In case this is not relevant, you can run the workflow multiple times.
-Fasta headers un field 0 (space delimited) are not allowed to contain a pipe character '|' (as peaks will be delimited as such).
+All samples in a 'run' have to belong to the same group. That means that out of all peaks/sample, a union will be made. In case this is not the case, you can run the workflow multiple times.
+Fasta headers are not allowed to contain a pipe character '|' (as peaks will be delimited as such later on).
 
 ## Installation
 
