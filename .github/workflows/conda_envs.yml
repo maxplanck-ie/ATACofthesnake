@@ -1,0 +1,36 @@
+name: test_conda_envs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/rules/envs/*.yml"
+      - ".github/workflows/conda_envs.yml"
+
+jobs:
+  create-conda-envs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Miniconda (Miniforge)
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          auto-update-conda: true
+          use-mamba: true
+
+      - name: List environment files
+        id: list_envs
+        run: |
+          echo "files=$(ls src/rules/envs/*.yml | paste -sd ',' -)" >> $GITHUB_OUTPUT
+
+      - name: Create environments
+        run: |
+          mamba env create -f ${{ matrix.env_file }} -n test_env
+        strategy:
+          matrix:
+            env_file: ${{ fromJson(steps.list_envs.outputs.files).split(',') }}
