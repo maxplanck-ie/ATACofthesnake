@@ -58,7 +58,7 @@ If no samplesheet is provided, all BAM/CRAM files in the specified directory are
 Comparison
 ^^^^^^^^^^
 
-The actual comparison/analysis to be made needs to be specified in a separate YAML file. 
+The actual comparison/analysis to be made needs to be specified in a separate YAML file.
 It is possible to request multiple analyses in one file. Multiple comparison files in a single run are not possible.
 Three different types of analyses can be requested, simple two-group comparisons, an LRT test, and a timecourse analysis.
 Note that all the requested analyses need to have a unique comparison_name. If not, only the last entry will be performed.
@@ -171,11 +171,11 @@ Note that here you cannot specify a design, and all covariates in the sampleshee
 Running the above comparison will run a Gaussian process regression per peak, and test whether the result is substantially different from a flat kernel by taking the marginal likelihood ratio between them.
 Since this cannot be directly tested with a 'regular' chi-squared test, a permutation-based approach is used to calculate a p-value, that is afterwards corrected with a Benjamini-Hochberg correction for multiple testing.
 The output is written to the `gp` folder, with the main results being written to a table with the likelihood ratio, p-value and FDR for each peak. Additionally, an array with predicted standardized accessibility scores (y_pred) and one with the actual standardized values (y_std) are also written out.
-A similar table, but now only with significant peaks (by default FDR < 0.01, set with `--permutation_cutoff`) also exists, with the addition that here the peaks are clustered (k-means setup, similar to the one performed in the LRT comparison type). 
+A similar table, but now only with significant peaks (by default FDR < 0.01, set with `--permutation_cutoff`) also exists, with the addition that here the peaks are clustered (k-means setup, similar to the one performed in the LRT comparison type).
 A visualization of these clusters, and their individual peak trajectories (standardized) is included in the folder too.
 
 A second timecourse mode can be used when time is not encoded as a continuous variable, but as an ordinal variable. Typical use cases for this mode are differentiation trajectories.
-Here it's important that order needs to be specified, with the 'earliest' time point being the first. 
+Here it's important that order needs to be specified, with the 'earliest' time point being the first.
 Note that not all possible values of the time factor listed in the samplesheet need to be included here (samples with missing levels are simply ignored).
 
 .. code:: yaml
@@ -228,7 +228,7 @@ Post processing
 Regardless of what differential analysis is performed, post processing (motif enrichment and footprinting) can be performed on significant peak groups (either the up- and down peaks in a two-group comparison, or the clusters in an LRT or timecourse analysis), given that there are enough peaks to work with (`--min_sigpeaks`).
 Enabling this mode is done by specifying a `--motifs` file (in MEME format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
 Note that you cannot specify a motifs file without also providing a samplesheet.
-Motif enrichment is performed with `ame (MEME suite) <https://meme-suite.org/meme/doc/ame.html>`_. In all cases, enrichment of a group is performed with all the other group(s) as background. In the odd case that there is only one group (for example, only peaks opening are identified in two-group way), the background will be the same group shuffled.
+Motif enrichment is performed with `ame (MEME suite) <https://meme-suite.org/meme/doc/ame.html>`_. In all cases, enrichment of a group is performed against the same group shuffled ('--control --shuffle--' argument in ame).
 
 Per default, footprinting is also performed with `TOBIAS <https://github.com/loosolab/tobias>`_. If a samplesheet is provided, then BAM files are subsampled to the minimum depth within a group (here defined as the unique combination of covariate levels) to avoid biases in footprinting due to differences in sequencing depth, and merged together.
 These merged bam files are then corrected (ATACorrect module) and scored (ScoreBigwig module).

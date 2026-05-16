@@ -6,6 +6,7 @@ rule lnBams:
     'input/{sample}.bam'
   threads: 1
   benchmark: "benchmarks/1_lnBams_{sample}.txt"
+  conda: "envs/seqtools.yml"
   run:
     if wildcards.sample in BAMSAMPLES:
       shell('ln -s {config[bamdir]}/{wildcards.sample}.bam {output}')
