@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.12.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.11.1...v0.12.0) (2026-05-16)
+
+
+### Features
+
+* motif searches are always against shuffled background ([#80](https://github.com/maxplanck-ie/ATACofthesnake/issues/80)) ([a4067d0](https://github.com/maxplanck-ie/ATACofthesnake/commit/a4067d0d996c282be5c6a4e9eaad2651c710c6e5))
+
+
+### Bug Fixes
+
+* lnBams not using system samtools anymore ([a4067d0](https://github.com/maxplanck-ie/ATACofthesnake/commit/a4067d0d996c282be5c6a4e9eaad2651c710c6e5))
+
+
+### Documentation
+
+* readthedocs badge ([a4067d0](https://github.com/maxplanck-ie/ATACofthesnake/commit/a4067d0d996c282be5c6a4e9eaad2651c710c6e5))
+
 ## [0.11.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.11.0...v0.11.1) (2026-05-08)
 
 
