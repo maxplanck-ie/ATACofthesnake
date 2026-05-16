@@ -8,7 +8,7 @@ jobs:
       env_files: ${{ steps.list_envs.outputs.files }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: List environment files
         id: list_envs
@@ -24,15 +24,12 @@ jobs:
         env_file: ${{ fromJson(needs.list-envs.outputs.env_files) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Miniconda (Miniforge)
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v4
         with:
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
           auto-update-conda: true
-          use-mamba: true
 
       - name: Create environment
         run: |
