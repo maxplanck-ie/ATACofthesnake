@@ -1,11 +1,5 @@
 name: test_conda_envs
-
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - "src/rules/envs/*.yml"
-      - ".github/workflows/conda_envs.yml"
+on: [push, pull_request]
 
 jobs:
   create-conda-envs:
