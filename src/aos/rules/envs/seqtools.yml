@@ -2,12 +2,12 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python == 3.9
-  - bedtools == 2.30.0
-  - bioconductor-edger == 3.32.0
+  - python >= 3.9
+  - bedtools >= 2.30.0
+  - bioconductor-edger >= 3.32.0
   - r-tidyverse
   - r-essentials
   - macs3
-  - samtools == 1.13
-  - htslib == 1.13
+  - samtools >= 1.13
+  - htslib >= 1.13
   - uropa >=4.0.0
