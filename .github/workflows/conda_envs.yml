@@ -13,7 +13,7 @@ jobs:
       - name: List environment files
         id: list_envs
         run: |
-          files=$(ls src/rules/envs/*.yml | jq -R -s -c 'split("\n")[:-1]')
+          files=$(ls src/aos/rules/envs/*.yml | jq -R -s -c 'split("\n")[:-1]')
           echo "files=$files" >> $GITHUB_OUTPUT
 
   create-conda-envs:
