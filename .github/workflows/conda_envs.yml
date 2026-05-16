@@ -2,9 +2,26 @@ name: test_conda_envs
 on: [push, pull_request]
 
 jobs:
-  create-conda-envs:
+  list-envs:
     runs-on: ubuntu-latest
+    outputs:
+      env_files: ${{ steps.list_envs.outputs.files }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: List environment files
+        id: list_envs
+        run: |
+          files=$(ls src/rules/envs/*.yml | jq -R -s -c 'split("\n")[:-1]')
+          echo "files=$files" >> $GITHUB_OUTPUT
+
+  create-conda-envs:
+    needs: list-envs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env_file: ${{ fromJson(needs.list-envs.outputs.env_files) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,14 +34,6 @@ jobs:
           auto-update-conda: true
           use-mamba: true
 
-      - name: List environment files
-        id: list_envs
-        run: |
-          echo "files=$(ls src/rules/envs/*.yml | paste -sd ',' -)" >> $GITHUB_OUTPUT
-
-      - name: Create environments
+      - name: Create environment
         run: |
           mamba env create -f ${{ matrix.env_file }} -n test_env
-        strategy:
-          matrix:
-            env_file: ${{ fromJson(steps.list_envs.outputs.files).split(',') }}
