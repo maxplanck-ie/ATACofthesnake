@@ -33,4 +33,4 @@ jobs:
 
       - name: Create environment
         run: |
-          mamba env create -f ${{ matrix.env_file }} -n test_env
+          conda env create -f ${{ matrix.env_file }} -n test_env
