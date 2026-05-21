@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.12.0...v0.12.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* proper row means for kmeans clustering under LRT ([#82](https://github.com/maxplanck-ie/ATACofthesnake/issues/82)) ([be243aa](https://github.com/maxplanck-ie/ATACofthesnake/commit/be243aab41b694187a18b05846f8db4449279e51))
+
 ## [0.12.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.11.1...v0.12.0) (2026-05-16)
 
 
