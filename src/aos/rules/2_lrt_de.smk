@@ -49,11 +49,11 @@ checkpoint lrt_bedfiles:
                 f.write("\t".join(peak.split("|")) + "\n")
         # Next, run determine k for heatmap
         counts = pd.read_csv(input.matrix, sep='\t', header=0)
-        peaks = counts[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
+        counts.index = counts[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
         counts = counts.drop(columns=["#chr", "start", "end"])
-        counts = counts[peaks.isin(sig["peak_id"])].values
-        counts_scaled = counts - counts.mean()
-        counts_scaled /= counts.std() + 1e-8
+        counts = counts.loc[sig["peak_id"].tolist()].values
+        counts_scaled = counts - counts.mean(axis=1, keepdims=True)
+        counts_scaled /= counts.std(axis=1, keepdims=True) + 1e-8
         k_range = range(2, 20)
         inertias = []
         for k in k_range:
@@ -65,7 +65,7 @@ checkpoint lrt_bedfiles:
             f.write(str(k_opt))
         # Create table with K-labels.
         kmeans = KMeans(n_clusters=k_opt, n_init=50, random_state=1337).fit(counts_scaled)
-        sig[f"k"] = kmeans.labels_
+        sig["k"] = kmeans.labels_
         sig.to_csv(f"lrt/{wildcards.comparison}/{wildcards.comparison}_sig_peaks_kmeans.tsv", sep='\t', index=False, header=True)
 
 
