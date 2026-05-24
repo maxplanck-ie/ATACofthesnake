@@ -10,7 +10,8 @@ rule gp_diffacc:
     ss = config['samplesheet'],
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
     permutations = config['cutoffs']['permutation_iterations'],
-    gp_timesteps = config['cutoffs']['gp_timesteps']
+    gp_timesteps = config['cutoffs']['gp_timesteps'],
+    gp_alpha = config['cutoffs']['gp_alpha']
   benchmark: "benchmarks/2_gp_{comparison}.txt"
   threads: 50
   conda: "envs/gp.yml"
@@ -29,6 +30,7 @@ rule gp_diffacc_interaction:
     comparison = lambda wildcards: config['comparison'][wildcards.comparison],
     permutations = config['cutoffs']['permutation_iterations'],
     gp_timesteps = config['cutoffs']['gp_timesteps'],
+    gp_alpha = config['cutoffs']['gp_alpha'],
     interaction = lambda wildcards: wildcards.interaction
   benchmark: "benchmarks/2_gp-interaction_{comparison}_{interaction}.txt"
   threads: 50
