@@ -169,7 +169,7 @@ from aos.preflight import Preflight
 @click.option(
     "--gp_alpha",
     required=False,
-    default=1e-10,
+    default=1e-5,
     type=float,
     show_default=True,
     help="the variance for the additional noise term in the time-course mode. Higher values result in more smoothing (flatter curves). Lower values result in less smoothing (more jagged fits).",
