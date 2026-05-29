@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.12.1...v0.13.0) (2026-05-29)
+
+
+### Features
+
+* kmeans on distances ([f6f8b50](https://github.com/maxplanck-ie/ATACofthesnake/commit/f6f8b5045368425f977c01b40fd0e3b2230eb017))
+* parametrize alpha in gp ([#85](https://github.com/maxplanck-ie/ATACofthesnake/issues/85)) ([f6f8b50](https://github.com/maxplanck-ie/ATACofthesnake/commit/f6f8b5045368425f977c01b40fd0e3b2230eb017))
+
 ## [0.12.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.12.0...v0.12.1) (2026-05-21)
 
 
