@@ -48,7 +48,9 @@ class Preflight:
         self.peakset = self.optional_paths(clickdict["peakset"])
 
         if self.motif:
-            assert self.samplesheet is not None, "Providing motifs requires a samplesheet to be provided too."
+            assert self.samplesheet is not None, (
+                "Providing motifs requires a samplesheet to be provided too."
+            )
 
         if self.samplesheet and self.comparison:
             self.logger.info("Validating samplesheet and comparison file...")
@@ -78,6 +80,7 @@ class Preflight:
             "lfc_cutoff": clickdict["lfc_cutoff"],
             "min_sigpeaks": clickdict["min_sigpeaks"],
             "gp_timesteps": clickdict["gp_timesteps"],
+            "gp_alpha": clickdict["gp_alpha"],
         }
 
         # Run settings
@@ -259,7 +262,9 @@ class Preflight:
                             f"Comparison {comp} has level {level} for time variable {comp['time']} that is not present in samplesheet. Exiting."
                         )
                 if "interaction" in comp:
-                    assert isinstance(comp["interaction"], str) or isinstance(comp["interaction"], list), (
+                    assert isinstance(comp["interaction"], str) or isinstance(
+                        comp["interaction"], list
+                    ), (
                         f"Comparison {comp} has an 'interaction' set that is not a string or list but {type(comp['interaction'])}. Exiting."
                     )
                     if isinstance(comp["interaction"], str):

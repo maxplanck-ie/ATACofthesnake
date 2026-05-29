@@ -166,6 +166,14 @@ from aos.preflight import Preflight
     show_default=True,
     help="Number of timesteps to use for gaussian process regression.",
 )
+@click.option(
+    "--gp_alpha",
+    required=False,
+    default=1e-1,
+    type=float,
+    show_default=True,
+    help="the variance for the additional noise term in the time-course mode. Higher values result in more smoothing (flatter curves). Lower values result in less smoothing (more jagged fits).",
+)
 def main(**kwargs) -> None:
     pf = Preflight(kwargs)
     console = Console()
