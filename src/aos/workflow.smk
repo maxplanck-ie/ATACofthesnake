@@ -14,10 +14,6 @@ if config['samplesheet']:
   allowed_samples = set(samplesheet['sample'].values)
   SAMPLES = [s for s in SAMPLES if s in allowed_samples]
 
-# Purge all .done flags
-for donefile in Path(".").glob("**/*.done"):
-  donefile.unlink()
-
 # Define output for comparisons.
 def define_comparison_output():
   outputfiles = []
