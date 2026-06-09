@@ -226,7 +226,7 @@ Post processing
 ---------------
 
 Regardless of what differential analysis is performed, post processing (motif enrichment and footprinting) can be performed on significant peak groups (either the up- and down peaks in a two-group comparison, or the clusters in an LRT or timecourse analysis), given that there are enough peaks to work with (`--min_sigpeaks`).
-Enabling this mode is done by specifying a `--motifs` file (in MEME format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
+Enabling this mode is done by specifying a `--motifs` file (in *MEME* format) upon runtime. This should contain all of the motifs of interest that you want to test for. Note that by default, motifs are clustered first to avoid redundant hits.
 Note that you cannot specify a motifs file without also providing a samplesheet.
 Motif enrichment is performed with `ame (MEME suite) <https://meme-suite.org/meme/doc/ame.html>`_. In all cases, enrichment of a group is performed against the same group shuffled ('--control --shuffle--' argument in ame).
 
@@ -235,6 +235,24 @@ These merged bam files are then corrected (ATACorrect module) and scored (ScoreB
 If additionally, motifs are provided and at least one comparison yielded significant peaks and subsequent enriched motifs, footprinting is performed for the enriched motifs (by searching for motif occurences with `fimo (MEME suite) <https://meme-suite.org/meme/doc/fimo.html>`_), and plotting the aggregated corrected signal over them (plotAggregate module).
 
 Motif enrichment results are available under the `motifs` folder in the output directory, the footprinting results are under the `footprints` folder.
+
+In case you need a reference, some example motif collections from the JASPAR database can be found here:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Organism
+     - Database
+     - URL
+   * - Vertebrates (human, mouse, ...)
+     - JASPAR - non-redundant
+     - https://jaspar.elixir.no/download/data/2026/CORE/JASPAR2026_CORE_vertebrates_non-redundant_pfms_meme.txt
+   * - Insects (drosophila, ...)
+     - JASPAR - non-redundant
+     - https://jaspar.elixir.no/download/data/2026/CORE/JASPAR2026_CORE_insects_non-redundant_pfms_meme.txt
+   * - Nematodes (C. elegans, ...)
+     - JASPAR - non-redundant
+     - https://jaspar.elixir.no/download/data/2026/CORE/JASPAR2026_CORE_nematodes_redundant_pfms_meme.txt
 
 .. _all-command-line-options:
 
