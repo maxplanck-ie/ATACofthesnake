@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.13.0...v0.13.1) (2026-06-09)
+
+
+### Documentation
+
+* include URL for motifs ([#87](https://github.com/maxplanck-ie/ATACofthesnake/issues/87)) ([6a3f277](https://github.com/maxplanck-ie/ATACofthesnake/commit/6a3f27740b737af3f294a0b2cfe9b073c196d4b3))
+
 ## [0.13.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.12.1...v0.13.0) (2026-05-29)
 
 
