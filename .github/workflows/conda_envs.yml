@@ -8,7 +8,7 @@ jobs:
       env_files: ${{ steps.list_envs.outputs.files }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: List environment files
         id: list_envs
@@ -24,7 +24,7 @@ jobs:
         env_file: ${{ fromJson(needs.list-envs.outputs.env_files) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Miniconda (Miniforge)
         uses: conda-incubator/setup-miniconda@v4
