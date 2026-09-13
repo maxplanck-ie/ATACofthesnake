@@ -13,7 +13,7 @@ authors = [
 ]
 keywords = ["ATAC", "differential accessibility", "motifs", "time-course analysis"]
 urls = { Homepage = "https://www.github.com/maxplanck-ie/ATACofthesnake" }
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
   "seaborn >= 0.12.0",
   "pandas >= 2",
