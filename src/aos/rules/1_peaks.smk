@@ -1,5 +1,5 @@
 from aos.helper import peak_boundaries
-from aos.helper import PCA_colors
+from aos.helper import PCA_colors, pca_to_mqc
 
 rule lnBams:
   output: 
@@ -181,12 +181,23 @@ rule plotPCA:
   input:
     peakset = 'peakset/counts.bw.npz'
   output:
-    'figures/PCA.png'
+    png = 'figures/PCA.png',
+    pcadata = temp('qc/PCA_data.tsv')
   threads: 1
   params:
     colstr = PCA_colors(config['samplesheet'], SAMPLES)
   benchmark: "benchmarks/1_plotPCA.txt"
   conda: "envs/deeptools.yml"
   shell:'''
-  plotPCA --corData {input.peakset} -o {output} --transpose --ntop 5000 {params.colstr}
+  plotPCA --corData {input.peakset} -o {output.png} --transpose --ntop 5000 {params.colstr} \
+    --outFileNameData {output.pcadata}
   '''
+
+rule pcamqc:
+  input:
+    'qc/PCA_data.tsv'
+  output:
+    'qc/PCA_mqc.tsv'
+  benchmark: "benchmarks/1_pcamqc.txt"
+  run:
+    pca_to_mqc(input[0], output[0])

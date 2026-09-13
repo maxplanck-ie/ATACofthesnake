@@ -172,6 +172,7 @@ rule all:
     # Default output
     'peakset/peaks_uropa_finalhits.txt',
     'figures/PCA.png',
+    'qc/PCA_mqc.tsv',
     expand('bw/{sample}.scalefac.bw', sample=SAMPLES),
     'figures/mitofraction.png',
     'qc/fragsize.tsv',
