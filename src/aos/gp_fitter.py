@@ -184,13 +184,13 @@ def fit_gp_interaction(y, paramdic):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ConvergenceWarning)
         gp_null = GaussianProcessRegressor(
-            kernel=kernel_null, alpha=alpha, n_restarts_optimizer=3
+            kernel=kernel_null, alpha=alpha, n_restarts_optimizer=5
         )
         gp_null.fit(X, y)
         lml_null = gp_null.log_marginal_likelihood()
 
         gp_full = GaussianProcessRegressor(
-            kernel=kernel_full, alpha=alpha, n_restarts_optimizer=3
+            kernel=kernel_full, alpha=alpha, n_restarts_optimizer=5
         )
         gp_full.fit(X, y)
         lml_full = gp_full.log_marginal_likelihood()
