@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.13.1...v0.14.0) (2026-09-13)
+
+
+### Features
+
+* mqc compatible qc metrics ([#94](https://github.com/maxplanck-ie/ATACofthesnake/issues/94)) ([0505b6b](https://github.com/maxplanck-ie/ATACofthesnake/commit/0505b6bbf7b61e5e282a5efce834444b010d7638))
+
+
+### Bug Fixes
+
+* 5 restarts default ([#96](https://github.com/maxplanck-ie/ATACofthesnake/issues/96)) ([5429e38](https://github.com/maxplanck-ie/ATACofthesnake/commit/5429e382a3b469ce540877eeb944052d1052cffd))
+
 ## [0.13.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.13.0...v0.13.1) (2026-06-09)
 
 
