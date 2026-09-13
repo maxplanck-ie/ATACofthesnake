@@ -29,7 +29,7 @@ table_output = snakemake.output.table
 
 if _comparison["time_type"] == "ordinal":
     # Set up variables
-    count_matrix = pd.read_csv(mat, sep="\t")
+    count_matrix = pd.read_csv(mat, sep="\t", dtype={"#chr": str})
     peaks = count_matrix[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
     samplesheet = pd.read_csv(ss, sep="\t", index_col=0)
     levels = _comparison["order"]
@@ -56,7 +56,7 @@ if _comparison["time_type"] == "ordinal":
 else:
     assert _comparison["time_type"] == "continuous"
     # Set up variables
-    count_matrix = pd.read_csv(mat, sep="\t")
+    count_matrix = pd.read_csv(mat, sep="\t", dtype={"#chr": str})
     peaks = count_matrix[["#chr", "start", "end"]].astype(str).agg("|".join, axis=1)
     samplesheet = pd.read_csv(ss, sep="\t", index_col=0)
 

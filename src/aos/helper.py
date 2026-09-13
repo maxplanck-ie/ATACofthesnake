@@ -78,11 +78,33 @@ def plotfragsize(fs, of):
     d.figure.savefig(of, dpi=300, bbox_inches="tight")
 
 
+def pca_to_mqc(fs, of):
+    df = pd.read_csv(fs, sep="\t", index_col=0)
+    eigen = df["Eigenvalue"]
+    pctvar = (eigen / eigen.sum() * 100).round(1)
+    df = df.drop(columns="Eigenvalue").T
+    df.columns = [f"PC{c}" for c in df.columns]
+    df.index = [i.replace(".scalefac.bw", "") for i in df.index]
+    df.index.name = "Sample"
+    df = df[["PC1", "PC2"]]
+    with open(of, "w") as f:
+        f.write('# id: "pca"\n')
+        f.write('# section_name: "PCA"\n')
+        f.write('# description: "Sample projections onto the top two principal components"\n')
+        f.write("# format: 'tsv'\n")
+        f.write("# plot_type: 'scatter'\n")
+        f.write("# pconfig:\n")
+        f.write("#    id: 'pca_scatter'\n")
+        f.write(f"#    xlab: 'PC1 ({pctvar.loc[1]}% variance)'\n")
+        f.write(f"#    ylab: 'PC2 ({pctvar.loc[2]}% variance)'\n")
+    df.to_csv(of, sep="\t", mode="a")
+
+
 def plotfrip(fs, of):
     pal = sns.cubehelix_palette(10, rot=-0.25, light=0.7)
-    df = pd.read_csv(fs, sep="\t", index_col=None, header=None, comment="#")
-    df.sort_values(by=[1], inplace=True, ascending=False)
-    g = sns.barplot(data=df, x=0, y=1, color=pal[5])
+    df = pd.read_csv(fs, sep="\t", index_col=None, comment="#")
+    df.sort_values(by="FRiP", inplace=True, ascending=False)
+    g = sns.barplot(data=df, x="Sample", y="FRiP", color=pal[5])
     g.tick_params(axis="x", labelrotation=90)
     g.set(xlabel="", ylabel="frip score")
     g.figure.savefig(of, dpi=300, bbox_inches="tight")

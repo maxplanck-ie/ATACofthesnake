@@ -105,10 +105,21 @@ rule fripcombine:
   input:
     expand('qc/{sample}.frip.txt', sample=SAMPLES)
   output:
-    'qc/fripscores.txt'
+    'qc/fripscores_mqc.tsv'
   benchmark: "benchmarks/1_fripcombine.txt"
   shell:'''
-  cat {input} > {output}
+  {{
+    echo '# id: "frip_scores"';
+    echo '# section_name: "FRiP scores"';
+    echo '# description: "Fraction of reads in peaks per sample"';
+    echo "# format: 'tsv'";
+    echo "# plot_type: 'bargraph'";
+    echo "# pconfig:";
+    echo "#    id: 'frip_bargraph'";
+    echo "#    ylab: 'FRiP score'";
+    printf 'Sample\tFRiP\n';
+    cat {input};
+  }} > {output}
   '''
 
 rule plotfragsize:
@@ -122,7 +133,7 @@ rule plotfragsize:
 
 rule plotfrip:
   input:
-    fs = 'qc/fripscores.txt'
+    fs = 'qc/fripscores_mqc.tsv'
   output:
     of = 'figures/fripscores.png'
   benchmark: "benchmarks/1_plotfrip.txt"
