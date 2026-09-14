@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.14.0...v0.14.1) (2026-09-14)
+
+
+### Documentation
+
+* include extra part on ss columns, min_sigpeaks + lrt cutoff ([#97](https://github.com/maxplanck-ie/ATACofthesnake/issues/97)) ([02c475c](https://github.com/maxplanck-ie/ATACofthesnake/commit/02c475cabdf9c35e8158fb43e2d16f1b37627405))
+
 ## [0.14.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.13.1...v0.14.0) (2026-09-13)
 
 
