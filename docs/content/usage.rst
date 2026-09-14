@@ -52,8 +52,26 @@ s7      KO       1
 s8      KO       1
 ======  =======  =======
 
+Any covariate can be included in the samplesheet, as long as the two instances per unique combination is fulfilled. Nuisance covariates (such as batch) should be included as well.
+For example:
+
+======  ========  =========  ====  =====
+sample  genotype  treatment  time  batch
+======  ========  =========  ====  =====
+s1      WT        control    0     1
+s2      WT        control    0     2
+s3      WT        treated    0     1
+s4      WT        treated    0     2
+s5      KO        control    1     1
+s6      KO        control    1     2
+s7      KO        treated    1     1
+s8      KO        treated    1     2
+======  ========  =========  ====  =====
+
+Any subset of these columns can be referenced in a comparison's ``design``, ``groups``, ``time``, or ``interaction`` fields (see below); columns not referenced by a given comparison are accounted for in the analysis. This also means a single samplesheet can be reused across multiple, different comparisons in the same comparison YAML file.
+
 Keep in mind that when a samplesheet is provided, only samples that are present in that samplesheet are considered for the analysis.
-If no samplesheet is provided, all BAM/CRAM files in the specified directory are included in the analysis.
+If no samplesheet is provided, all BAM/CRAM files in the specified directory are included in the analysis (the full base pipeline — peak calling, bigwigs, count matrix, QC — still runs; only differential testing is skipped).
 
 Comparison
 ^^^^^^^^^^
@@ -66,7 +84,7 @@ Note that all the requested analyses need to have a unique comparison_name. If n
 Twogroup comparisons
 """"""""""""""""""""
 
-The twogroup comparison is he most basic comparison to be made. It can be specified as such:
+The twogroup comparison is the most basic comparison to be made. It can be specified as such:
 
 .. code:: yaml
 
@@ -147,7 +165,7 @@ Keep in mind that the reduced design should be nested within the full design, me
 The output here is similar to the two-group comparison output (though under the `lrt` subfolder), with the difference that there is no group label in the edgeR output.
 Instead, a rudimentary k-means clustering is ran on the significant peaks (calculating k based on the inertia metrics).
 Note that here `--fdr_cutoff` is relevant, but `--lfc_cutoff` is not, even though fold changes are estimated per dropped factor level and available in the output table too.
-By default, if at least 1000 peaks (`--min_sigpeaks`) are scored differential under the LRT test, postprocessing is ran. This number can be controlled with the `--lrt-peaks` flag.
+By default, if at least 100 peaks (`--min_sigpeaks`) are scored differential under the LRT test, postprocessing is ran. This number can be controlled with the `--min_sigpeaks` flag.
 
 
 Timecourse
