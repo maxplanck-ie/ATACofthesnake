@@ -26,11 +26,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up Miniconda (Miniforge)
-        uses: conda-incubator/setup-miniconda@v4
-        with:
-          auto-update-conda: true
-
       - name: Create environment
-        run: |
-          conda env create -f ${{ matrix.env_file }} -n test_env
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-file: ${{ matrix.env_file }}
+          environment-name: test_env
+          cache-environment: true
+          cache-downloads: true
