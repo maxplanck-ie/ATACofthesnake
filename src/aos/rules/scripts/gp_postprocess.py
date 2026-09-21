@@ -74,7 +74,17 @@ else:
     patterns = np.vstack(y_pred.values)
 patterns_scaled = patterns - patterns.mean(axis=1, keepdims=True)
 patterns_scaled /= patterns.std(axis=1, keepdims=True) + 1e-8
-K_range = range(2, min(20, len(patterns)))
+
+k_max = min(20, len(patterns))
+if k_max < 3:
+    print(
+        f"Only {len(patterns)} significant peaks for {comp_name}; skipping "
+        "k-means clustering (need at least 3)."
+    )
+    Path(snakemake.output.donefile).touch()
+    sys.exit(0)
+
+K_range = range(2, k_max)
 inertias = Parallel(n_jobs=snakemake.threads)(
     delayed(compute_inertia)(k, patterns_scaled) for k in K_range
 )

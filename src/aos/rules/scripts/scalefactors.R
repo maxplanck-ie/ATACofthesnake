@@ -14,6 +14,13 @@ countmat <- as.matrix(countmat[,-(1:3),drop=FALSE])
 NormFactor <- calcNormFactors(object = countmat, method = "TMM")
 # Get libSize
 LibSize <- colSums(countmat)
+if (any(LibSize == 0)) {
+  bad <- colnames(countmat)[LibSize == 0]
+  stop(sprintf(
+    "Sample(s) %s have zero reads overlapping the peak set; cannot compute a scale factor for them. Check upstream filtering/peak calling for these samples.",
+    paste(bad, collapse = ", ")
+  ))
+}
 # Size factors
 SizeFactors <- NormFactor * LibSize / 1000000
 # Reciprocal for deepTools
