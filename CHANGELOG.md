@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.14.1...v0.15.0) (2026-09-21)
+
+
+### Features
+
+* gp/lrt clustering safety check ([25096c6](https://github.com/maxplanck-ie/ATACofthesnake/commit/25096c66e6fa5661ba19be0e225157e59f269a63))
+* seed gp permutations, edgeR lrt test pairing ([#101](https://github.com/maxplanck-ie/ATACofthesnake/issues/101)) ([25096c6](https://github.com/maxplanck-ie/ATACofthesnake/commit/25096c66e6fa5661ba19be0e225157e59f269a63))
+* tobias subsample rounding improvement ([25096c6](https://github.com/maxplanck-ie/ATACofthesnake/commit/25096c66e6fa5661ba19be0e225157e59f269a63))
+
+
+### Bug Fixes
+
+* cli pseudocount bounds ([25096c6](https://github.com/maxplanck-ie/ATACofthesnake/commit/25096c66e6fa5661ba19be0e225157e59f269a63))
+* gp interaction k-table output collision ([25096c6](https://github.com/maxplanck-ie/ATACofthesnake/commit/25096c66e6fa5661ba19be0e225157e59f269a63))
+
 ## [0.14.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.14.0...v0.14.1) (2026-09-14)
 
 
