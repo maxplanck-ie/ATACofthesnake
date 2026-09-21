@@ -54,19 +54,26 @@ checkpoint lrt_bedfiles:
         counts = counts.loc[sig["peak_id"].tolist()].values
         counts_scaled = counts - counts.mean(axis=1, keepdims=True)
         counts_scaled /= counts.std(axis=1, keepdims=True) + 1e-8
-        k_range = range(2, 20)
-        inertias = []
-        for k in k_range:
-            kmeans = KMeans(n_clusters=k, n_init=50, random_state=1337).fit(counts_scaled)
-            inertias.append(kmeans.inertia_)
-        k_opt = get_elbow(inertias, k_range)
-        print(f"Selected K = {k_opt}")
-        with open(f"lrt/{wildcards.comparison}/k_opt.txt", 'w') as f:
-            f.write(str(k_opt))
-        # Create table with K-labels.
-        kmeans = KMeans(n_clusters=k_opt, n_init=50, random_state=1337).fit(counts_scaled)
-        sig["k"] = kmeans.labels_
-        sig.to_csv(f"lrt/{wildcards.comparison}/{wildcards.comparison}_sig_peaks_kmeans.tsv", sep='\t', index=False, header=True)
+        k_max = min(20, len(sig))
+        if k_max < 3:
+            print(
+                f"Only {len(sig)} significant peaks for {wildcards.comparison}; "
+                "skipping k-means clustering (need at least 3)."
+            )
+        else:
+            k_range = range(2, k_max)
+            inertias = []
+            for k in k_range:
+                kmeans = KMeans(n_clusters=k, n_init=50, random_state=1337).fit(counts_scaled)
+                inertias.append(kmeans.inertia_)
+            k_opt = get_elbow(inertias, k_range)
+            print(f"Selected K = {k_opt}")
+            with open(f"lrt/{wildcards.comparison}/k_opt.txt", 'w') as f:
+                f.write(str(k_opt))
+            # Create table with K-labels.
+            kmeans = KMeans(n_clusters=k_opt, n_init=50, random_state=1337).fit(counts_scaled)
+            sig["k"] = kmeans.labels_
+            sig.to_csv(f"lrt/{wildcards.comparison}/{wildcards.comparison}_sig_peaks_kmeans.tsv", sep='\t', index=False, header=True)
 
 
 rule lrt_plotheatmap:

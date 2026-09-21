@@ -97,7 +97,11 @@ rule frips:
   shell:'''
   mapped=$(samtools view -c -F 4 {input.bam})
   peakreads=$(samtools view -c -F 4 -L {input.peaks} {input.bam})
-  frip=$(bc -l <<< $peakreads/$mapped)
+  if [ "$mapped" -eq 0 ]; then
+    frip=0
+  else
+    frip=$(bc -l <<< $peakreads/$mapped)
+  fi
   printf "%s\t%5.3f\n" {params.sample} $frip > {output}
   '''
 

@@ -36,7 +36,7 @@ rows <- paste(countmat[,1],countmat[,2], countmat[,3], sep='|')
 countmat <- countmat[-c(1:3)]
 rownames(countmat) <- rows
 # make sure the columns of count matrix are equal to the rows of the samplesheet.
-countmat <- countmat[, rownames(samplesheet)] 
+countmat <- countmat[, rownames(samplesheet)]
 
 # Design
 ## Either design is present in the comparison_entry, or we default to additive design of all covariates.
@@ -66,13 +66,17 @@ ok <- complete.cases(mf_full) & complete.cases(mf_red)
 relevantsamples <- rownames(samplesheet)[ok]
 write_lines(relevantsamples,relevantsamples_out, sep='\n')
 
+design <- design[relevantsamples, , drop = FALSE]
+countmat <- countmat[, relevantsamples]
+
 # Run edgeR.
 keep <- filterByExpr(
     countmat, design=design,min.count = 5, min.prop = 0.49
 )
 countmat <- countmat[keep,]
-countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
-fit <- glmQLFit(countmat, design=design, dispersion = countmat_disp)
+y <- DGEList(counts = countmat)
+y <- estimateDisp(y, design = design)
+fit <- glmFit(y, design = design)
 lrt <- glmLRT(fit, coef=lrt_coefs)
 res <- data.frame(topTags(lrt, n = Inf))
 res$peak_id <- rownames(res)

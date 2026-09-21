@@ -76,12 +76,22 @@ count_matrix_norm.index = peaks
 if len(samplesheet.columns) > 2:
     covars = samplesheet.drop(columns=[_comparison["time"], INT_STRING])
     nuis_encoded = pd.get_dummies(covars, drop_first=True)
-    assert nuis_encoded.shape[0] == count_matrix_norm.shape[1]
+    if nuis_encoded.shape[0] != count_matrix_norm.shape[1]:
+        raise ValueError(
+            f"Nuisance covariate table has {nuis_encoded.shape[0]} samples but "
+            f"the count matrix has {count_matrix_norm.shape[1]}; samplesheet "
+            "and count matrix are misaligned."
+        )
 else:
     nuis_encoded = None
 # Encode interaction
 int_encoded = pd.get_dummies(samplesheet[INT_STRING], drop_first=True)
-assert len(time) == count_matrix_norm.shape[1]
+if len(time) != count_matrix_norm.shape[1]:
+    raise ValueError(
+        f"Time vector has {len(time)} samples but the count matrix has "
+        f"{count_matrix_norm.shape[1]}; samplesheet and count matrix are "
+        "misaligned."
+    )
 
 # Get levels for prediction.
 _all_levels = sorted(samplesheet[INT_STRING].unique())

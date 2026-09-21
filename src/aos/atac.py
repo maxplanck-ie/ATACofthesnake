@@ -108,7 +108,7 @@ from aos.preflight import Preflight
     "--pseudocount",
     required=False,
     default=8,
-    type=int,
+    type=click.IntRange(min=0),
     show_default=True,
     help="Pseudocount to add to the count matrix prior to differential calling. Only relevant in two-group mode.",
 )
@@ -178,7 +178,7 @@ def main(**kwargs) -> None:
     pf = Preflight(kwargs)
     console = Console()
     console.print("[bold green]Running snakemake...")
-    subprocess.run(
+    result = subprocess.run(
         [
             "snakemake",
             "-s",
@@ -191,3 +191,8 @@ def main(**kwargs) -> None:
         ]
         + pf.snakemake_arguments()
     )
+    if result.returncode != 0:
+        console.print(
+            f"[bold red]Snakemake exited with a non-zero status ({result.returncode})."
+        )
+        raise SystemExit(result.returncode)

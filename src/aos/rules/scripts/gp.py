@@ -75,10 +75,20 @@ count_matrix_norm.to_csv(norm_matrix_output, sep="\t", index=True, header=True)
 if len(samplesheet.columns) > 1:
     covars = samplesheet.drop(columns=[_comparison["time"]])
     cov_encoded = pd.get_dummies(covars, drop_first=True)
-    assert cov_encoded.shape[0] == count_matrix_norm.shape[1]
+    if cov_encoded.shape[0] != count_matrix_norm.shape[1]:
+        raise ValueError(
+            f"Covariate table has {cov_encoded.shape[0]} samples but the count "
+            f"matrix has {count_matrix_norm.shape[1]}; samplesheet and count "
+            "matrix are misaligned."
+        )
 else:
     cov_encoded = None
-assert len(time) == count_matrix_norm.shape[1]
+if len(time) != count_matrix_norm.shape[1]:
+    raise ValueError(
+        f"Time vector has {len(time)} samples but the count matrix has "
+        f"{count_matrix_norm.shape[1]}; samplesheet and count matrix are "
+        "misaligned."
+    )
 
 # Paramdic to fit GPs
 fit_parameters = {

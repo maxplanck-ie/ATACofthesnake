@@ -52,7 +52,11 @@ class Preflight:
                 "Providing motifs requires a samplesheet to be provided too."
             )
 
-        if self.samplesheet and self.comparison:
+        if self.samplesheet or self.comparison:
+            assert self.samplesheet and self.comparison, (
+                "Both --samplesheet and --comparison are required together to run "
+                "differential testing; only one of the two was provided. Exiting."
+            )
             self.logger.info("Validating samplesheet and comparison file...")
             # Validate samplesheet and comparison file.
             self.validate_samplesheet(self.samplesheet, self.bamdir)
@@ -61,7 +65,6 @@ class Preflight:
                 self.logger.warning(_warning)
         else:
             self.logger.info("No differential testing requested...")
-            self.interaction = None
 
         # Store variables
         self.logger.info("Parsing other variables...")

@@ -67,7 +67,8 @@ rule gp_postprocessing_interaction:
     permutation_cutoff = config['cutoffs']['permutation_cutoff'],
     comp_name = lambda wildcards: wildcards.comparison,
     min_sigpeaks = config['cutoffs']['min_sigpeaks'],
-    y_pred = lambda wildcards: f"gp/{wildcards.comparison}/inttest_{wildcards.comparison}_{wildcards.interaction}_acc_pred.tsv",
+    interaction = True,
+    int = lambda wildcards: wildcards.interaction,
     odir = lambda wildcards: f"gp/{wildcards.comparison}"
   benchmark: "benchmarks/2_gp-interaction-postprocess_{comparison}_{interaction}.txt"
   threads: 20

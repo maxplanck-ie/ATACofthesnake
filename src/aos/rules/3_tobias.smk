@@ -31,20 +31,28 @@ rule subsample_bams:
       sample = Path(bam).stem
       obam = f"footprints/bams/{sample}.bam"
       fraction = target / countdic[sample]
-      if fraction == 1:
+      frac_rounded = round(fraction, 6)
+      if frac_rounded >= 1:
         shell(f"cp {bam} {obam}")
         shell(f"cp {bam}.bai {obam}.bai")
       else:
-        fracstr = f"{fraction:.6f}".split(".")[1]
+        fracstr = f"{frac_rounded:.6f}".split(".")[1]
+        if fracstr == "000000":
+          raise ValueError(
+            f"Sample {sample} in footprinting group {wildcards.fp_group} would be "
+            f"subsampled to a fraction of 0 reads (target={target}, "
+            f"count={countdic[sample]}). The read-depth imbalance in this group is "
+            "too extreme to subsample sensibly."
+          )
         fracstr = f"1337.{fracstr}"
         shell(f"samtools view -@ {threads} -b -s {fracstr} {bam} -o {obam}")
         shell(f"samtools index -@ {threads} {obam}")
       temp_bams.append(obam)
-        
+
     # Merge all subsamples bams together.
     shell(f"samtools merge -@ {threads} {output.finbam} {' '.join(temp_bams)}")
     shell(f"samtools index -@ {threads} {output.finbam}")
-    
+
     # Cleanup temp files.
     for bam in input.bams:
       sample = Path(bam).stem
@@ -130,7 +138,7 @@ rule plot_aggregate:
         txt = "footprints/plotaggregate/{comp}/{motif}.txt"
     params:
         bedfiles = lambda wc: ' '.join(
-            str(p) for p in 
+            str(p) for p in
             Path(f"footprints/plotaggregate/{wc.comp}/bedfiles").glob(f"{wc.motif}-*.bed")
         ),
         motname = lambda wc: pd.read_table(

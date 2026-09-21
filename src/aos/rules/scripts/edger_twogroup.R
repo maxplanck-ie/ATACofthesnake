@@ -116,8 +116,9 @@ keep <- filterByExpr(
 )
 countmat <- countmat[keep,]
 countmat <- countmat + pseudocount
-countmat_disp <- estimateGLMCommonDisp(countmat, design, verbose=TRUE)
-fit <- glmQLFit(countmat, design=design, dispersion = countmat_disp)
+y <- DGEList(counts = countmat)
+y <- estimateDisp(y, design = design)
+fit <- glmQLFit(y, design = design)
 res <- glmQLFTest(fit, contrast=contrast)
 results <- topTags(res, n = Inf, adjust.method="BH", sort.by='PValue', p.value=1)
 res <- results$table

@@ -7,18 +7,6 @@ import pandas as pd
 import seaborn as sns
 
 
-def idx_to_mit(_f):
-    count = 0
-    totalcount = 0
-    with open(_f) as f:
-        for line in f:
-            _l = line.strip().split()
-            totalcount += int(_l[1])
-            if "mt" in _l[0].lower():
-                count = int(_l[1])
-    return round(count / totalcount, 2)
-
-
 def plotfragsize(fs, of):
     df = pd.read_csv(fs, sep="\t", index_col=None, comment="#")
     df["Sample"] = [
@@ -178,8 +166,6 @@ def maplot(tsv: str, of: str, compentry: dict, lfc_cutoff: float, fdr_cutoff: fl
 def merge_idx(i, o):
     _i = list(i)
     _o = str(o)
-    print(list(_i))
-    print(str(_o))
     rnames = ["samples"]
     with open(_i[0]) as f:
         for line in f:
@@ -270,7 +256,7 @@ def PCA_colors(samplesheet, samples):
         colIx = 0
         for s in sdf.iloc[:, [0]].values:
             if s[0] not in colDic:
-                colDic[s[0]] = colors[colIx]
+                colDic[s[0]] = colors[colIx % len(colors)]
                 colIx += 1
         PCAstr = "--colors"
         for s in sdf.iloc[:, [0]].values:

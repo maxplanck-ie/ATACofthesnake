@@ -5,13 +5,6 @@ import pandas as pd
 from aos import helper
 
 
-class TestIdxToMit:
-    def test_fraction(self, tmp_path):
-        f = tmp_path / "idx.tsv"
-        f.write_text("chr1 100\nMT 50\nchr2 20\n")
-        assert helper.idx_to_mit(f) == 0.29
-
-
 class TestPCAColors:
     def test_no_samplesheet(self):
         assert helper.PCA_colors(None, ["s1", "s2"]) == ""
