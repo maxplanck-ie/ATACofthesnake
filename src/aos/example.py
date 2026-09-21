@@ -153,9 +153,11 @@ class AOSExample:
                     verified += 1
                     continue
             self.logger.info(f"Downloading {fname} from {url}...")
-            response = requests.get(url)
+            response = requests.get(url, timeout=60, stream=True)
+            response.raise_for_status()
             with open(self.output / dataset / fname, 'wb') as f:
-                f.write(response.content)
+                for chunk in response.iter_content(chunk_size=1024 * 1024):
+                    f.write(chunk)
             self.logger.info(f"Downloaded {fname}, verifying md5. File {verified + 1} of {len(wanted)}")
             md5_hash = hashlib.md5()
             with open(self.output / dataset / fname, "rb") as f:
