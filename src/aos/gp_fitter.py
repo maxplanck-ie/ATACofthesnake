@@ -9,6 +9,7 @@ from sklearn.gaussian_process.kernels import ConstantKernel as C
 
 from aos.gp_custom_kernels import OrdinalKernel, SlicedOrdinalKernel, SlicedRBF
 
+_PERMUTATION_SEED = 1337
 
 def fit_gp(y, paramdic):
     cov_encoded = paramdic["cov_encoded"]
@@ -76,7 +77,7 @@ def fit_gp(y, paramdic):
             distances = np.array([])
 
         # PERM
-        rng = np.random.default_rng()
+        rng = np.random.default_rng(_PERMUTATION_SEED)
         lr_perm = []
 
         for _ in range(perms):
@@ -249,7 +250,7 @@ def fit_gp_interaction(y, paramdic):
         distances = np.array([])
 
     # PERMUTATION TEST
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(_PERMUTATION_SEED)
     lr_perm = []
     for _ in range(perms):
         perm_idx = rng.permutation(len(time))
