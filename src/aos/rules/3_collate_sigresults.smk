@@ -51,16 +51,21 @@ checkpoint collate_sigresults:
           _tsv = sigresult.replace("_postprocess.done", "_k_table.tsv")
           if Path(_tsv).exists():
             df = pd.read_table(_tsv, sep='\t', index_col=0)
-            assert (df["FDR"] < params.perm_cutoff).all(), f"Permutation cutoff not met for all peaks in {_tsv}"
+            df = df[df["FDR"] < params.perm_cutoff]
             _comp = Path(sigresult).parts[1]
             if "inttest" in sigresult:
-              _comp += "_" + Path(sigresult).name.split("_")[2]
-            output_folder = Path(f"motifs/{_comp}")
-            output_folder.mkdir(parents=True, exist_ok=True)
-            for k in df['k'].unique():
-              with open(output_folder / f"{_comp}_k{k}.bed", "w") as f:
-                for peak in df[df['k'] == k].index:
-                  f.write('\t'.join(peak.split('|'))+'\n')
+              _name = Path(sigresult).name
+              _prefix = f"inttest_{_comp}_"
+              _suffix = "_postprocess.done"
+              _interaction_name = _name[len(_prefix):-len(_suffix)]
+              _comp += "_" + _interaction_name
+            if not df.empty:
+              output_folder = Path(f"motifs/{_comp}")
+              output_folder.mkdir(parents=True, exist_ok=True)
+              for k in df['k'].unique():
+                with open(output_folder / f"{_comp}_k{k}.bed", "w") as f:
+                  for peak in df[df['k'] == k].index:
+                    f.write('\t'.join(peak.split('|'))+'\n')
           _disttsv = sigresult.replace("_postprocess.done", "_distances_k_table.tsv")
           if Path(_disttsv).exists():
             df = pd.read_table(_disttsv, sep='\t', index_col=0)
