@@ -331,11 +331,12 @@ class Preflight:
         self.gtf_sorted = self.outputdir / "genes.sorted.gtf"
         self.tss = self.outputdir / "tss.bed"
 
-    def snakemake_arguments(self) -> list:
-        if self.smk_profile:
-            return ["--profile", self.smk_profile]
+    @staticmethod
+    def snakemake_arguments(profile: str | None, threads: int) -> list:
+        if profile:
+            return ["--profile", profile]
         else:
-            return ["--cores", f"{self.threads}", "--use-conda"]
+            return ["--cores", f"{threads}", "--use-conda"]
 
     def to_dict(self):
         d = {}
