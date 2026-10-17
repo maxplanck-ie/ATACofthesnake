@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import click
 from rich.console import Console
@@ -174,22 +175,56 @@ from aos.preflight import Preflight
     show_default=True,
     help="the variance for the additional noise term in the time-course mode. Higher values result in more smoothing (flatter curves). Lower values result in less smoothing (more jagged fits).",
 )
+@click.option(
+    "--unlock",
+    is_flag=True,
+    default=False,
+    help="Unlock the output directory after a crashed/killed run, then exit. Skips preflight and reuses the aos_config.yaml of the previous run. The required options still need to be given, but are ignored (except -o, and -p/-@).",
+)
+@click.option(
+    "--dryrun",
+    is_flag=True,
+    default=False,
+    help="Run preflight, then ask snakemake for a dry-run only (nothing is executed). Note that steps downstream of checkpoints (motifs/footprinting) cannot be planned before earlier steps have run.",
+)
 def main(**kwargs) -> None:
-    pf = Preflight(kwargs)
     console = Console()
+    if kwargs["unlock"] and kwargs["dryrun"]:
+        raise click.UsageError("--unlock and --dryrun cannot be combined.")
+
+    smk_args = Preflight.snakemake_arguments(
+        kwargs["snakemakeprofile"], kwargs["threads"]
+    )
+    if kwargs["unlock"]:
+        outputdir = Path(kwargs["outputdir"])
+        configfile = outputdir / "aos_config.yaml"
+        if not (outputdir / ".snakemake").is_dir() or not configfile.exists():
+            raise click.UsageError(
+                f"Nothing to unlock: {outputdir} has no .snakemake directory and/or aos_config.yaml from a previous run."
+            )
+        workflowfile = Path(__file__).parent / "workflow.smk"
+        extra = ["--unlock"]
+    else:
+        pf = Preflight(kwargs)
+        workflowfile = pf.workflowfile
+        configfile = pf.configfile
+        outputdir = pf.outputdir
+        extra = ["--dry-run"] if kwargs["dryrun"] else []
+
     console.print("[bold green]Running snakemake...")
     result = subprocess.run(
         [
             "snakemake",
             "-s",
-            pf.workflowfile,
+            workflowfile,
             "--configfile",
-            pf.configfile,
+            configfile,
             "-d",
-            pf.outputdir,
+            outputdir,
             "-p",
         ]
-        + pf.snakemake_arguments()
+        + smk_args
+        + extra
     )
     if result.returncode != 0:
         console.print(
