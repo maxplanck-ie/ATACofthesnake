@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.15.0...v0.16.0) (2026-10-17)
+
+
+### Features
+
+* snakemake unlock and dryrun options available via CLI ([#108](https://github.com/maxplanck-ie/ATACofthesnake/issues/108)) ([a0de587](https://github.com/maxplanck-ie/ATACofthesnake/commit/a0de587325641d12824abf2d60511610bbd86239))
+
+
+### Documentation
+
+* DOI in README ([#103](https://github.com/maxplanck-ie/ATACofthesnake/issues/103)) ([4e01e94](https://github.com/maxplanck-ie/ATACofthesnake/commit/4e01e9459e6be521ed317c3361eb28979065cfdf))
+
 ## [0.15.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.14.1...v0.15.0) (2026-09-21)
 
 
