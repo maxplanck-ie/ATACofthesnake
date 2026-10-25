@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.17.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.16.0...v0.17.0) (2026-10-25)
+
+
+### Features
+
+* make gp runners ETA readable from both local and submitted workflows ([a880ae4](https://github.com/maxplanck-ie/ATACofthesnake/commit/a880ae41897edd599100a45fb525748660ae304b))
+
+
+### Performance Improvements
+
+* vectorize permutations for speed up  ([#109](https://github.com/maxplanck-ie/ATACofthesnake/issues/109)) ([a880ae4](https://github.com/maxplanck-ie/ATACofthesnake/commit/a880ae41897edd599100a45fb525748660ae304b))
+
 ## [0.16.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.15.0...v0.16.0) (2026-10-17)
 
 
