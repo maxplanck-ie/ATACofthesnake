@@ -12,6 +12,7 @@ rule gp_diffacc:
     permutations = config['cutoffs']['permutation_iterations'],
     gp_timesteps = config['cutoffs']['gp_timesteps'],
     gp_alpha = config['cutoffs']['gp_alpha']
+  log: "gp/{comparison}/{comparison}_gp.log"
   benchmark: "benchmarks/2_gp_{comparison}.txt"
   threads: 50
   conda: "envs/gp.yml"
@@ -32,6 +33,7 @@ rule gp_diffacc_interaction:
     gp_timesteps = config['cutoffs']['gp_timesteps'],
     gp_alpha = config['cutoffs']['gp_alpha'],
     interaction = lambda wildcards: wildcards.interaction
+  log: "gp/{comparison}/inttest_{comparison}_{interaction}_gp.log"
   benchmark: "benchmarks/2_gp-interaction_{comparison}_{interaction}.txt"
   threads: 50
   conda: 'envs/gp.yml'

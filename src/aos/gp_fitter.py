@@ -1,4 +1,7 @@
+import sys
+import time
 import warnings
+from datetime import timedelta
 
 import numpy as np
 from scipy.special import softmax
@@ -308,3 +311,27 @@ def fit_gp_interaction(y, paramdic):
     )
     p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
     return y_pred_arr, y_std_arr, distances, lr_obs, p_value
+
+
+def log_progress(results, total, label, logfile, every=60):
+    """Yield results, writing progress and ETA to stderr and logfile."""
+    start = last = time.monotonic()
+    with open(logfile, "w") as log:
+        _line = f"{label}: fitting {total} peaks"
+        print(_line, file=sys.stderr, flush=True)
+        print(_line, file=log, flush=True)
+        for done, result in enumerate(results, 1):
+            yield result
+            now = time.monotonic()
+            if now - last >= every or done == total:
+                last = now
+                elapsed = now - start
+                eta = elapsed / done * (total - done)
+                _line = (
+                    f"{label}: {done}/{total} peaks ({done / total:.0%}) | "
+                    f"{done / elapsed:.1f} peaks/s | "
+                    f"elapsed {timedelta(seconds=round(elapsed))} | "
+                    f"ETA {timedelta(seconds=round(eta))}"
+                )
+                print(_line, file=sys.stderr, flush=True)
+                print(_line, file=log, flush=True)
