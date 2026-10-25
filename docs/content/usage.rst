@@ -213,6 +213,7 @@ A similar Gaussian process regression is ran here as in the continuous case, wit
 The output is similar to the output in the continuous case, with the addition of the estimated relative distance between time points per peak in a separate table.
 Cut offs here are controlled by `--permutation_cutoff` (default 1e-2), which is performed on the bh-corrected permutation p-values. The number of iterations can be set with `--permutation_iterations` and defaults to 1000, per peak.
 Note that increasing this number could lead to exorbitant runtimes (and in fact runtimes with 1000 iterations are already quite long). In case you are running a continuous timecourse, the number of timepoints for predicted curve fits can be set with `--gp_timesteps`, and defaults to 10.
+Progress and an estimated time remaining for the Gaussian process fits are written every minute to `gp/<comparison>/<comparison>_gp.log` (or `gp/<comparison>/inttest_<comparison>_<interaction>_gp.log`), and to stderr. The log can be followed with `tail -f`, both for local runs and when using a snakemake profile.
 
 For both `ordinal` and `continuous` timecourse analyses, time*covariate interactions can be tested by including an `interaction` cell in the comparison yaml. For example:
 

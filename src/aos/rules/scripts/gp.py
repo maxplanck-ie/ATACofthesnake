@@ -3,10 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from rich.progress import track
 from statsmodels.stats.multitest import multipletests
 
-from aos.gp_fitter import fit_gp
+from aos.gp_fitter import fit_gp, log_progress
 
 # Avoid overthreading.
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -101,12 +100,15 @@ fit_parameters = {
     "fit_type": _comparison["time_type"],
 }
 
-results = Parallel(n_jobs=THREADS)(
-    delayed(fit_gp)(row.values, fit_parameters)
-    for _, row in track(
-        count_matrix_norm.iterrows(),
+results = list(
+    log_progress(
+        Parallel(n_jobs=THREADS, return_as="generator")(
+            delayed(fit_gp)(row.values, fit_parameters)
+            for _, row in count_matrix_norm.iterrows()
+        ),
         total=count_matrix_norm.shape[0],
-        description="Fitting GP",
+        label=f"GP {snakemake.wildcards.comparison}",
+        logfile=snakemake.log[0],
     )
 )
 
