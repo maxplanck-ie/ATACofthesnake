@@ -43,7 +43,28 @@ if _comparison["time_type"] == "ordinal":
         if samplesheet.loc[sam, _comparison["time"]] in _levels_case
     ]
     samplesheet = samplesheet.loc[samples_of_interest]
-    count_matrix = count_matrix[samples_of_interest]
+
+    _n_int = samplesheet[INT_STRING].nunique()
+    _keep = [
+        samplesheet.loc[samplesheet[_comparison["time"]] == lvl, INT_STRING].nunique()
+        == _n_int
+        for lvl in _levels_case
+    ]
+    if not all(_keep):
+        print(
+            f"Interaction {INT_STRING}: dropping timepoints "
+            f"{[lvl for lvl, k in zip(levels, _keep) if not k]}, not observed "
+            f"for every {INT_STRING} level."
+        )
+        levels = [lvl for lvl, k in zip(levels, _keep) if k]
+        _levels_case = [lvl for lvl, k in zip(_levels_case, _keep) if k]
+        samplesheet = samplesheet[samplesheet[_comparison["time"]].isin(_levels_case)]
+    if len(levels) < 2:
+        raise ValueError(
+            f"Interaction {INT_STRING}: fewer than 2 timepoints are observed for "
+            f"every {INT_STRING} level ({levels}); cannot test the interaction."
+        )
+    count_matrix = count_matrix[list(samplesheet.index)]
 
     _time_str = samplesheet[_comparison["time"]].values.astype(str)
     _time_map = {t: i for i, t in enumerate(levels)}
@@ -81,6 +102,9 @@ if len(samplesheet.columns) > 2:
             f"the count matrix has {count_matrix_norm.shape[1]}; samplesheet "
             "and count matrix are misaligned."
         )
+    # Covariates can become constant after dropping timepoints.
+    if nuis_encoded.shape[1] == 0:
+        nuis_encoded = None
 else:
     nuis_encoded = None
 # Encode interaction

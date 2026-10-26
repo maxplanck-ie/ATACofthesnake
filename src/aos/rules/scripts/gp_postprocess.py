@@ -9,7 +9,6 @@ from joblib import Parallel, delayed
 from sklearn.cluster import KMeans
 
 # parameters
-# config['cutoffs']['permutation_cutoff']
 perm_cutoff = snakemake.params.permutation_cutoff
 comp_name = snakemake.params.comp_name
 min_sigpeaks = snakemake.params.min_sigpeaks
@@ -66,7 +65,7 @@ def compute_inertia(k, pat):
 if "interaction" in y_pred.columns:
     _valcols = y_pred.columns.drop("interaction")
     patterns = np.vstack(
-        y_pred.groupby(y_pred.index)[_valcols]
+        y_pred.groupby(y_pred.index, sort=False)[_valcols]
         .apply(lambda x: np.hstack(x.to_numpy()))
         .values
     )
