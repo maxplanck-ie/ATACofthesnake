@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.17.0...v0.18.0) (2026-10-26)
+
+
+### Features
+
+* ordinal timepoints interaction tests drop timepoints not observed ([121a745](https://github.com/maxplanck-ie/ATACofthesnake/commit/121a74585f1865206206d8e1b09d3665b770f776))
+
+
+### Bug Fixes
+
+* interaction GP minimal LR tolerance to avoid minimal difference significant peaks ([#111](https://github.com/maxplanck-ie/ATACofthesnake/issues/111)) ([121a745](https://github.com/maxplanck-ie/ATACofthesnake/commit/121a74585f1865206206d8e1b09d3665b770f776))
+
 ## [0.17.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.16.0...v0.17.0) (2026-10-25)
 
 
