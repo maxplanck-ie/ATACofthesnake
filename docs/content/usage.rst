@@ -227,6 +227,8 @@ For both `ordinal` and `continuous` timecourse analyses, time*covariate interact
 
 Will run the original analysis (which peaks are time-sensitive, while controlling for other covariates), but will also run a second analysis, which test for the interaction between time and treatment (which peaks respond differently over time for different covariate levels).
 The outputs are the same as the original analysis, with the addition that predictions are done per covariate level.
+For the interaction test, p-values are obtained by permuting the residuals of the fitted model without the interaction term, so that time and covariate main effects are kept intact in every permutation. As a consequence, the likelihood ratio can be slightly negative for peaks without any interaction signal.
+In the ordinal case, timepoints that are not observed for every level of the interaction covariate (e.g. a shared, untreated baseline) are left out of the interaction test.
 In case you have more then one covariate to test, interaction can also be specified as a list. Here one `default` analysis will be ran for time, and two interaction analyses:
 
 .. code:: yaml

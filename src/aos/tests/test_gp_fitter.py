@@ -34,15 +34,17 @@ def old_perm_lr_gp(kernel, X, lml_null):
     return np.array(lr)
 
 
-def old_perm_lr_interaction(kernel_null, kernel_full, X, int_cols):
-    """Reference: the original loop, permuting the interaction columns."""
+def old_perm_lr_interaction(kernel_null, kernel_full, X):
+    """Reference: Freedman-Lane loop, permuting the null model's residuals."""
+    gp_null = GaussianProcessRegressor(kernel=kernel_null, alpha=ALPHA, optimizer=None)
+    y_hat = gp_null.fit(X, Y).predict(X)
+    resid = Y - y_hat
     lr = []
     for p in gp_fitter._permutations(len(X), PERMS):
-        X_perm = X.copy()
-        X_perm[:, int_cols] = X[p][:, int_cols]
-        lml_full = sklearn_lml(kernel_full, X_perm, Y)
-        lml_null = sklearn_lml(kernel_null, X_perm, Y)
-        lr.append(max(0.0, 2 * (lml_full - lml_null)))
+        y_perm = y_hat + resid[p]
+        lml_full = sklearn_lml(kernel_full, X, y_perm)
+        lml_null = sklearn_lml(kernel_null, X, y_perm)
+        lr.append(2 * (lml_full - lml_null))
     return np.array(lr)
 
 
@@ -93,9 +95,9 @@ def test_perm_interaction_continuous_nuisance():
     X = np.hstack([TIME, GROUP2, NUIS])
     kernel_null, kernel_full = interaction_kernels("continuous", [1], [2])
     new = gp_fitter._perm_lr_gp_interaction(
-        kernel_null, kernel_full, X, Y, ALPHA, [1], PERMS
+        kernel_null, kernel_full, X, Y, ALPHA, PERMS
     )
-    old = old_perm_lr_interaction(kernel_null, kernel_full, X, [1])
+    old = old_perm_lr_interaction(kernel_null, kernel_full, X)
     np.testing.assert_allclose(new, old, rtol=1e-7, atol=1e-8)
 
 
@@ -103,9 +105,9 @@ def test_perm_interaction_ordinal_three_levels():
     X = np.hstack([TIME, GROUP3])
     kernel_null, kernel_full = interaction_kernels("ordinal", [1, 2], None)
     new = gp_fitter._perm_lr_gp_interaction(
-        kernel_null, kernel_full, X, Y, ALPHA, [1, 2], PERMS
+        kernel_null, kernel_full, X, Y, ALPHA, PERMS
     )
-    old = old_perm_lr_interaction(kernel_null, kernel_full, X, [1, 2])
+    old = old_perm_lr_interaction(kernel_null, kernel_full, X)
     np.testing.assert_allclose(new, old, rtol=1e-7, atol=1e-8)
 
 

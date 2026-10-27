@@ -4,6 +4,7 @@ import warnings
 from datetime import timedelta
 
 import numpy as np
+from scipy.linalg import cho_solve, solve_triangular
 from scipy.special import softmax
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -14,7 +15,6 @@ from aos.gp_custom_kernels import OrdinalKernel, SlicedOrdinalKernel, SlicedRBF
 
 _PERMUTATION_SEED = 1337
 _PERM_CHUNK = 250
-_INT_LR_TOL = 1e-3
 
 
 def _permutations(n, perms):
@@ -34,6 +34,23 @@ def _lml_stack(K, y, alpha):
         -0.5 * np.sum(z**2, axis=-1)
         - np.sum(np.log(np.diagonal(L, axis1=-2, axis2=-1)), axis=-1)
         - 0.5 * n * np.log(2 * np.pi)
+    )
+
+
+def _chol_noise(K, alpha):
+    """Cholesky factor of K + alpha * I."""
+    K = K.copy()
+    K[np.diag_indices_from(K)] += alpha
+    return np.linalg.cholesky(K)
+
+
+def _lml_rows(L, Y):
+    """sklearn's GPR log marginal likelihood per row of Y, for L = chol(K + alpha I)."""
+    z = solve_triangular(L, Y.T, lower=True)
+    return (
+        -0.5 * np.sum(z**2, axis=0)
+        - np.sum(np.log(np.diag(L)))
+        - 0.5 * L.shape[0] * np.log(2 * np.pi)
     )
 
 
@@ -60,26 +77,6 @@ def _split_time_kernel(kernel, X):
     return K_time, K_cov
 
 
-def _gather_levels(K_lv, codes, p):
-    c = codes[p]
-    idx = np.arange(len(codes))
-    return K_lv[c[:, :, None], c[:, None, :], idx[:, None], idx[None, :]]
-
-
-def _level_pair_kernels(kernel, X, cols, levels, codes):
-    """K_lv[g, h] = kernel(X with cols set to level g, X with cols set to level h)."""
-    X_lv = []
-    for level in levels:
-        X_l = X.copy()
-        X_l[:, cols] = level
-        X_lv.append(X_l)
-    K_lv = np.array([[kernel(X_g, X_h) for X_h in X_lv] for X_g in X_lv])
-    identity = np.arange(X.shape[0])[None, :]
-    if not np.allclose(_gather_levels(K_lv, codes, identity)[0], kernel(X)):
-        raise ValueError("Level-pair kernels do not match the fitted GP kernel.")
-    return K_lv
-
-
 def _perm_lr_gp(kernel, X, y, alpha, lml_null, perms):
     K_time, K_cov = _split_time_kernel(kernel, X)
     lml = _perm_lml(
@@ -91,16 +88,23 @@ def _perm_lr_gp(kernel, X, y, alpha, lml_null, perms):
     return 2 * (lml - lml_null)
 
 
-def _perm_lr_gp_interaction(kernel_null, kernel_full, X, y, alpha, int_cols, perms):
+def _perm_lr_gp_interaction(kernel_null, kernel_full, X, y, alpha, perms):
+    """Freedman-Lane: permute the residuals of the fitted null model.
+    """
     X = np.asarray(X, dtype=float)
-    levels, codes = np.unique(X[:, int_cols], axis=0, return_inverse=True)
-    codes = codes.reshape(-1)
-    K_null = _level_pair_kernels(kernel_null, X, int_cols, levels, codes)
-    K_full = _level_pair_kernels(kernel_full, X, int_cols, levels, codes)
+    L_null = _chol_noise(kernel_null(X), alpha)
+    L_full = _chol_noise(kernel_full(X), alpha)
+    # Null posterior mean at X: K (K + alpha I)^-1 y = y - alpha (K + alpha I)^-1 y.
+    resid = alpha * cho_solve((L_null, True), y)
+    y_hat = y - resid
     perm_idx = _permutations(len(X), perms)
-    lml_null = _perm_lml(lambda p: _gather_levels(K_null, codes, p), y, alpha, perm_idx)
-    lml_full = _perm_lml(lambda p: _gather_levels(K_full, codes, p), y, alpha, perm_idx)
-    return np.maximum(0.0, 2 * (lml_full - lml_null))
+    lr = np.empty(perms)
+    for s in range(0, perms, _PERM_CHUNK):
+        Y_perm = y_hat + resid[perm_idx[s : s + _PERM_CHUNK]]
+        lr[s : s + _PERM_CHUNK] = 2 * (
+            _lml_rows(L_full, Y_perm) - _lml_rows(L_null, Y_perm)
+        )
+    return lr
 
 
 def fit_gp(y, paramdic):
@@ -253,9 +257,8 @@ def fit_gp_interaction(y, paramdic):
         gp_full.fit(X, y)
         lml_full = gp_full.log_marginal_likelihood()
 
+    # Not clipped at 0: permuted LRs aren't either, so both sides stay comparable.
     lr_obs = 2 * (lml_full - lml_null)
-    if lr_obs < _INT_LR_TOL:
-        lr_obs = 0.0
 
     # PREDICTION
 
@@ -308,14 +311,11 @@ def fit_gp_interaction(y, paramdic):
     else:
         distances = np.array([])
 
-    # PERMUTATION TEST - every lr_perm >= 0, so lr_obs == 0 gives p == 1.
-    if lr_obs == 0.0:
-        p_value = 1.0
-    else:
-        lr_perm = _perm_lr_gp_interaction(
-            gp_null.kernel_, gp_full.kernel_, X, y, alpha, i_idx, perms
-        )
-        p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
+    # PERMUTATION TEST
+    lr_perm = _perm_lr_gp_interaction(
+        gp_null.kernel_, gp_full.kernel_, X, y, alpha, perms
+    )
+    p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
     return y_pred_arr, y_std_arr, distances, lr_obs, p_value
 
 
