@@ -15,6 +15,7 @@ from aos.gp_custom_kernels import OrdinalKernel, SlicedOrdinalKernel, SlicedRBF
 
 _PERMUTATION_SEED = 1337
 _PERM_CHUNK = 250
+_INT_LR_TOL = 1e-3
 
 
 def _permutations(n, perms):
@@ -257,8 +258,9 @@ def fit_gp_interaction(y, paramdic):
         gp_full.fit(X, y)
         lml_full = gp_full.log_marginal_likelihood()
 
-    # Not clipped at 0: permuted LRs aren't either, so both sides stay comparable.
     lr_obs = 2 * (lml_full - lml_null)
+    if lr_obs < _INT_LR_TOL:
+        lr_obs = 0.0
 
     # PREDICTION
 
@@ -311,11 +313,13 @@ def fit_gp_interaction(y, paramdic):
     else:
         distances = np.array([])
 
-    # PERMUTATION TEST
-    lr_perm = _perm_lr_gp_interaction(
-        gp_null.kernel_, gp_full.kernel_, X, y, alpha, perms
-    )
-    p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
+    if lr_obs == 0.0:
+        p_value = 1.0
+    else:
+        lr_perm = _perm_lr_gp_interaction(
+            gp_null.kernel_, gp_full.kernel_, X, y, alpha, perms
+        )
+        p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
     return y_pred_arr, y_std_arr, distances, lr_obs, p_value
 
 
