@@ -144,7 +144,9 @@ results = list(
     )
 )
 
-y_preds, y_stds, distances_list, lr_obs_list, pvals = zip(*results)
+y_preds, y_stds, distances_list, lr_obs_list, pvals, lr_shape_list, p_shape_list = zip(
+    *results
+)
 
 _index = count_matrix_norm.index
 int_labels = fit_parameters["int_labels"]
@@ -167,10 +169,14 @@ distances_df = pd.DataFrame(np.vstack(distances_list), index=_index)
 if not distances_df.empty:
     distances_df.columns = [f"{a}-{b}" for a, b in zip(levels, levels[1:])]
 
+# lr_obs/p_value/FDR: any difference between levels (offset and/or time-varying).
+# *_shape: time-varying differences only, adjusted stage-wise in gp_postprocess.
 results_df = pd.DataFrame(
     {
         "lr_obs": lr_obs_list,
         "p_value": pvals,
+        "lr_shape": lr_shape_list,
+        "p_shape": p_shape_list,
     },
     index=_index,
 )

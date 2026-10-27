@@ -145,7 +145,11 @@ def test_fit_gp_interaction_pvalue():
         "fit_type": "continuous",
         "unique_times": UNIQUE_TIMES,
     }
-    p_value = gp_fitter.fit_gp_interaction(Y, paramdic)[-1]
-    assert 0 < p_value <= 1
+    _, _, _, lr_obs, p_value, lr_shape, p_shape = gp_fitter.fit_gp_interaction(
+        Y, paramdic
+    )
+    assert lr_obs >= 0 and lr_shape >= 0
+    assert 0 < p_value <= 1 and 0 < p_shape <= 1
     paramdic["perms"] = 0
-    assert gp_fitter.fit_gp_interaction(Y, paramdic)[-1] == 1
+    _, _, _, _, p_value, _, p_shape = gp_fitter.fit_gp_interaction(Y, paramdic)
+    assert p_value == 1 and p_shape == 1

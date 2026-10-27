@@ -179,6 +179,19 @@ def fit_gp(y, paramdic):
         return y_pred, y_std, distances, lr_obs, p_value
 
 
+def _lr_test_interaction(gp_null, gp_full, X, y, alpha, perms):
+    """LR and Freedman-Lane p-value of a fitted full GP against a nested null GP."""
+    lr_obs = 2 * (
+        gp_full.log_marginal_likelihood() - gp_null.log_marginal_likelihood()
+    )
+    if lr_obs < _INT_LR_TOL:
+        return 0.0, 1.0
+    lr_perm = _perm_lr_gp_interaction(
+        gp_null.kernel_, gp_full.kernel_, X, y, alpha, perms
+    )
+    return lr_obs, (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
+
+
 def _make_kernel_triple(fit_type, t_idx, i_idx, n_idx, unique_times):
     if fit_type == "ordinal":
         base = C(1.0, (1e-5, 1e5)) * RBF(
@@ -231,36 +244,39 @@ def fit_gp_interaction(y, paramdic):
         else None
     )
 
-    k_t_null, k_i_null, k_n_null = _make_kernel_triple(
+    # Three nested models:
+    #   shared: one time curve for all levels (+ nuisance)
+    #   shift:  shared + a constant offset per level
+    #   full:   shift + a time-varying offset per level (time:interaction)
+    k_t_shared, _, k_n_shared = _make_kernel_triple(
         fit_type, t_idx, i_idx, n_idx, unique_times
     )
-    kernel_null = k_t_null + k_i_null
-    if k_n_null is not None:
-        kernel_null += k_n_null
-    kernel_null = C(1.0, (1e-5, 1e5)) * kernel_null
+    kernel_shared = k_t_shared
+    if k_n_shared is not None:
+        kernel_shared += k_n_shared
+    kernel_shared = C(1.0, (1e-5, 1e5)) * kernel_shared
+
+    k_t_shift, k_i_shift, k_n_shift = _make_kernel_triple(
+        fit_type, t_idx, i_idx, n_idx, unique_times
+    )
+    kernel_shift = k_t_shift + k_i_shift
+    if k_n_shift is not None:
+        kernel_shift += k_n_shift
+    kernel_shift = C(1.0, (1e-5, 1e5)) * kernel_shift
 
     k_t_int, k_i_int, _ = _make_kernel_triple(
         fit_type, t_idx, i_idx, n_idx, unique_times
     )
-    kernel_full = kernel_null + C(1.0, (1e-2, 1e2)) * (k_t_int * k_i_int)
+    kernel_full = kernel_shift + C(1.0, (1e-2, 1e2)) * (k_t_int * k_i_int)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ConvergenceWarning)
-        gp_null = GaussianProcessRegressor(
-            kernel=kernel_null, alpha=alpha, n_restarts_optimizer=5
-        )
-        gp_null.fit(X, y)
-        lml_null = gp_null.log_marginal_likelihood()
-
-        gp_full = GaussianProcessRegressor(
-            kernel=kernel_full, alpha=alpha, n_restarts_optimizer=5
-        )
-        gp_full.fit(X, y)
-        lml_full = gp_full.log_marginal_likelihood()
-
-    lr_obs = 2 * (lml_full - lml_null)
-    if lr_obs < _INT_LR_TOL:
-        lr_obs = 0.0
+        gp_shared, gp_shift, gp_full = [
+            GaussianProcessRegressor(
+                kernel=k, alpha=alpha, n_restarts_optimizer=5
+            ).fit(X, y)
+            for k in (kernel_shared, kernel_shift, kernel_full)
+        ]
 
     # PREDICTION
 
@@ -313,14 +329,11 @@ def fit_gp_interaction(y, paramdic):
     else:
         distances = np.array([])
 
-    if lr_obs == 0.0:
-        p_value = 1.0
-    else:
-        lr_perm = _perm_lr_gp_interaction(
-            gp_null.kernel_, gp_full.kernel_, X, y, alpha, perms
-        )
-        p_value = (np.sum(lr_perm >= lr_obs) + 1) / (len(lr_perm) + 1)
-    return y_pred_arr, y_std_arr, distances, lr_obs, p_value
+    # full vs shared: any difference between levels (offset and/or time-varying).
+    lr_obs, p_value = _lr_test_interaction(gp_shared, gp_full, X, y, alpha, perms)
+    # full vs shift: time-varying differences only.
+    lr_shape, p_shape = _lr_test_interaction(gp_shift, gp_full, X, y, alpha, perms)
+    return y_pred_arr, y_std_arr, distances, lr_obs, p_value, lr_shape, p_shape
 
 
 def log_progress(results, total, label, logfile, every=60):

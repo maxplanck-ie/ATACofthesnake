@@ -26,13 +26,18 @@ else:
     k_table = Path(odir) / f"{comp_name}_k_table.tsv"
     k_plot = Path(odir) / f"{comp_name}_k_plot.png"
 
-sig = results[results["FDR"] < perm_cutoff]
+sig = results[results["FDR"] < perm_cutoff].copy()
 if len(sig) < min_sigpeaks:
     print(
         f"Only {len(sig)} significant peaks found for {comp_name} with permutation cutoff {perm_cutoff}. Need at least {min_sigpeaks} to continue."
     )
     Path(snakemake.output.donefile).touch()
     sys.exit(0)
+
+# Stage-wise shape test: only peaks passing the main test are tested, at
+# perm_cutoff * len(sig) / len(results). padj_shape < perm_cutoff is equivalent.
+if "p_shape" in sig.columns:
+    sig["padj_shape"] = (sig["p_shape"] * len(results) / len(sig)).clip(upper=1)
 
 y_pred = y_pred.loc[sig.index]
 
