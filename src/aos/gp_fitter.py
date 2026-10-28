@@ -11,7 +11,12 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.gaussian_process.kernels import ConstantKernel as C
 
-from aos.gp_custom_kernels import OrdinalKernel, SlicedOrdinalKernel, SlicedRBF
+from aos.gp_custom_kernels import (
+    BaselineMask,
+    OrdinalKernel,
+    SlicedOrdinalKernel,
+    SlicedRBF,
+)
 
 _PERMUTATION_SEED = 1337
 _PERM_CHUNK = 250
@@ -224,6 +229,7 @@ def fit_gp_interaction(y, paramdic):
     time_grid = paramdic["time_grid"]
     fit_type = paramdic["fit_type"]
     unique_times = paramdic["unique_times"]
+    baseline = paramdic.get("baseline")
 
     if nuis_encoded is not None:
         X = np.hstack([time, int_encoded, nuis_encoded])
@@ -248,6 +254,7 @@ def fit_gp_interaction(y, paramdic):
     #   shared: one time curve for all levels (+ nuisance)
     #   shift:  shared + a constant offset per level
     #   full:   shift + a time-varying offset per level (time:interaction)
+    # With a common baseline, both offsets are masked out at the baseline timepoint.
     k_t_shared, _, k_n_shared = _make_kernel_triple(
         fit_type, t_idx, i_idx, n_idx, unique_times
     )
@@ -259,15 +266,21 @@ def fit_gp_interaction(y, paramdic):
     k_t_shift, k_i_shift, k_n_shift = _make_kernel_triple(
         fit_type, t_idx, i_idx, n_idx, unique_times
     )
-    kernel_shift = k_t_shift + k_i_shift
+    k_t_int, k_i_int, _ = _make_kernel_triple(
+        fit_type, t_idx, i_idx, n_idx, unique_times
+    )
+    k_offset = k_i_shift
+    k_varying = k_t_int * k_i_int
+    if baseline is not None:
+        k_offset = BaselineMask(baseline) * k_offset
+        k_varying = BaselineMask(baseline) * k_varying
+
+    kernel_shift = k_t_shift + k_offset
     if k_n_shift is not None:
         kernel_shift += k_n_shift
     kernel_shift = C(1.0, (1e-5, 1e5)) * kernel_shift
 
-    k_t_int, k_i_int, _ = _make_kernel_triple(
-        fit_type, t_idx, i_idx, n_idx, unique_times
-    )
-    kernel_full = kernel_shift + C(1.0, (1e-2, 1e2)) * (k_t_int * k_i_int)
+    kernel_full = kernel_shift + C(1.0, (1e-2, 1e2)) * k_varying
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ConvergenceWarning)

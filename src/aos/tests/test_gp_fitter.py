@@ -6,7 +6,7 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.gaussian_process.kernels import ConstantKernel as C
 
 from aos import gp_fitter
-from aos.gp_custom_kernels import OrdinalKernel
+from aos.gp_custom_kernels import BaselineMask, OrdinalKernel
 
 # 12 samples: 4 timepoints x 3 replicates.
 TIME = np.repeat([0.0, 1.0, 2.0, 3.0], 3)[:, None]
@@ -153,3 +153,36 @@ def test_fit_gp_interaction_pvalue():
     paramdic["perms"] = 0
     _, _, _, _, p_value, _, p_shape = gp_fitter.fit_gp_interaction(Y, paramdic)
     assert p_value == 1 and p_shape == 1
+
+
+def test_baseline_mask():
+    mask = BaselineMask(0.0)
+    X = np.hstack([TIME, GROUP2])
+    s = (TIME.ravel() != 0.0).astype(float)
+    np.testing.assert_array_equal(mask(X), np.outer(s, s))
+    np.testing.assert_array_equal(mask(X, X[:4]), np.outer(s, s[:4]))
+    np.testing.assert_array_equal(mask.diag(X), s)
+
+
+def test_fit_gp_interaction_common_baseline():
+    # Baseline (time 0) only observed for the reference level.
+    group = GROUP2.copy()
+    group[:3] = 0.0
+    paramdic = {
+        "time": TIME,
+        "int_encoded": pd.DataFrame({"group": group.ravel()}),
+        "nuis_encoded": None,
+        "perms": 20,
+        "alpha": ALPHA,
+        "time_grid": UNIQUE_TIMES[:, None],
+        "fit_type": "ordinal",
+        "unique_times": UNIQUE_TIMES,
+        "baseline": 0.0,
+    }
+    y_pred, y_std, _, _, p_value, _, p_shape = gp_fitter.fit_gp_interaction(
+        Y, paramdic
+    )
+    # Both levels share the baseline.
+    np.testing.assert_allclose(y_pred[0, 0], y_pred[1, 0])
+    np.testing.assert_allclose(y_std[0, 0], y_std[1, 0])
+    assert 0 < p_value <= 1 and 0 < p_shape <= 1

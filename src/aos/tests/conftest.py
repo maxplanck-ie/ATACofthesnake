@@ -326,5 +326,17 @@ def comppath(tmp_path):
     d = deepcopy(comp)
     d["test_comp"]["interaction"] = 5
     wy(d, tmp_path / "comp_gp_interactionwrongtype.yaml")
+    # gp - common baseline
+    d = deepcopy(comp)
+    d["test_comp"]["interaction"] = "treatment"
+    d["test_comp"]["common_baseline"] = True
+    wy(d, tmp_path / "comp_gp_commonbaseline.yaml")
+    # gp - common baseline wrong type
+    d["test_comp"]["common_baseline"] = "yes"
+    wy(d, tmp_path / "comp_gp_commonbaselinewrongtype.yaml")
+    # gp - common baseline without interaction
+    d = deepcopy(comp)
+    d["test_comp"]["common_baseline"] = True
+    wy(d, tmp_path / "comp_gp_commonbaselinenoint.yaml")
 
     return tmp_path
