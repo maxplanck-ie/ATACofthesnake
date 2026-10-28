@@ -279,6 +279,13 @@ class Preflight:
                             assert interaction in covariates, (
                                 f"Comparison {comp} has interaction variable {interaction} that is not present in samplesheet. Exiting."
                             )
+                if "common_baseline" in comp:
+                    assert isinstance(comp["common_baseline"], bool), (
+                        f"Comparison {comp} has a 'common_baseline' that is not true/false but {type(comp['common_baseline'])}. Exiting."
+                    )
+                    assert "interaction" in comp, (
+                        f"Comparison {comp} sets 'common_baseline' without an 'interaction'. Exiting."
+                    )
         return warnings
 
     def parse_fasta(self):

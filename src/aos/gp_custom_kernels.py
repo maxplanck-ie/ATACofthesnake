@@ -132,3 +132,26 @@ class SlicedOrdinalKernel(OrdinalKernel):
     def remap_X(self, X):
         t = self.remap_time(X[:, 0])
         return t[:, None]
+
+
+class BaselineMask(Kernel):
+    """k(x, x') = 1[t != baseline] * 1[t' != baseline], with t = X[:, 0] (time)."""
+    def __init__(self, baseline):
+        self.baseline = baseline
+
+    def _mask(self, X):
+        return (np.asarray(X)[:, 0] != self.baseline).astype(float)
+
+    def __call__(self, X, Y=None, eval_gradient=False):
+        s_x = self._mask(X)
+        s_y = s_x if Y is None else self._mask(Y)
+        K = np.outer(s_x, s_y)
+        if eval_gradient:
+            return K, np.empty((K.shape[0], K.shape[1], 0))
+        return K
+
+    def diag(self, X):
+        return self._mask(X)
+
+    def is_stationary(self):
+        return False

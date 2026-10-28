@@ -24,6 +24,8 @@ PERMS = snakemake.params.permutations
 GP_TIMESTEPS = snakemake.params.gp_timesteps
 ALPHA = snakemake.params.gp_alpha
 INT_STRING = snakemake.params.interaction
+# First timepoint is shared by all interaction levels (e.g. untreated baseline).
+COMMON_BASELINE = _comparison.get("common_baseline", False)
 table_output = snakemake.output.table
 
 if _comparison["time_type"] == "ordinal":
@@ -50,12 +52,21 @@ if _comparison["time_type"] == "ordinal":
         == _n_int
         for lvl in _levels_case
     ]
+    # A common baseline doesn't need every level.
+    if COMMON_BASELINE:
+        _keep[0] = True
     if not all(_keep):
-        print(
+        _msg = (
             f"Interaction {INT_STRING}: dropping timepoints "
             f"{[lvl for lvl, k in zip(levels, _keep) if not k]}, not observed "
             f"for every {INT_STRING} level."
         )
+        if not _keep[0]:
+            _msg += (
+                f" If {levels[0]} is a baseline shared by all {INT_STRING} levels "
+                "(e.g. untreated), set 'common_baseline: true' in the comparison."
+            )
+        print(_msg)
         levels = [lvl for lvl, k in zip(levels, _keep) if k]
         _levels_case = [lvl for lvl, k in zip(_levels_case, _keep) if k]
         samplesheet = samplesheet[samplesheet[_comparison["time"]].isin(_levels_case)]
@@ -72,6 +83,7 @@ if _comparison["time_type"] == "ordinal":
     time = _time[:, None]
     unique_times = np.arange(len(levels), dtype=float)
     time_grid = unique_times[:, None]
+    baseline = 0.0 if COMMON_BASELINE else None
 
 else:
     assert _comparison["time_type"] == "continuous"
@@ -86,6 +98,8 @@ else:
     time_grid = np.linspace(time.min(), time.max(), GP_TIMESTEPS)[:, None]
     # Just needed in ordinal case, not here.
     unique_times = sorted(samplesheet[_comparison["time"]].unique())
+    # time_grid starts at time.min(), so predictions there are masked too.
+    baseline = float(time.min()) if COMMON_BASELINE else None
 
 # Common prep
 
@@ -130,6 +144,7 @@ fit_parameters = {
     "perms": PERMS,
     "alpha": ALPHA,
     "fit_type": _comparison["time_type"],
+    "baseline": baseline,
 }
 
 results = list(
@@ -144,7 +159,9 @@ results = list(
     )
 )
 
-y_preds, y_stds, distances_list, lr_obs_list, pvals = zip(*results)
+y_preds, y_stds, distances_list, lr_obs_list, pvals, lr_shape_list, p_shape_list = zip(
+    *results
+)
 
 _index = count_matrix_norm.index
 int_labels = fit_parameters["int_labels"]
@@ -167,10 +184,14 @@ distances_df = pd.DataFrame(np.vstack(distances_list), index=_index)
 if not distances_df.empty:
     distances_df.columns = [f"{a}-{b}" for a, b in zip(levels, levels[1:])]
 
+# lr_obs/p_value/FDR: any difference between levels (offset and/or time-varying).
+# *_shape: time-varying differences only, adjusted stage-wise in gp_postprocess.
 results_df = pd.DataFrame(
     {
         "lr_obs": lr_obs_list,
         "p_value": pvals,
+        "lr_shape": lr_shape_list,
+        "p_shape": p_shape_list,
     },
     index=_index,
 )

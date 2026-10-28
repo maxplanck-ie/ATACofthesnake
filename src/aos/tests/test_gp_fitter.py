@@ -6,7 +6,7 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.gaussian_process.kernels import ConstantKernel as C
 
 from aos import gp_fitter
-from aos.gp_custom_kernels import OrdinalKernel
+from aos.gp_custom_kernels import BaselineMask, OrdinalKernel
 
 # 12 samples: 4 timepoints x 3 replicates.
 TIME = np.repeat([0.0, 1.0, 2.0, 3.0], 3)[:, None]
@@ -34,15 +34,17 @@ def old_perm_lr_gp(kernel, X, lml_null):
     return np.array(lr)
 
 
-def old_perm_lr_interaction(kernel_null, kernel_full, X, int_cols):
-    """Reference: the original loop, permuting the interaction columns."""
+def old_perm_lr_interaction(kernel_null, kernel_full, X):
+    """Reference: Freedman-Lane loop, permuting the null model's residuals."""
+    gp_null = GaussianProcessRegressor(kernel=kernel_null, alpha=ALPHA, optimizer=None)
+    y_hat = gp_null.fit(X, Y).predict(X)
+    resid = Y - y_hat
     lr = []
     for p in gp_fitter._permutations(len(X), PERMS):
-        X_perm = X.copy()
-        X_perm[:, int_cols] = X[p][:, int_cols]
-        lml_full = sklearn_lml(kernel_full, X_perm, Y)
-        lml_null = sklearn_lml(kernel_null, X_perm, Y)
-        lr.append(max(0.0, 2 * (lml_full - lml_null)))
+        y_perm = y_hat + resid[p]
+        lml_full = sklearn_lml(kernel_full, X, y_perm)
+        lml_null = sklearn_lml(kernel_null, X, y_perm)
+        lr.append(2 * (lml_full - lml_null))
     return np.array(lr)
 
 
@@ -93,9 +95,9 @@ def test_perm_interaction_continuous_nuisance():
     X = np.hstack([TIME, GROUP2, NUIS])
     kernel_null, kernel_full = interaction_kernels("continuous", [1], [2])
     new = gp_fitter._perm_lr_gp_interaction(
-        kernel_null, kernel_full, X, Y, ALPHA, [1], PERMS
+        kernel_null, kernel_full, X, Y, ALPHA, PERMS
     )
-    old = old_perm_lr_interaction(kernel_null, kernel_full, X, [1])
+    old = old_perm_lr_interaction(kernel_null, kernel_full, X)
     np.testing.assert_allclose(new, old, rtol=1e-7, atol=1e-8)
 
 
@@ -103,9 +105,9 @@ def test_perm_interaction_ordinal_three_levels():
     X = np.hstack([TIME, GROUP3])
     kernel_null, kernel_full = interaction_kernels("ordinal", [1, 2], None)
     new = gp_fitter._perm_lr_gp_interaction(
-        kernel_null, kernel_full, X, Y, ALPHA, [1, 2], PERMS
+        kernel_null, kernel_full, X, Y, ALPHA, PERMS
     )
-    old = old_perm_lr_interaction(kernel_null, kernel_full, X, [1, 2])
+    old = old_perm_lr_interaction(kernel_null, kernel_full, X)
     np.testing.assert_allclose(new, old, rtol=1e-7, atol=1e-8)
 
 
@@ -143,7 +145,44 @@ def test_fit_gp_interaction_pvalue():
         "fit_type": "continuous",
         "unique_times": UNIQUE_TIMES,
     }
-    p_value = gp_fitter.fit_gp_interaction(Y, paramdic)[-1]
-    assert 0 < p_value <= 1
+    _, _, _, lr_obs, p_value, lr_shape, p_shape = gp_fitter.fit_gp_interaction(
+        Y, paramdic
+    )
+    assert lr_obs >= 0 and lr_shape >= 0
+    assert 0 < p_value <= 1 and 0 < p_shape <= 1
     paramdic["perms"] = 0
-    assert gp_fitter.fit_gp_interaction(Y, paramdic)[-1] == 1
+    _, _, _, _, p_value, _, p_shape = gp_fitter.fit_gp_interaction(Y, paramdic)
+    assert p_value == 1 and p_shape == 1
+
+
+def test_baseline_mask():
+    mask = BaselineMask(0.0)
+    X = np.hstack([TIME, GROUP2])
+    s = (TIME.ravel() != 0.0).astype(float)
+    np.testing.assert_array_equal(mask(X), np.outer(s, s))
+    np.testing.assert_array_equal(mask(X, X[:4]), np.outer(s, s[:4]))
+    np.testing.assert_array_equal(mask.diag(X), s)
+
+
+def test_fit_gp_interaction_common_baseline():
+    # Baseline (time 0) only observed for the reference level.
+    group = GROUP2.copy()
+    group[:3] = 0.0
+    paramdic = {
+        "time": TIME,
+        "int_encoded": pd.DataFrame({"group": group.ravel()}),
+        "nuis_encoded": None,
+        "perms": 20,
+        "alpha": ALPHA,
+        "time_grid": UNIQUE_TIMES[:, None],
+        "fit_type": "ordinal",
+        "unique_times": UNIQUE_TIMES,
+        "baseline": 0.0,
+    }
+    y_pred, y_std, _, _, p_value, _, p_shape = gp_fitter.fit_gp_interaction(
+        Y, paramdic
+    )
+    # Both levels share the baseline.
+    np.testing.assert_allclose(y_pred[0, 0], y_pred[1, 0])
+    np.testing.assert_allclose(y_std[0, 0], y_std[1, 0])
+    assert 0 < p_value <= 1 and 0 < p_shape <= 1

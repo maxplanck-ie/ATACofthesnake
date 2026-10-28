@@ -147,3 +147,9 @@ class TestPreflight:
             Preflight.validate_comparison(comppath / "comp_gp_interactionwronglist.yaml", ss)
         with pytest.raises(AssertionError):
             Preflight.validate_comparison(comppath / "comp_gp_interactionwrongtype.yaml", ss)
+        # gp - common baseline, wrong type, without interaction
+        Preflight.validate_comparison(comppath / "comp_gp_commonbaseline.yaml", ss)
+        with pytest.raises(AssertionError):
+            Preflight.validate_comparison(comppath / "comp_gp_commonbaselinewrongtype.yaml", ss)
+        with pytest.raises(AssertionError):
+            Preflight.validate_comparison(comppath / "comp_gp_commonbaselinenoint.yaml", ss)

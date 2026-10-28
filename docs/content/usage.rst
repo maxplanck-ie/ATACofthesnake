@@ -225,8 +225,34 @@ For both `ordinal` and `continuous` timecourse analyses, time*covariate interact
       time_type: 'continuous'
       interaction: 'treatment'
 
-Will run the original analysis (which peaks are time-sensitive, while controlling for other covariates), but will also run a second analysis, which test for the interaction between time and treatment (which peaks respond differently over time for different covariate levels).
+Will run the original analysis (which peaks are time-sensitive, while controlling for other covariates), but will also run a second analysis, which tests whether the time trajectories differ between treatment levels.
+Three nested models are fitted per peak: a single time curve shared by all levels, the shared curve plus a constant offset per level, and the latter plus a time-varying offset per level (time:treatment).
+The main test (`lr_obs`, `p_value` and `FDR` columns) compares the full model to the shared curve, i.e. it captures both constant shifts between levels and differences that change over time (treatment + time:treatment).
+The `lr_shape` and `p_shape` columns compare the full model to the shifted curves, i.e. they capture time-varying differences only (time:treatment).
+The shape test is corrected stage-wise: only peaks significant in the main test are considered, at a threshold of `--permutation_cutoff` times the fraction of peaks passing the main test. The resulting `padj_shape` column in the k_table can be compared directly against `--permutation_cutoff` (and is only valid for that cutoff). Significant peaks with `padj_shape` below the cutoff differ over time between levels, the others mostly show a constant shift.
+Significance cut offs, clustering and plots are based on the main test (`FDR`).
 The outputs are the same as the original analysis, with the addition that predictions are done per covariate level.
+For both tests, p-values are obtained by permuting the residuals of the fitted null model, so that effects allowed under the null are kept intact in every permutation. Peaks where the full model does not improve on the null at all (likelihood ratio below 1e-3) are reported with a likelihood ratio of 0 and a p-value of 1.
+In the ordinal case, timepoints that are not observed for every level of the interaction covariate are left out of the interaction test, unless the first timepoint is a shared baseline (see below).
+If the first timepoint is a baseline shared by all levels (e.g. samples taken before treatment), this can be specified with `common_baseline`:
+
+.. code:: yaml
+
+    comparison_name:
+      type: timecourse
+      time: 'time'
+      time_type: 'ordinal'
+      order:
+        - 'T0'
+        - 'T6'
+        - 'T24'
+      interaction: 'treatment'
+      common_baseline: true
+
+With `common_baseline: true`, differences between levels are fixed to zero at the baseline (the first level in `order` for ordinal time, the earliest time for continuous time), and the baseline samples inform the shared time curve. Their interaction level is ignored, so the baseline can be observed for any (sub)set of levels.
+Without it (the default, e.g. WT vs KO), differences between levels are allowed from the first timepoint on.
+In the continuous case, note that the predicted curves between the baseline and the next sampled timepoint are not informed by data: differences between levels can start right after the baseline.
+
 In case you have more then one covariate to test, interaction can also be specified as a list. Here one `default` analysis will be ran for time, and two interaction analyses:
 
 .. code:: yaml
