@@ -87,6 +87,12 @@ def get_ames(wildcards):
     )
   return []
 
+def get_comp_ames(wildcards):
+  return [
+    ame for ame in get_ames(wildcards)
+    if ame.startswith(f"motifs/{wildcards.motif_comp}/")
+  ]
+
 def get_ame_plots(wildcards):
   # For rule all — one output per unique motif_comp
   if config['motif']:

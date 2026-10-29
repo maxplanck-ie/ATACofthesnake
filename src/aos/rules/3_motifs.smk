@@ -42,7 +42,7 @@ rule ame:
 
 rule plotame:
   input:
-    ames = get_ames,
+    ames = get_comp_ames,
     motiffile = 'motifs/clusteredmotifs_consensus_motifs.meme'
   output:
     out = touch('motifs/{motif_comp}/motif_enrichment.parsed')
