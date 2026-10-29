@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.19.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.18.0...v0.19.0) (2026-10-29)
+
+
+### Features
+
+* allow 'no difference' baselines in GP ordinal/cont. modes ([bad0844](https://github.com/maxplanck-ie/ATACofthesnake/commit/bad0844e8a46672d0e4797425a94fd0c8ceb7603))
+* GP interaction test catches both constant and time-varying differences ([#113](https://github.com/maxplanck-ie/ATACofthesnake/issues/113)) ([bad0844](https://github.com/maxplanck-ie/ATACofthesnake/commit/bad0844e8a46672d0e4797425a94fd0c8ceb7603))
+* interaction only peaks covered under padj_shape ([bad0844](https://github.com/maxplanck-ie/ATACofthesnake/commit/bad0844e8a46672d0e4797425a94fd0c8ceb7603))
+
+
+### Bug Fixes
+
+* interaction GP null model residuals ([bad0844](https://github.com/maxplanck-ie/ATACofthesnake/commit/bad0844e8a46672d0e4797425a94fd0c8ceb7603))
+* restrict plotame to its own ame result instead of full glob ([#115](https://github.com/maxplanck-ie/ATACofthesnake/issues/115)) ([39ee7fb](https://github.com/maxplanck-ie/ATACofthesnake/commit/39ee7fbcfdb7ce6cb573d284f02186af34ff67f0))
+
 ## [0.18.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.17.0...v0.18.0) (2026-10-26)
 
 
