@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.19.0...v0.19.1) (2026-11-07)
+
+
+### Documentation
+
+* DOI to latest version in zenodo ([#116](https://github.com/maxplanck-ie/ATACofthesnake/issues/116)) ([0c3906a](https://github.com/maxplanck-ie/ATACofthesnake/commit/0c3906abbfe037e3d0404ec6b343594b63d27fa1))
+
 ## [0.19.0](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.18.0...v0.19.0) (2026-10-29)
 
 
