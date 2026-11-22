@@ -189,7 +189,7 @@ rule plotPCA:
   benchmark: "benchmarks/1_plotPCA.txt"
   conda: "envs/deeptools.yml"
   shell:'''
-  plotPCA --corData {input.peakset} -o {output.png} --transpose --ntop 5000 {params.colstr} \
+  plotPCA --corData {input.peakset} -o {output.png} --ntop 5000 {params.colstr} \
     --outFileNameData {output.pcadata}
   '''
 
