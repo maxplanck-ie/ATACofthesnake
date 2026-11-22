@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.2](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.19.1...v0.19.2) (2026-11-22)
+
+
+### Bug Fixes
+
+* pin deeptools 4.1, subsequent drop --transpose from plotPCA ([#119](https://github.com/maxplanck-ie/ATACofthesnake/issues/119)) ([929c6a2](https://github.com/maxplanck-ie/ATACofthesnake/commit/929c6a25242e3af3183a1781961350ea8cfd7c7a))
+
 ## [0.19.1](https://github.com/maxplanck-ie/ATACofthesnake/compare/v0.19.0...v0.19.1) (2026-11-07)
 
 
